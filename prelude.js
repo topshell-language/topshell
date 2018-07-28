@@ -65,6 +65,7 @@
     _p._sort = function(r) { return r.sort_; };
     _p._first = function(r) { if(Array.isArray(r)) return r[0]; else return r.head_; };
     _p._last = function(r) { if(Array.isArray(r)) return r[r.size - 1]; else return r.last_; };
+    _p._rest = function(r) { if(Array.isArray(r)) return r.slice(1); else return r.rest_; };
     _p._append = function(r) { if(Array.isArray(r)) return function(a) { return r.concat(a); }; else return r.append_; };
     _p._foldLeft = function(r) { return r.foldLeft_; };
     _p._foldRight = function(r) { return r.foldRight_; };

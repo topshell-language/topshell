@@ -97,6 +97,7 @@ object Emitter {
                 case "sort" => "_p._sort(" + emitTerm(record) + ")"
                 case "first" => "_p._first(" + emitTerm(record) + ")"
                 case "last" => "_p._last(" + emitTerm(record) + ")"
+                case "rest" => "_p._rest(" + emitTerm(record) + ")"
                 case "append" => "_p._append(" + emitTerm(record) + ")"
                 case "foldLeft" => "_p._foldLeft(" + emitTerm(record) + ")"
                 case "foldRight" => "_p._foldRight(" + emitTerm(record) + ")"
