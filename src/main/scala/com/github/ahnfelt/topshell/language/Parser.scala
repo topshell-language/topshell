@@ -25,25 +25,25 @@ class Parser(file : String, tokens : Array[Token]) {
         if(current.kind != "top" && current.kind != "end") {
             throw ParseException(current.at, "Expected an unindented top-level definition")
         }
-        var result = List.empty[TopSymbol]
+        var topSymbols = List.empty[TopSymbol]
         while(current.kind == "top") {
             val symbol = parseTopSymbol()
             if(current.kind != "top" && current.kind != "end") {
-                result ::= {
+                topSymbols ::= {
                     if(symbol.error.nonEmpty) symbol
                     else symbol.copy(error = Some(ParseException(current.at, "Unexpected " + current.raw)))
                 }
                 while(current.kind != "top" && current.kind != "end") offset += 1
             } else {
                 val name = symbol.binding.name
-                result ::= {
-                    if(!result.exists(_.binding.name == name)) symbol
+                topSymbols ::= {
+                    if(!topSymbols.exists(_.binding.name == name)) symbol
                     else symbol.copy(error = Some(ParseException(current.at, "Duplicate definition of " + name)))
                 }
             }
         }
         if(current.kind != "end") throw ParseException(current.at, "Expected end of file, got " + current.raw)
-        result.reverse
+        topSymbols.reverse
     }
 
     private def parseTopSymbol() : TopSymbol = {
@@ -167,6 +167,9 @@ class Parser(file : String, tokens : Array[Token]) {
             ERecord(at, bindings.reverse, rest)
         case ("lower", _) =>
             val c = skip("lower")
+            EVariable(c.at, c.raw)
+        case ("upper", _) =>
+            val c = skip("upper")
             EVariable(c.at, c.raw)
         case ("number", _) =>
             val c = skip("number")
