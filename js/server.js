@@ -1,7 +1,18 @@
 var http = require('http');
 var url = require('url');
 var utils = require('./utilities');
-var handler = require('./handler');
+var actions = require('./actions');
+
+var handler = (json, callback) => {
+    var action = actions[json.action];
+    if(action) {
+        action(json.data, (err, data) => callback(err,
+            JSON.stringify({data: data === undefined ? null : data})
+        ));
+    } else {
+        callback("No such action");
+    }
+};
 
 var server = http.createServer((request, response) => {
     var parts = url.parse(request.url);
