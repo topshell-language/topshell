@@ -13,6 +13,8 @@ object Syntax {
 
     case class TopSymbol(bind : Boolean, binding : Binding, error : Option[ParseException])
 
+    case class TopImport(at : Location, name : String, url : String, error : Option[ParseException])
+
     sealed abstract class Term { val at : Location }
     case class EString(at : Location, value : String) extends Term
     case class ENumber(at : Location, value : String) extends Term

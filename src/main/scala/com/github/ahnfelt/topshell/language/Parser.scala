@@ -26,6 +26,7 @@ class Parser(file : String, tokens : Array[Token]) {
             throw ParseException(current.at, "Expected an unindented top-level definition")
         }
         var topSymbols = List.empty[TopSymbol]
+        var imports = List.empty[TopImport]
         while(current.kind == "top") {
             val symbol = parseTopSymbol()
             if(current.kind != "top" && current.kind != "end") {
