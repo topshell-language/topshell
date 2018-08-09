@@ -77,7 +77,7 @@ class Parser(file : String, tokens : Array[Token]) {
     }
 
     private def parseIf() : Term = {
-        val condition = parseAndOr()
+        val condition = parsePipe()
         if(current.raw != "?") condition else {
             val at = skip("separator", Some("?")).at
             val thenBody = parseTerm()
@@ -98,6 +98,7 @@ class Parser(file : String, tokens : Array[Token]) {
         result
     }
 
+    private def parsePipe() : Term = parseBinary(Seq("|"), parseAndOr)
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), parseCompare)
     private def parseCompare() : Term = parseBinary(Seq(">", "<", ">=", "<=", "==", "!="), parsePlus)
     private def parsePlus() : Term = parseBinary(Seq("+", "-"), parseMultiply)
