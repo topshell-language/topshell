@@ -73,7 +73,7 @@ case class MainComponent() extends Component[NoEmit] {
                     val global = scalajs.js.Dynamic.global
                     E.div(
                         ResultCss,
-                        E.div(ResultHeaderCss, Text(symbol.binding.name)),
+                        E.div(ResultHeaderCss, Text(symbol.binding.name)).when(!symbol.binding.name.contains('_')),
                         E.div(ResultBodyCss,
                             symbol.error.map(_.message).map(m =>
                                 E.span(CodeCss, S.color(Palette.textError), Text(m))
@@ -118,10 +118,10 @@ case class MainComponent() extends Component[NoEmit] {
     private def renderValue(value : Any) : Tag = value match {
         case v : String => E.div(StringValueCss, Text(js.JSON.stringify(v)))
         case v : Double => E.div(ValueCss, S.color(Palette.textError).when(v.isNaN), Text(v + ""))
-        case v : Boolean => E.div(ValueCss, Text(v + ""))
-        case v if v == null => E.div(ValueCss, Text("null"))
-        case v if js.isUndefined(v) => E.div(ValueCss, S.color(Palette.textError), Text("undefined"))
-        case _ : js.Function => E.div(ValueCss, Text("function"))
+        case v : Boolean => E.div(ValueCss, Text(if(v) "True" else "False"))
+        case v if v == null => E.div(ValueCss, Text("Null"))
+        case v if js.isUndefined(v) => E.div(ValueCss, S.color(Palette.textError), Text("Undefined"))
+        case _ : js.Function => E.div(ValueCss, Text("Function"))
         case v if js.Dynamic.global.tsh_prelude.isVisual_(v.asInstanceOf[js.Any]).asInstanceOf[Boolean] =>
             E.div().withRef(container => v.asInstanceOf[js.Dynamic].setHtml(container.asInstanceOf[js.Any]))
         case v : js.Array[_] => E.div(Tags({

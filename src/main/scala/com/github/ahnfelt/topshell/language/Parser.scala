@@ -7,7 +7,7 @@ class Parser(file : String, tokens : Array[Token]) {
 
     //println(tokens.map(_.kind).mkString(" "))
 
-    private var nextWildcard = 0
+    private var nextAnonymousOutput = 0
     private var offset = 0
     private val end = Token(Location(file, tokens.lastOption.map(_.at.line + 1).getOrElse(1), 1), "end", "end of file")
     private def current =
@@ -51,7 +51,7 @@ class Parser(file : String, tokens : Array[Token]) {
     private def parseTopSymbol() : TopSymbol = {
         skip("top")
         val isDefinition = current.kind == "definition"
-        val variable = if(isDefinition) current.raw else { nextWildcard += 1; "out_" + nextWildcard }
+        val variable = if(isDefinition) current.raw else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
         val bind = ahead.raw == "<-"
         val at = if(isDefinition) ahead.at else current.at
         try {
