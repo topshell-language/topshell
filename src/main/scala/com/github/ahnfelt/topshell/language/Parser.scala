@@ -7,6 +7,7 @@ class Parser(file : String, tokens : Array[Token]) {
 
     //println(tokens.map(_.kind).mkString(" "))
 
+    private var nextWildcard = 0
     private var offset = 0
     private val end = Token(Location(file, tokens.lastOption.map(_.at.line + 1).getOrElse(1), 1), "end", "end of file")
     private def current =
@@ -49,14 +50,19 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseTopSymbol() : TopSymbol = {
         skip("top")
-        val variable = current.raw
+        val isDefinition = current.kind == "definition"
+        val variable = if(isDefinition) current.raw else { nextWildcard += 1; "out_" + nextWildcard }
         val bind = ahead.raw == "<-"
-        val at = ahead.at
+        val at = if(isDefinition) ahead.at else current.at
         try {
-            skip("definition").raw
-            if(bind) skip("separator", Some("<-")).at else skip("separator", Some("=")).at
-            val binding = Binding(at, variable, parseTerm())
-            TopSymbol(bind, binding, None)
+            if(!isDefinition) {
+                TopSymbol(bind, Binding(at, variable, parseTerm()), None)
+            } else {
+                skip("definition").raw
+                if(bind) skip("separator", Some("<-")).at else skip("separator", Some("=")).at
+                val binding = Binding(at, variable, parseTerm())
+                TopSymbol(bind, binding, None)
+            }
         } catch { case e : ParseException =>
             val binding = Binding(at, variable, ERecord(at, List(), None))
             TopSymbol(bind, binding, Some(e))

@@ -38,16 +38,16 @@ object Tokenizer {
             var wildcard = 0
             pattern.findAllMatchIn(code).map { m =>
                 def location = Location(file, line, 1 + m.start - lineStart)
-                if(m.group(groups("space")) != null) {
+                val token = if(m.group(groups("space")) != null) {
                     List.empty
                 } else if(m.group(groups("newline")) != null) {
                     line += 1
                     lineStart = m.end
                     List.empty
-                } else if(m.group(groups("lower")) != null && m.start == lineStart) {
-                    List(Token(location, "top", "top level symbol"), Token(location, "lower", m.group(groups("lower"))))
-                } else if(m.group(groups("upper")) != null && m.start == lineStart) {
-                    List(Token(location, "top", "top level symbol"), Token(location, "upper", m.group(groups("upper"))))
+                } else if(m.group(groups("lower")) != null) {
+                    List(Token(location, "lower", m.group(groups("lower"))))
+                } else if(m.group(groups("upper")) != null) {
+                    List(Token(location, "upper", m.group(groups("upper"))))
                 } else if(m.group(groups("operator")) != null) {
                     val raw = m.group(groups("operator"))
                     val kind =
@@ -55,12 +55,15 @@ object Tokenizer {
                     List(Token(location, kind, raw))
                 } else if(m.group(groups("wildcard")) != null) {
                     wildcard += 1
-                    val token = Token(location, "definition", "_" + wildcard)
-                    if(m.start == lineStart) List(Token(location, "top", "top level symbol"), token) else List(token)
+                    List(Token(location, "definition", "_" + wildcard))
                 } else {
                     val iterator = for(k <- keys) yield Option(m.group(groups(k))).map(g => Token(location, k, g))
                     List(iterator.collectFirst { case Some(t) => t }.get)
                 }
+                val all = m.group(0)
+                if(m.start == lineStart && all != "}" && all != "]" && all != ")" && all.trim.nonEmpty) {
+                    Token(location, "top", "top level symbol") :: token
+                } else token
             }
         }.flatten.toArray
         tokens.zip(tokens.drop(1) :+ Token(null, "internal", "internal")).map { case (token, next) =>
