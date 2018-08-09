@@ -101,7 +101,8 @@ class Parser(file : String, tokens : Array[Token]) {
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), parseCompare)
     private def parseCompare() : Term = parseBinary(Seq(">", "<", ">=", "<=", "==", "!="), parsePlus)
     private def parsePlus() : Term = parseBinary(Seq("+", "-"), parseMultiply)
-    private def parseMultiply() : Term = parseBinary(Seq("*", "/"), parseUnary)
+    private def parseMultiply() : Term = parseBinary(Seq("*", "/"), parsePower)
+    private def parsePower() : Term = parseBinary(Seq("^"), parseUnary)
 
     private def parseUnary() : Term = {
         if(current.raw == "!" || current.raw == "-") {

@@ -109,6 +109,8 @@ object Emitter {
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
         case EUnary(at, operator, operand) =>
             "(" + operator + "(" + emitTerm(operand) + "))"
+        case EBinary(at, "^", left, right) =>
+            "Math.pow(" + emitTerm(left) + ", " + emitTerm(right) + ")"
         case EBinary(at, operator, left, right) =>
             "((" + emitTerm(left) + ") " + operator + " (" + emitTerm(right) + "))"
     }
