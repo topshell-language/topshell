@@ -147,7 +147,7 @@ case class MainComponent() extends Component[NoEmit] {
         case v if v == null => E.div(ValueCss, Text("Null"))
         case v if js.isUndefined(v) => E.div(ValueCss, S.color(Palette.textError), Text("Undefined"))
         case _ : js.Function => E.div(ValueCss, Text("Function"))
-        case v if js.Dynamic.global.tsh_prelude.isVisual_(v.asInstanceOf[js.Any]).asInstanceOf[Boolean] =>
+        case v if !js.isUndefined(v.asInstanceOf[js.Dynamic]._tsh_visual_marker) =>
             E.div().withRef(container => v.asInstanceOf[js.Dynamic].setHtml(container.asInstanceOf[js.Any]))
         case v : js.Array[_] => E.div(Tags({
             if(v.isEmpty) List(List(E.span(ValueCss, Text("[]"))))

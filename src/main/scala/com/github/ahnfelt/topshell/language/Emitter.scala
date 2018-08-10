@@ -8,13 +8,14 @@ object Emitter {
         "(function(_g) {\n" +
         "if(!_g.tsh) _g.tsh = {};\n" +
         "var _s = _g.tsh;\n" +
-        "var _p = _g.tsh_prelude;\n" +
-        "var null_ = _p.null_;\n" +
-        "var false_ = _p.false_;\n" +
-        "var true_ = _p.true_;\n" +
-        "var tag_ = _p.tag_;\n" +
-        "var visual_ = _p.visual_;\n" +
-        "var _a = _p.recordRest;\n" +
+        """
+            function _a(m, r) {
+                for(var k in r) {
+                    if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
+                }
+                return m;
+            };
+        """ +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
         (if(topSymbols.isEmpty) "" else emitStart(topImports.map(_.name) ++ topSymbols.map(_.binding.name))) +
@@ -91,7 +92,8 @@ object Emitter {
         case EApply(at, function, argument) => "(" + emitTerm(function) + ")(" + emitTerm(argument) + ")"
         case ELet(at, bindings, body) => "(function() {\n" + emitBody(term) + "})()"
         case EBind(at, binding, body) =>
-            "_p._then(" + emitTerm(binding.value) + ")(function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
+            // TODO: Opened modules should be stored in _o, and then it should be _o.then_
+            "List_.then_(" + emitTerm(binding.value) + ")(function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
         case EList(at, elements, rest) =>
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
@@ -99,43 +101,7 @@ object Emitter {
             val record = "{" + fields.map(b => b.name + "_:" + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_a(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
         case EField(at, record, field) =>
-            field match {
-                /*case "map" => "_p._map(" + emitTerm(record) + ")"
-                case "then" => "_p._then(" + emitTerm(record) + ")"
-                case "size" => "_p._size(" + emitTerm(record) + ")"
-                case "at" => "_p._at(" + emitTerm(record) + ")"
-                case "take" => "_p._take(" + emitTerm(record) + ")"
-                case "drop" => "_p._drop(" + emitTerm(record) + ")"
-                case "takeLast" => "_p._takeLast(" + emitTerm(record) + ")"
-                case "dropLast" => "_p._dropLast(" + emitTerm(record) + ")"
-                case "takeWhile" => "_p._takeWhile(" + emitTerm(record) + ")"
-                case "dropWhile" => "_p._dropWhile(" + emitTerm(record) + ")"
-                case "takeLastWhile" => "_p._takeLastWhile(" + emitTerm(record) + ")"
-                case "dropLastWhile" => "_p._dropLastWhile(" + emitTerm(record) + ")"
-                case "zip" => "_p._zip(" + emitTerm(record) + ")"
-                case "unzip" => "_p._unzip(" + emitTerm(record) + ")"
-                case "indexes" => "_p._indexes(" + emitTerm(record) + ")"
-                case "filter" => "_p._filter(" + emitTerm(record) + ")"
-                case "startsWith" => "_p._startsWith(" + emitTerm(record) + ")"
-                case "endsWith" => "_p._endsWith(" + emitTerm(record) + ")"
-                case "find" => "_p._find(" + emitTerm(record) + ")"
-                case "any" => "_p._any(" + emitTerm(record) + ")"
-                case "all" => "_p._all(" + emitTerm(record) + ")"
-                case "empty" => "_p._empty(" + emitTerm(record) + ")"
-                case "reverse" => "_p._reverse(" + emitTerm(record) + ")"
-                case "join" => "_p._join(" + emitTerm(record) + ")"
-                case "sort" => "_p._sort(" + emitTerm(record) + ")"
-                case "first" => "_p._first(" + emitTerm(record) + ")"
-                case "last" => "_p._last(" + emitTerm(record) + ")"
-                case "rest" => "_p._rest(" + emitTerm(record) + ")"
-                case "append" => "_p._append(" + emitTerm(record) + ")"
-                case "foldLeft" => "_p._foldLeft(" + emitTerm(record) + ")"
-                case "foldRight" => "_p._foldRight(" + emitTerm(record) + ")"
-                case "scanLeft" => "_p._scanLeft(" + emitTerm(record) + ")"
-                case "scanRight" => "_p._scanRight(" + emitTerm(record) + ")"
-                */
-                case _ => emitTerm(record) + "." + field + "_"
-            }
+            emitTerm(record) + "." + field + "_"
         case EIf(at, condition, thenBody, elseBody) =>
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
         case EUnary(at, operator, operand) =>
