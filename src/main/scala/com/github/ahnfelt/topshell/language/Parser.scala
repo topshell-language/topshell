@@ -17,7 +17,7 @@ class Parser(file : String, tokens : Array[Token]) {
     private def skip(kind : String, value : Option[String] = None) : Token = {
         val c = current
         if(c.kind != kind) throw ParseException(c.at, "Expected " + kind + value.map(" " + _).getOrElse("") + ", got " + c.raw)
-        if(value.exists(_ != c.raw)) throw ParseException(c.at, "Expected " + value.get + ", got " + c.raw)
+        if(value.exists(_ != c.raw)) throw ParseException(c.at, "Expected " + value.get + " got " + c.raw)
         offset += 1
         c
     }
@@ -76,7 +76,7 @@ class Parser(file : String, tokens : Array[Token]) {
         if(current.raw != "?") condition else {
             val at = skip("separator", Some("?")).at
             val thenBody = parseTerm()
-            skip("separator", Some(":"))
+            skip("separator", Some(","))
             val elseBody = parseTerm()
             EIf(at, condition, thenBody, elseBody)
         }
@@ -92,6 +92,15 @@ class Parser(file : String, tokens : Array[Token]) {
         }
         result
     }
+
+    private val allBinary = Seq(
+        Seq("|"),
+        Seq("&&", "||"),
+        Seq(">", "<", ">=", "<=", "==", "!="),
+        Seq("+", "-"),
+        Seq("*", "/"),
+        Seq("^"),
+    ).flatten
 
     private def parsePipe() : Term = parseBinary(Seq("|"), parseAndOr)
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), parseCompare)
@@ -132,7 +141,19 @@ class Parser(file : String, tokens : Array[Token]) {
     private def parseAtom() : Term = (current.kind, current.raw) match {
         case (_, "(") =>
             skip("bracket", Some("("))
-            val result = parseTerm()
+            val result = if(current.kind == "operator" && allBinary.contains(current.raw)) {
+                val c = skip("operator")
+                val at = c.at
+                EFunction(at, "_1", EFunction(at, "_2",
+                    EBinary(at, c.raw, EVariable(at, "_1"), EVariable(at, "_2"))
+                ))
+            } else if(current.raw == ".") {
+                val at = skip("separator").at
+                val field = skip("lower").raw
+                EFunction(at, "_1", EField(at, EVariable(at, "_1"), field))
+            } else {
+                parseTerm()
+            }
             skip("bracket", Some(")"))
             result
         case (_, "[") =>
