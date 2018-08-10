@@ -69,12 +69,7 @@ class Parser(file : String, tokens : Array[Token]) {
         }
     }
 
-    private def parseTerm() : Term = current.kind match {
-        case "definition" =>
-            parseDefinition()
-        case _ =>
-            parseIf()
-    }
+    private def parseTerm() : Term = parseIf()
 
     private def parseIf() : Term = {
         val condition = parsePipe()
@@ -117,7 +112,7 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseApply() : Term = {
         var result = parseDot()
-        while(List("lower", "number", "string").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
+        while(List("lower", "number", "string", "definition").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
             val argument = parseDot()
             result = EApply(argument.at, result, argument)
         }
@@ -186,6 +181,8 @@ class Parser(file : String, tokens : Array[Token]) {
         case ("string", _) =>
             val c = skip("string")
             EString(c.at, c.raw)
+        case ("definition", _) =>
+            parseDefinition()
         case _ =>
             throw ParseException(current.at, "Expected an atom, got " + current.raw)
     }
