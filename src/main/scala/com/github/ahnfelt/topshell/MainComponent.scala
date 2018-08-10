@@ -15,6 +15,7 @@ case class MainComponent() extends Component[NoEmit] {
     var topImports : List[TopImport] = List.empty
     var topSymbols : List[TopSymbol] = List.empty
     var error : Option[String] = None
+    val timeout = Timeout(this, debouncedCode, true) { _ => 1000 } // Temporary workaround until we wait for async exec
 
     override def componentWillRender(get : Get) : Unit = {
         if(get(debouncedCode) != lastCode) {
@@ -74,20 +75,20 @@ case class MainComponent() extends Component[NoEmit] {
                 E.i(A.className("fa fa-rocket"), ButtonCss, A.title("Re-run with all side effects enabled (Ctrl + Shift + Enter)")),
             ),
             E.div(RightAreaCss,
-                Tags(for(symbol <- topImports) yield {
+                Tags(for(topImport <- topImports) yield {
                     val global = scalajs.js.Dynamic.global
                     E.div(
                         ResultCss,
-                        E.div(ResultHeaderCss, Text(symbol.name)),
+                        E.div(ResultHeaderCss, Text(topImport.name)),
                         E.div(ResultBodyCss,
-                            symbol.error.map(_.message).map(m =>
+                            topImport.error.map(_.message).map(m =>
                                 E.span(CodeCss, S.color(Palette.textError), Text(m))
                             ).getOrElse {
-                                if(!js.isUndefined(global.tsh.selectDynamic(symbol.name + "_e"))) {
-                                    val value = global.tsh.selectDynamic(symbol.name + "_e")
+                                if(!js.isUndefined(global.tsh.selectDynamic(topImport.name + "_e"))) {
+                                    val value = global.tsh.selectDynamic(topImport.name + "_e")
                                     E.span(CodeCss, S.color(Palette.textError), Text(value + ""))
                                 } else {
-                                    E.div(ValueCss, Text("Module"))
+                                    E.div(ValueCss, Text("Module " + topImport.url))
                                 }
                             }
                         )

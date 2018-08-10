@@ -8,7 +8,7 @@ object UsedImports {
     def completeImports(topSymbols : List[TopSymbol], topImports : List[TopImport]) : List[TopImport] = {
         val used = topSymbols.map(_.binding.value).map(usedImports).foldLeft(Map.empty[String, Location])(_ ++ _)
         val missing = used -- topImports.map(_.name)
-        val generated = missing.map { case (name, at) => TopImport(at, name, "/core/" + name + ".js", None) }
+        val generated = missing.map { case (name, at) => TopImport(at, name, "/topshell/core/" + name + ".js", None) }
         topImports ++ generated
     }
 

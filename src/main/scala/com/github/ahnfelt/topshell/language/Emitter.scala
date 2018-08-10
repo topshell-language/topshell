@@ -15,17 +15,47 @@ object Emitter {
         "var tag_ = _p.tag_;\n" +
         "var visual_ = _p.visual_;\n" +
         "var _a = _p.recordRest;\n" +
+        topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
-        (if(topSymbols.isEmpty) "" else emitStart(topSymbols)) +
+        (if(topSymbols.isEmpty) "" else emitStart(topImports.map(_.name) ++ topSymbols.map(_.binding.name))) +
         "\n})(this);\n"
     }
 
-    def emitStart(symbols : List[Syntax.TopSymbol]) : String = symbols match {
-        case List() => "_g.tsh.last = v;"
+    def emitStart(symbols : List[String]) : String = symbols match {
+        case List() => "_g.tsh.last = v;\n"
         case s::ss =>
-            "_s." + s.binding.name + "_f(function(v) {\n" +
+            "_s." + s + "_f(function(v) {\n" +
             emitStart(ss) +
             "});\n"
+    }
+
+    def emitImport(topImport : TopImport) : String = {
+        "var " + topImport.name + "_ = void 0;\n" +
+        "_s." + topImport.name + "_ = " + topImport.name + "_;\n" +
+        "_s." + topImport.name + "_e = void 0;\n" +
+        "_s." + topImport.name + "_f = function(_c) {\n" +
+        (if(topImport.error.isEmpty) emitImportFetch(topImport) else "") +
+        "};\n"
+    }
+
+    def emitImportFetch(topImport : TopImport) : String = {
+        s"""
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', '${topImport.url.replaceAll("[\\r\\n'\\\"\\\\]", "")}');
+            xhr.onload = function() {
+                if(xhr.status === 200) {
+                    var f = new Function('exports', xhr.responseText);
+                    var exported = {};
+                    f(exported);
+                    ${topImport.name}_ = exported;
+                } else {
+                    _s.${topImport.name}_e = 'Could not load module';
+                }
+                _s.${topImport.name}_ = ${topImport.name}_;
+                _c(${topImport.name}_, _s.${topImport.name}_e);
+            };
+            xhr.send();
+        """
     }
 
     def emitTopSymbol(symbol : TopSymbol) : String = {
@@ -70,7 +100,7 @@ object Emitter {
             rest.map(r => "_a(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
         case EField(at, record, field) =>
             field match {
-                case "map" => "_p._map(" + emitTerm(record) + ")"
+                /*case "map" => "_p._map(" + emitTerm(record) + ")"
                 case "then" => "_p._then(" + emitTerm(record) + ")"
                 case "size" => "_p._size(" + emitTerm(record) + ")"
                 case "at" => "_p._at(" + emitTerm(record) + ")"
@@ -103,6 +133,7 @@ object Emitter {
                 case "foldRight" => "_p._foldRight(" + emitTerm(record) + ")"
                 case "scanLeft" => "_p._scanLeft(" + emitTerm(record) + ")"
                 case "scanRight" => "_p._scanRight(" + emitTerm(record) + ")"
+                */
                 case _ => emitTerm(record) + "." + field + "_"
             }
         case EIf(at, condition, thenBody, elseBody) =>
