@@ -2,7 +2,7 @@ package com.github.ahnfelt.topshell
 
 import com.github.ahnfelt.react4s._
 import com.github.ahnfelt.topshell.language.Syntax.{Term, TopImport, TopSymbol}
-import com.github.ahnfelt.topshell.language.{Checker, Emitter, Parser, Tokenizer}
+import com.github.ahnfelt.topshell.language._
 import com.github.ahnfelt.topshell.language.Tokenizer.{ParseException, Token}
 
 import scala.scalajs.js
@@ -22,14 +22,14 @@ case class MainComponent() extends Component[NoEmit] {
             try {
                 val tokens = Tokenizer.tokenize("Unnamed.tsh", lastCode)
                 val (newImports, newSymbols) = new Parser("Unnamed.tsh", tokens).parseTopLevel()
-                topImports = newImports
+                topImports = UsedImports.completeImports(newSymbols, newImports)
                 topSymbols = newSymbols
                 error = None
                 println("===")
                 println(topImports)
                 println(topSymbols)
                 println("---")
-                topSymbols = Checker.check(topSymbols)
+                topSymbols = Checker.check(topImports, topSymbols)
                 val emitted = Emitter.emit(topImports, topSymbols)
                 println(emitted)
                 scalajs.js.eval(emitted)

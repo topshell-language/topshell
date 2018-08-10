@@ -7,10 +7,11 @@ object Checker {
 
     private val globals = List("tag", "visual", "true", "false", "null")
 
-    def check(symbols : List[TopSymbol]) : List[TopSymbol] = {
+    def check(imports : List[TopImport], symbols : List[TopSymbol]) : List[TopSymbol] = {
         for((s, i) <- symbols.zipWithIndex) yield {
             val visible =
                 globals ++
+                imports.map(_.name) ++
                 symbols.take(i).map(_.binding.name) ++
                 symbols.drop(i).takeWhile(s => !s.bind && s.binding.value.isInstanceOf[EFunction]).map(_.binding.name)
             try {
