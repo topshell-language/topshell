@@ -1,7 +1,7 @@
 package com.github.ahnfelt.topshell
 
 import com.github.ahnfelt.react4s._
-import com.github.ahnfelt.topshell.language.Syntax.{Term, TopSymbol}
+import com.github.ahnfelt.topshell.language.Syntax.{Term, TopImport, TopSymbol}
 import com.github.ahnfelt.topshell.language.{Checker, Emitter, Parser, Tokenizer}
 import com.github.ahnfelt.topshell.language.Tokenizer.{ParseException, Token}
 
@@ -12,6 +12,7 @@ case class MainComponent() extends Component[NoEmit] {
     val code = State("")
     val debouncedCode = Debounce(this, code, 500)
     var lastCode = ""
+    var topImports : List[TopImport] = List.empty
     var topSymbols : List[TopSymbol] = List.empty
     var error : Option[String] = None
 
@@ -20,16 +21,20 @@ case class MainComponent() extends Component[NoEmit] {
             lastCode = get(debouncedCode)
             try {
                 val tokens = Tokenizer.tokenize("Unnamed.tsh", lastCode)
-                topSymbols = new Parser("Unnamed.tsh", tokens).parseTopSymbols()
+                val (newImports, newSymbols) = new Parser("Unnamed.tsh", tokens).parseTopLevel()
+                topImports = newImports
+                topSymbols = newSymbols
                 error = None
                 println("===")
+                println(topImports)
                 println(topSymbols)
                 println("---")
                 topSymbols = Checker.check(topSymbols)
-                val emitted = Emitter.emit(topSymbols)
+                val emitted = Emitter.emit(topImports, topSymbols)
                 println(emitted)
                 scalajs.js.eval(emitted)
             } catch { case e : ParseException =>
+                topImports = List.empty
                 topSymbols = List.empty
                 error = Some(e.message + " " + e.at.toShortString)
             }
@@ -69,6 +74,25 @@ case class MainComponent() extends Component[NoEmit] {
                 E.i(A.className("fa fa-rocket"), ButtonCss, A.title("Re-run with all side effects enabled (Ctrl + Shift + Enter)")),
             ),
             E.div(RightAreaCss,
+                Tags(for(symbol <- topImports) yield {
+                    val global = scalajs.js.Dynamic.global
+                    E.div(
+                        ResultCss,
+                        E.div(ResultHeaderCss, Text(symbol.name)),
+                        E.div(ResultBodyCss,
+                            symbol.error.map(_.message).map(m =>
+                                E.span(CodeCss, S.color(Palette.textError), Text(m))
+                            ).getOrElse {
+                                if(!js.isUndefined(global.tsh.selectDynamic(symbol.name + "_e"))) {
+                                    val value = global.tsh.selectDynamic(symbol.name + "_e")
+                                    E.span(CodeCss, S.color(Palette.textError), Text(value + ""))
+                                } else {
+                                    E.div(ValueCss, Text("Module"))
+                                }
+                            }
+                        )
+                    )
+                }),
                 Tags(for(symbol <- topSymbols) yield {
                     val global = scalajs.js.Dynamic.global
                     E.div(

@@ -4,7 +4,7 @@ import com.github.ahnfelt.topshell.language.Syntax._
 
 object Emitter {
 
-    def emit(topSymbols : List[TopSymbol]) = {
+    def emit(topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
         "(function(_g) {\n" +
         "if(!_g.tsh) _g.tsh = {};\n" +
         "var _s = _g.tsh;\n" +

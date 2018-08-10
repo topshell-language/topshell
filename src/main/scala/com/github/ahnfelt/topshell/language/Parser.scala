@@ -22,34 +22,64 @@ class Parser(file : String, tokens : Array[Token]) {
         c
     }
 
-    def parseTopSymbols() : List[TopSymbol] = {
+    def parseTopLevel() : (List[TopImport], List[TopSymbol]) = {
         if(current.kind != "top" && current.kind != "end") {
             throw ParseException(current.at, "Expected an unindented top-level definition")
         }
+        var topImports = List.empty[TopImport]
         var topSymbols = List.empty[TopSymbol]
-        var imports = List.empty[TopImport]
         while(current.kind == "top") {
-            val symbol = parseTopSymbol()
-            if(current.kind != "top" && current.kind != "end") {
-                topSymbols ::= {
-                    if(symbol.error.nonEmpty) symbol
-                    else symbol.copy(error = Some(ParseException(current.at, "Unexpected " + current.raw)))
+            skip("top")
+            if(ahead.raw == "@") {
+                val topImport = parseTopImport()
+                if(topImports.exists(_.name == topImport.name)) {
+                    topImports ::= topImport.copy(error = Some(
+                        ParseException(current.at, "Duplicate import of " + topImport.name)
+                    ))
+                } else {
+                    topImports ::= topImport
                 }
-                while(current.kind != "top" && current.kind != "end") offset += 1
             } else {
-                val name = symbol.binding.name
-                topSymbols ::= {
-                    if(!topSymbols.exists(_.binding.name == name)) symbol
-                    else symbol.copy(error = Some(ParseException(current.at, "Duplicate definition of " + name)))
+                val symbol = parseTopSymbol()
+                if(current.kind != "top" && current.kind != "end") {
+                    topSymbols ::= {
+                        if(symbol.error.nonEmpty) symbol
+                        else symbol.copy(error = Some(ParseException(current.at, "Unexpected " + current.raw)))
+                    }
+                    while(current.kind != "top" && current.kind != "end") offset += 1
+                } else {
+                    val name = symbol.binding.name
+                    topSymbols ::= {
+                        if(!topSymbols.exists(_.binding.name == name)) symbol
+                        else symbol.copy(error = Some(ParseException(current.at, "Duplicate definition of " + name)))
+                    }
                 }
             }
         }
         if(current.kind != "end") throw ParseException(current.at, "Expected end of file, got " + current.raw)
-        topSymbols.reverse
+        topImports.reverse -> topSymbols.reverse
+    }
+
+    private def parseTopImport() : TopImport = {
+        val name = current.raw
+        val at = current.at
+        try {
+            skip("definition")
+            skip("operator", Some("@"))
+            val url = skip("string").raw
+            if(current.kind != "top" && current.kind != "end") {
+                val unexpectedAt = current.at
+                while (current.kind != "top" && current.kind != "end") offset += 1
+                TopImport(at, name, url, Some(ParseException(unexpectedAt, "Unexpected " + current.raw)))
+            } else {
+                TopImport(at, name, url, None)
+            }
+        } catch { case e : ParseException =>
+            TopImport(at, name, "???", Some(e))
+        }
     }
 
     private def parseTopSymbol() : TopSymbol = {
-        skip("top")
         val isDefinition = current.kind == "definition"
         val variable = if(isDefinition) current.raw else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
         val bind = ahead.raw == "<-"

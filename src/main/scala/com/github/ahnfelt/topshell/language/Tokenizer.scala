@@ -67,8 +67,13 @@ object Tokenizer {
             }
         }.flatten.toArray
         tokens.zip(tokens.drop(1) :+ Token(null, "internal", "internal")).map { case (token, next) =>
-            if(token.kind == "lower" && Seq("=", "<-", "->", "::").contains(next.raw)) token.copy(kind = "definition")
-            else token
+            if(token.kind == "lower" && Seq("=", "<-", "->", "::").contains(next.raw)) {
+                token.copy(kind = "definition")
+            } else if(token.kind == "upper" && Seq("@").contains(next.raw)) {
+                token.copy(kind = "definition")
+            } else {
+                token
+            }
         }
     }
 
