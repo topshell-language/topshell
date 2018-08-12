@@ -171,7 +171,7 @@ class Parser(file : String, tokens : Array[Token]) {
     private def parseAtom() : Term = (current.kind, current.raw) match {
         case (_, "(") =>
             skip("bracket", Some("("))
-            val result = if(current.kind == "operator" && allBinary.contains(current.raw)) {
+            val result = if(current.kind == "operator" && allBinary.contains(current.raw) && ahead.raw == ")") {
                 val c = skip("operator")
                 val at = c.at
                 EFunction(at, "_1", EFunction(at, "_2",
