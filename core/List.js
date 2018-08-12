@@ -50,8 +50,11 @@ exports.head_ = function(r) { return r[0]; };
 exports.tail_ = function(r) { return r.slice(1); };
 exports.append_ = function(r) { return function(a) { return r.concat(a); }; };
 
-exports.foldLeft_ = f => z => a => a.reduce(x => y => f(x, y), z);
-exports.foldRight_ = f => z => a => a.reduceRight(x => y => f(x, y), z);
+exports.foldLeft_ = f => z => a => a.reduce((x, y) => f(x)(y), z);
+exports.foldRight_ = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
+
+exports.sort_ = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
+
 
 exports.takeWhile_ = function(r) { return r.takeWhile_; };
 exports.dropWhile_ = function(r) { return r.dropWhile_; };
@@ -63,9 +66,6 @@ exports.indexes_ = function(r) { return r.indexes_; };
 exports.startsWith_ = function(r) { return r.startsWith_; };
 exports.endsWith_ = function(r) { return r.endsWith_; };
 exports.join_ = function(r) { return r.join_; };
-exports.sort_ = function(r) { return r.sort_; };
-
-
 
 exports.scanLeft_ = function(r) { return r.scanLeft_; };
 exports.scanRight_ = function(r) { return r.scanRight_; };
