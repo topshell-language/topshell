@@ -55,8 +55,6 @@ exports.foldRight_ = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
 
 exports.sort_ = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
 
-exports.join_ = s => a => a.join(s);
-
 
 exports.takeWhile_ = function(r) { return r.takeWhile_; };
 exports.dropWhile_ = function(r) { return r.dropWhile_; };
