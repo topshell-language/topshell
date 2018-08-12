@@ -55,6 +55,8 @@ exports.foldRight_ = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
 
 exports.sort_ = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
 
+exports.join_ = s => a => a.join(s);
+
 
 exports.takeWhile_ = function(r) { return r.takeWhile_; };
 exports.dropWhile_ = function(r) { return r.dropWhile_; };
@@ -65,7 +67,6 @@ exports.unzip_ = function(r) { return r.unzip_; };
 exports.indexes_ = function(r) { return r.indexes_; };
 exports.startsWith_ = function(r) { return r.startsWith_; };
 exports.endsWith_ = function(r) { return r.endsWith_; };
-exports.join_ = function(r) { return r.join_; };
 
 exports.scanLeft_ = function(r) { return r.scanLeft_; };
 exports.scanRight_ = function(r) { return r.scanRight_; };
