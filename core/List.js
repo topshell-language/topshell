@@ -22,6 +22,16 @@ exports.then_ = function(f) {
     };
 };
 
+exports.range_ = function(start) {
+    return function(stop) {
+        var result = [];
+        for(var i = start; i <= stop; i++) {
+            result.push(i);
+        }
+        return result;
+    };
+};
+
 exports.size_ = function(r) { return r.length; };
 exports.isEmpty_ = function(r) { return r.length === 0; };
 exports.at_ = function(r) { return function(i) { return r[i]; }; };
