@@ -13,7 +13,7 @@ object Checker {
                 globals ++
                 imports.map(_.name) ++
                 symbols.take(i).map(_.binding.name) ++
-                symbols.drop(i).takeWhile(s => !s.bind && s.binding.value.isInstanceOf[EFunction]).map(_.binding.name)
+                symbols.drop(i).takeWhile(s => !s.bind).map(_.binding.name)
             try {
                 checkTerm(s.binding.value, visible.toSet)
                 s
@@ -37,8 +37,7 @@ object Checker {
             for((s, i) <- bindings.zipWithIndex) {
                 val newVisible =
                     visible ++
-                    bindings.take(i).map(_.name) ++
-                    bindings.drop(i).takeWhile(_.value.isInstanceOf[EFunction]).map(_.name)
+                    bindings.map(_.name)
                 checkTerm(s.value, newVisible)
             }
             checkTerm(body, visible ++ bindings.map(_.name))

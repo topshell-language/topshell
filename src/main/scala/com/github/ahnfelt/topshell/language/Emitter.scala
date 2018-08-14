@@ -5,21 +5,19 @@ import com.github.ahnfelt.topshell.language.Syntax._
 object Emitter {
 
     def emit(topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
-        "(function(_g) {\n" +
         "if(!_g.tsh) _g.tsh = {};\n" +
         "var _s = _g.tsh;\n" +
         """
-            function _a(m, r) {
-                for(var k in r) {
-                    if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
-                }
-                return m;
-            };
+function _a(m, r) {
+    for(var k in r) {
+        if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
+    }
+    return m;
+};
         """ +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
-        (if(topSymbols.isEmpty) "" else emitStart(topImports.map(_.name) ++ topSymbols.map(_.binding.name))) +
-        "\n})(this);\n"
+        (if(topSymbols.isEmpty) "" else emitStart(topImports.map(_.name) ++ topSymbols.map(_.binding.name)))
     }
 
     def emitStart(symbols : List[String]) : String = symbols match {
@@ -53,6 +51,7 @@ object Emitter {
                     _s.${topImport.name}_e = 'Could not load module';
                 }
                 _s.${topImport.name}_ = ${topImport.name}_;
+                _d("${topImport.name}", {_tag: "span", attributes: {}, children: ["Module ${topImport.url}"]}, _s.${topImport.name}_e);
                 _c(${topImport.name}_, _s.${topImport.name}_e);
             };
             xhr.send();
@@ -70,6 +69,7 @@ object Emitter {
         "_s." + symbol.binding.name + "_e = e;\n" +
         "}\n" +
         "_s." + symbol.binding.name + "_ = " + symbol.binding.name + "_;\n" +
+        s"""_d("${symbol.binding.name}", ${symbol.binding.name}_, _s.${symbol.binding.name}_e);""" + "\n" +
         "_c(" + symbol.binding.name + "_, _s." + symbol.binding.name + "_e);\n" +
         "};\n"
     }
