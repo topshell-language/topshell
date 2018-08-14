@@ -10,7 +10,7 @@ import scala.scalajs.js
 case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], error : P[Option[String]]) extends Component[NoEmit] {
 
     val code = State("")
-    val debouncedCode = Debounce(this, code)
+    val debouncedCode = Debounce(this, code.map(_.trim))
     var lastCode = ""
 
     override def componentWillRender(get : Get) : Unit = {
