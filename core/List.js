@@ -34,11 +34,11 @@ exports.range_ = function(start) {
 
 exports.size_ = function(r) { return r.length; };
 exports.isEmpty_ = function(r) { return r.length === 0; };
-exports.at_ = function(r) { return function(i) { return r[i]; }; };
-exports.take_ = function(r) { return function(i) { return r.slice(0, i); }; };
-exports.drop_ = function(r) { return function(i) { return r.slice(i); }; };
-exports.takeLast_ = function(r) { return function(i) { return r.slice(-i); }; };
-exports.dropLast_ = function(r) { return function(i) { return r.slice(0, -i); }; };
+exports.at_ = function(i) { return function(r) { return r[i]; }; };
+exports.take_ = function(i) { return function(r) { return r.slice(0, i); }; };
+exports.drop_ = function(i) { return function(r) { return r.slice(i); }; };
+exports.takeLast_ = function(i) { return function(r) { return r.slice(-i); }; };
+exports.dropLast_ = function(i) { return function(r) { return r.slice(0, -i); }; };
 
 exports.filter_ = function(f) { return function(r) { return r.filter(f); }; };
 exports.reverse_ = function(r) { return r.slice().reverse(); };
