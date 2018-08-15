@@ -97,8 +97,10 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], err
         case _ =>
             val v = value.asInstanceOf[js.Dictionary[_]]
             val tagName = v("_tag").asInstanceOf[String]
-            val attributes = for((k, i) <- v("attributes").asInstanceOf[js.Dictionary[String]]) yield A(k, i)
-            E(tagName, Tags(attributes.toSeq), renderValue(v("children")))
+            if(tagName == ">text") Text(v("text").asInstanceOf[String]) else {
+                val attributes = for((k, i) <- v("attributes").asInstanceOf[js.Dictionary[String]]) yield A(k, i)
+                E(tagName, Tags(attributes.toSeq), renderValue(v("children")))
+            }
     }
 
     private def onKeyDown(e : KeyboardEvent) : Unit = {
