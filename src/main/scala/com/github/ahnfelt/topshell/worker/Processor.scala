@@ -11,12 +11,18 @@ import scala.scalajs.js.JSON
 
 object Processor {
 
+    private var version : Double = 0
+
     def process(code : String) : Unit = {
+        version += 1
+        val currentVersion = version
+        js.Dynamic.global.updateDynamic("_tsh_code_version")(currentVersion)
+
         val tokens = Tokenizer.tokenize("Unnamed.tsh", code)
         val (newImports, newSymbols) = new Parser("Unnamed.tsh", tokens).parseTopLevel()
         val topImports = UsedImports.completeImports(newSymbols, newImports)
         val topSymbols = Checker.check(topImports, newSymbols)
-        val emitted = Emitter.emit(topImports.filter(_.error.isEmpty), topSymbols.filter(_.error.isEmpty))
+        val emitted = Emitter.emit(currentVersion, topImports.filter(_.error.isEmpty), topSymbols.filter(_.error.isEmpty))
 
         val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
         val message = js.Dictionary("event" -> "symbols", "symbols" -> js.Array(names : _*))
@@ -24,17 +30,19 @@ object Processor {
 
         val _g = DedicatedWorkerGlobalScope.self
         val _d = { (name : js.Any, value : js.Any, error : js.Any) =>
-            val message = if(!js.isUndefined(error) && error != null) {
-                js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error))
-            } else {
-                val html = if(
-                    js.isUndefined(value) ||
-                    value == null ||
-                    !value.asInstanceOf[js.Dictionary[_]].contains("_tag")
-                ) toHtml(value) else value
-                js.Dictionary("event" -> "result", "name" -> name, "html" -> html)
+            if(version == currentVersion) {
+                val message = if(!js.isUndefined(error) && error != null) {
+                    js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error))
+                } else {
+                    val html = if(
+                        js.isUndefined(value) ||
+                            value == null ||
+                            !value.asInstanceOf[js.Dictionary[_]].contains("_tag")
+                    ) toHtml(value) else value
+                    js.Dictionary("event" -> "result", "name" -> name, "html" -> html)
+                }
+                DedicatedWorkerGlobalScope.self.postMessage(message)
             }
-            DedicatedWorkerGlobalScope.self.postMessage(message)
         } : js.Function3[js.Any, js.Any, js.Any, Unit]
 
         for(i <- topImports.filter(_.error.nonEmpty)) {
@@ -70,5 +78,7 @@ object Processor {
                 tag("span", Seq(), Seq("{") ++ items ++ Seq("}") : _*)
             }
     }
+
+    case class AbortedException() extends RuntimeException("Aborted due to new version of the code")
 
 }

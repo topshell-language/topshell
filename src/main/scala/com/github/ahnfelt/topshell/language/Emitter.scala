@@ -4,7 +4,7 @@ import com.github.ahnfelt.topshell.language.Syntax._
 
 object Emitter {
 
-    def emit(topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
+    def emit(version : Double, topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
         "if(!_g.tsh) _g.tsh = {};\n" +
         "var _s = _g.tsh;\n" +
         """
@@ -17,14 +17,14 @@ function _a(m, r) {
         """ +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
-        (if(topSymbols.isEmpty) "" else emitStart(topImports.map(_.name) ++ topSymbols.map(_.binding.name)))
+        (if(topSymbols.isEmpty) "" else emitStart(version, topImports.map(_.name) ++ topSymbols.map(_.binding.name)))
     }
 
-    def emitStart(symbols : List[String]) : String = symbols match {
+    def emitStart(version : Double, symbols : List[String]) : String = symbols match {
         case List() => "_g.tsh.last = v;\n"
         case s::ss =>
             "_s." + s + "_f(function(v) {\n" +
-            emitStart(ss) +
+            "if(_g._tsh_code_version === " + version + ") " + emitStart(version, ss) +
             "});\n"
     }
 
