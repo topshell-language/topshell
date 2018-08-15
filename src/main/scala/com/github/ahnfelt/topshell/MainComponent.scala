@@ -102,9 +102,12 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], err
                 Text(v("text").asInstanceOf[String])
             } else if(tagName == ">view") {
                 renderValue(v("html_"))
+            } else if(tagName == ">attribute") {
+                A("" + v("key_"), "" + v("value_"))
+            } else if(tagName == ">style") {
+                S("" + v("key_"), "" + v("value_"))
             } else {
-                val attributes = for((k, i) <- v("attributes").asInstanceOf[js.Dictionary[String]]) yield A(k, i)
-                E(tagName, Tags(attributes.toSeq), renderValue(v("children")))
+                E(tagName, renderValue(v("children")))
             }
     }
 

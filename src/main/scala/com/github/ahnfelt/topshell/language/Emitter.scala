@@ -51,7 +51,7 @@ function _a(m, r) {
                     _s.${topImport.name}_e = 'Could not load module';
                 }
                 _s.${topImport.name}_ = ${topImport.name}_;
-                _d("${topImport.name}", {_tag: "span", attributes: {}, children: ["Module ${topImport.url}"]}, _s.${topImport.name}_e);
+                _d("${topImport.name}", {_tag: "span", children: ["Module ${topImport.url}"]}, _s.${topImport.name}_e);
                 _c(${topImport.name}_, _s.${topImport.name}_e);
             };
             xhr.send();

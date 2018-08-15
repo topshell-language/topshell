@@ -55,25 +55,25 @@ object Processor {
 
     }
 
-    def tag(tagName : String, attributes : Seq[(String, String)], children : Any*) = {
-        js.Dictionary("_tag" -> tagName, "attributes" -> js.Dictionary(attributes : _*), "children" -> js.Array(children : _*))
+    def tag(tagName : String, children : Any*) = {
+        js.Dictionary("_tag" -> tagName, "children" -> js.Array(children : _*))
     }
 
     def toHtml(value : Any) : Any = value match {
-        case _ if js.isUndefined(value) => tag("span", Seq(), "Undefined")
-        case v if v == null => tag("span", Seq(), "Null")
-        case v : String => tag("span", Seq(), JSON.stringify(v))
-        case v : Double => tag("span", Seq(), JSON.stringify(v))
-        case v : Boolean => tag("span", Seq(), if(v) "True" else "False")
-        case _ : js.Function => tag("span", Seq(), "Function")
+        case _ if js.isUndefined(value) => tag("span", "Undefined")
+        case v if v == null => tag("span", "Null")
+        case v : String => tag("span", JSON.stringify(v))
+        case v : Double => tag("span", JSON.stringify(v))
+        case v : Boolean => tag("span", if(v) "True" else "False")
+        case _ : js.Function => tag("span", "Function")
         case v : js.Array[_] =>
             val items : Seq[Any] = v.toSeq.flatMap(i => Seq(", ", toHtml(i))).drop(1)
-            tag("span", Seq(), Seq("[") ++ items ++ Seq("]") : _*)
+            tag("span", Seq("[") ++ items ++ Seq("]") : _*)
         case _ =>
             val v = value.asInstanceOf[js.Dictionary[_]]
             if(v.contains("_tag")) v else {
                 val items : Seq[Any] = v.toSeq.flatMap { case (k, i) => Seq(", ", k.replace("_", ""), ": ", toHtml(i)) }.drop(1)
-                tag("span", Seq(), Seq("{") ++ items ++ Seq("}") : _*)
+                tag("span", Seq("{") ++ items ++ Seq("}") : _*)
             }
     }
 
