@@ -151,7 +151,7 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseApply() : Term = {
         var result = parseDot()
-        while(List("lower", "number", "string", "definition").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
+        while(List("lower", "upper", "number", "string", "definition").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
             val argument = parseDot()
             result = EApply(argument.at, result, argument)
         }
