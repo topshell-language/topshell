@@ -70,7 +70,7 @@ function _a(m, r) {
         "}\n" +
         "_s." + symbol.binding.name + "_ = " + symbol.binding.name + "_;\n" +
         s"""_d("${symbol.binding.name}", ${symbol.binding.name}_, _s.${symbol.binding.name}_e);""" + "\n" +
-        "_c(" + symbol.binding.name + "_, _s." + symbol.binding.name + "_e);\n" +
+        "_g.setTimeout(() => _c(" + symbol.binding.name + "_, _s." + symbol.binding.name + "_e), 0);\n" +
         "};\n"
     }
 

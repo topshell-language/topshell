@@ -14,9 +14,10 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], err
     var lastCode = ""
 
     override def componentWillRender(get : Get) : Unit = {
+        if(get(code).trim != lastCode) Main.codeVersion += 1
         if(get(debouncedCode) != lastCode) {
             lastCode = get(debouncedCode)
-            Main.worker.postMessage(lastCode)
+            Main.worker.postMessage(js.Dictionary("code" -> lastCode, "codeVersion" -> Main.codeVersion))
         }
     }
 

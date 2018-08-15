@@ -1,5 +1,6 @@
 package com.github.ahnfelt.topshell.worker
 
+import com.github.ahnfelt.topshell.Main
 import com.github.ahnfelt.topshell.language.Tokenizer.ParseException
 import com.github.ahnfelt.topshell.language._
 import org.scalajs.dom.raw.DedicatedWorkerGlobalScope
@@ -11,11 +12,8 @@ import scala.scalajs.js.JSON
 
 object Processor {
 
-    private var version : Double = 0
-
     def process(code : String) : Unit = {
-        version += 1
-        val currentVersion = version
+        val currentVersion = Main.codeVersion
         js.Dynamic.global.updateDynamic("_tsh_code_version")(currentVersion)
 
         val tokens = Tokenizer.tokenize("Unnamed.tsh", code)
@@ -25,21 +23,21 @@ object Processor {
         val emitted = Emitter.emit(currentVersion, topImports.filter(_.error.isEmpty), topSymbols.filter(_.error.isEmpty))
 
         val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
-        val message = js.Dictionary("event" -> "symbols", "symbols" -> js.Array(names : _*))
+        val message = js.Dictionary("event" -> "symbols", "symbols" -> js.Array(names : _*), "codeVersion" -> currentVersion)
         DedicatedWorkerGlobalScope.self.postMessage(message)
 
         val _g = DedicatedWorkerGlobalScope.self
         val _d = { (name : js.Any, value : js.Any, error : js.Any) =>
-            if(version == currentVersion) {
+            if(Main.codeVersion == currentVersion) {
                 val message = if(!js.isUndefined(error) && error != null) {
-                    js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error))
+                    js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error), "codeVersion" -> currentVersion)
                 } else {
                     val html = if(
                         js.isUndefined(value) ||
                             value == null ||
                             !value.asInstanceOf[js.Dictionary[_]].contains("_tag")
                     ) toHtml(value) else value
-                    js.Dictionary("event" -> "result", "name" -> name, "html" -> html)
+                    js.Dictionary("event" -> "result", "name" -> name, "html" -> html, "codeVersion" -> currentVersion)
                 }
                 DedicatedWorkerGlobalScope.self.postMessage(message)
             }

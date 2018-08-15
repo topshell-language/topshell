@@ -11,6 +11,7 @@ import scala.scalajs.js
 
 object Main {
     var worker : Worker = _
+    var codeVersion : Double = 0
 
     def main(arguments : Array[String]) : Unit = {
         if(!js.isUndefined(js.Dynamic.global.window)) {
@@ -23,31 +24,36 @@ object Main {
             worker = new Worker("worker.js")
             worker.onmessage = m => {
                 val data = m.data.asInstanceOf[js.Dynamic]
-                data.event.asInstanceOf[String] match {
-                    case "symbols" =>
-                        symbols = data.symbols.asInstanceOf[js.Array[String]].map(_ -> Loader.Loading()).toList
-                    case "error" =>
-                        val name = data.name.asInstanceOf[String]
-                        val index = symbols.indexWhere(_._1 == name)
-                        symbols = symbols.updated(
-                            index,
-                            name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
-                        )
-                    case "result" =>
-                        val name = data.name.asInstanceOf[String]
-                        val index = symbols.indexWhere(_._1 == name)
-                        symbols = symbols.updated(
-                            index,
-                            name -> Loader.Result(data.html)
-                        )
-                    case e =>
-                        println("Not handled: " + e)
+                if(data.codeVersion.asInstanceOf[Double] == codeVersion) {
+                    data.event.asInstanceOf[String] match {
+                        case "symbols" =>
+                            symbols = data.symbols.asInstanceOf[js.Array[String]].map(_ -> Loader.Loading()).toList
+                        case "error" =>
+                            val name = data.name.asInstanceOf[String]
+                            val index = symbols.indexWhere(_._1 == name)
+                            symbols = symbols.updated(
+                                index,
+                                name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
+                            )
+                        case "result" =>
+                            val name = data.name.asInstanceOf[String]
+                            val index = symbols.indexWhere(_._1 == name)
+                            symbols = symbols.updated(
+                                index,
+                                name -> Loader.Result(data.html)
+                            )
+                        case e =>
+                            println("Not handled: " + e)
+                    }
+                    update()
                 }
-                update()
             }
             dom.window.onload = _ => update()
         } else {
-            DedicatedWorkerGlobalScope.self.onmessage = m => Processor.process(m.data.asInstanceOf[String])
+            DedicatedWorkerGlobalScope.self.onmessage = m => {
+                codeVersion = m.data.asInstanceOf[js.Dynamic].codeVersion.asInstanceOf[Double]
+                Processor.process(m.data.asInstanceOf[js.Dynamic].code.asInstanceOf[String])
+            }
         }
     }
 }
