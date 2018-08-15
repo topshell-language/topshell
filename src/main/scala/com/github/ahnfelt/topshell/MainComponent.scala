@@ -49,8 +49,8 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], err
                     E.i(A.className("fa fa-question"), ButtonCss, A.title("Help")),
                     E.i(A.className("fa fa-cog"), ButtonCss, A.title("Settings")),
                 ),
-                E.i(A.className("fa fa-play"), ButtonCss, A.title("Re-run (Ctrl + Enter)")),
-                E.i(A.className("fa fa-rocket"), ButtonCss, A.title("Re-run with all side effects enabled (Ctrl + Shift + Enter)")),
+                E.i(A.className("fa fa-pause"), ButtonCss, A.title("Pause execution until next edit or re-run")),
+                E.i(A.className("fa fa-forward"), ButtonCss, A.title("Execute all effects (Ctrl + Shift + Enter)")),
             ),
             E.div(RightAreaCss,
                 Tags(for((symbol, status) <- get(symbols).toList) yield {
