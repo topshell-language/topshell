@@ -98,7 +98,11 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], err
         case _ =>
             val v = value.asInstanceOf[js.Dictionary[_]]
             val tagName = v("_tag").asInstanceOf[String]
-            if(tagName == ">text") Text(v("text").asInstanceOf[String]) else {
+            if(tagName == ">text") {
+                Text(v("text").asInstanceOf[String])
+            } else if(tagName == ">view") {
+                renderValue(v("html_"))
+            } else {
                 val attributes = for((k, i) <- v("attributes").asInstanceOf[js.Dictionary[String]]) yield A(k, i)
                 E(tagName, Tags(attributes.toSeq), renderValue(v("children")))
             }

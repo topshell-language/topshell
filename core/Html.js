@@ -32,3 +32,5 @@ exports.tag_ = function(tagName) { return function(attributes) { return function
 exports.text_ = function(text) {
     return {_tag: ">text", text: "" + text};
 };
+
+exports.view_ = render => value => ({_tag: ">view", html_: exports.of_(render(value)), value_: value});
