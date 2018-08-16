@@ -5,6 +5,7 @@ import com.github.ahnfelt.topshell.language.Syntax.Location
 object Tokenizer {
 
     private val patterns = """
+        comment:    [/][/][^\r\n]*
         number:     [0-9]+(?:[.][0-9]+(?:[eE][+-]?[0-9]+)?)?\b
         string:     ["](?:[^"\\\r\n]+|[\\][\\"trn])*["]
         lower:      [a-z][a-zA-Z0-9]*\b
@@ -43,6 +44,8 @@ object Tokenizer {
                 } else if(m.group(groups("newline")) != null) {
                     line += 1
                     lineStart = m.end
+                    List.empty
+                } else if(m.group(groups("comment")) != null) {
                     List.empty
                 } else if(m.group(groups("lower")) != null) {
                     List(Token(location, "lower", m.group(groups("lower"))))
