@@ -7,7 +7,7 @@ import com.github.ahnfelt.topshell.language.Tokenizer.{ParseException, Token}
 
 import scala.scalajs.js
 
-case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], error : P[Option[String]]) extends Component[NoEmit] {
+case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
 
     val code = State("")
     val debouncedCode = Debounce(this, code.map(_.trim))
@@ -54,8 +54,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], err
                 E.i(A.className("fa fa-forward"), ButtonCss, A.title("Execute all effects (Ctrl + Shift + Enter)")),
             ),
             E.div(RightAreaCss,
-                Tags(for((symbol, status) <- get(symbols).toList) yield {
-                    val global = scalajs.js.Dynamic.global
+                Tags(for((symbol, status) <- get(symbols) if !get(implied)(symbol) || status.isInstanceOf[Loader.Error[_]]) yield {
                     E.div(
                         ResultCss,
                         E.div(ResultHeaderCss, Text(symbol)).when(!symbol.contains('_')),

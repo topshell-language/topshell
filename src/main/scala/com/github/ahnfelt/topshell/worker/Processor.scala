@@ -23,7 +23,12 @@ object Processor {
         val emitted = Emitter.emit(currentVersion, topImports.filter(_.error.isEmpty), topSymbols.filter(_.error.isEmpty))
 
         val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
-        val message = js.Dictionary("event" -> "symbols", "symbols" -> js.Array(names : _*), "codeVersion" -> currentVersion)
+        val message = js.Dictionary(
+            "event" -> "symbols",
+            "symbols" -> js.Array(names : _*),
+            "implied" -> js.Array((topImports.map(_.name).toSet -- newImports.map(_.name)).toSeq : _*),
+            "codeVersion" -> currentVersion
+        )
         DedicatedWorkerGlobalScope.self.postMessage(message)
 
         val _g = DedicatedWorkerGlobalScope.self

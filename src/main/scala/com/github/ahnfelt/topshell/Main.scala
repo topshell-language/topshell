@@ -16,9 +16,10 @@ object Main {
     def main(arguments : Array[String]) : Unit = {
         if(!js.isUndefined(js.Dynamic.global.window)) {
             var symbols : List[(String, Loader.Loaded[js.Any])] = List()
+            var implied : Set[String] = Set()
             var error : Option[String] = None
             def update() : Unit = {
-                val component = Component(MainComponent, symbols, error)
+                val component = Component(MainComponent, symbols, implied, error)
                 ReactBridge.renderToDomById(component, "main")
             }
             worker = new Worker("worker.js")
@@ -28,6 +29,7 @@ object Main {
                     data.event.asInstanceOf[String] match {
                         case "symbols" =>
                             symbols = data.symbols.asInstanceOf[js.Array[String]].map(_ -> Loader.Loading()).toList
+                            implied = data.implied.asInstanceOf[js.Array[String]].toSet
                         case "error" =>
                             val name = data.name.asInstanceOf[String]
                             val index = symbols.indexWhere(_._1 == name)
