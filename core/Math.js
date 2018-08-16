@@ -1,5 +1,37 @@
-exports.mod_ = function(top) {
-    return function(bottom) {
-        return top % bottom;
-    };
-};
+exports.pi_ = Math.PI;
+exports.e_ = Math.E;
+exports.mod_ = top => bottom => top % bottom;
+
+exports.abs_ = Math.abs;
+exports.acos_ = Math.acos;
+exports.acosh_ = Math.acosh;
+exports.asin_ = Math.asin;
+exports.asinh_ = Math.asinh;
+exports.atan_ = Math.atan;
+exports.atan2_ = y => x => Math.atan2(y, x);
+exports.atanh_ = Math.atanh;
+exports.cbrt_ = Math.cbrt;
+exports.ceil_ = Math.ceil;
+exports.clz32_ = Math.clz32;
+exports.cos_ = Math.cos;
+exports.cosh_ = Math.cosh;
+exports.exp_ = Math.exp;
+exports.expm1_ = Math.expm1;
+exports.floor_ = Math.floor;
+exports.fround_ = Math.fround;
+exports.hypot_ = x => y => Math.hypot(x, y);
+exports.imul_ = x => y => Math.imul(x, y);
+exports.log_ = Math.log;
+exports.log10_ = Math.log10;
+exports.log1p_ = Math.log1p;
+exports.log2_ = Math.log2;
+exports.max_ = x => y => Math.max(x, y);
+exports.min_ = x => y => Math.min(x, y);
+exports.round_ = Math.round;
+exports.sign_ = Math.sign;
+exports.sin_ = Math.sin;
+exports.sinh_ = Math.sinh;
+exports.sqrt_ = Math.sqrt;
+exports.tan_ = Math.tan;
+exports.tanh_ = Math.tanh;
+exports.trunc_ = Math.trunc;
