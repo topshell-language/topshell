@@ -17,3 +17,7 @@ exports.drop_ = i => s => s.slice(i);
 exports.trim_ = s => s.trim();
 exports.toUpper_ = s => s.toUpperCase();
 exports.toLower_ = s => s.toLowerCase();
+exports.toInt_ = i => parseInt(i, 10);
+exports.fromInt_ = i => "" + i;
+exports.toIntBase_ = b => i => parseInt(i, b);
+exports.fromIntBase_ = b => i => i.toString(b);
