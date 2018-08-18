@@ -76,7 +76,11 @@ object Processor {
             tag("span", Seq("[") ++ items ++ Seq("]") : _*)
         case _ =>
             val v = value.asInstanceOf[js.Dictionary[_]]
-            if(v.contains("_tag")) v else {
+            if(v.contains("_tag")) {
+                v
+            } else if(v.contains("_task")) {
+                tag("span", "Task")
+            } else {
                 val items : Seq[Any] = v.toSeq.flatMap { case (k, i) => Seq(", ", k.replace("_", ""), ": ", toHtml(i)) }.drop(1)
                 tag("span", Seq("{") ++ items ++ Seq("}") : _*)
             }
