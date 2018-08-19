@@ -25,7 +25,7 @@ exports.all_ = tasks => ({_task: (t, c) => {
     });
 }});
 
-exports.race_ = tasks => ({_task: (t, c) => {
+exports.any_ = tasks => ({_task: (t, c) => {
     var pending = tasks.length;
     tasks.forEach((task, i) => {
         task._task(v => {

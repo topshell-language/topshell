@@ -28,6 +28,10 @@ function _then(m, f) {
         return ({_task: (t, c) =>
             m._task(v => {try { f(v)._task(t, c) } catch(e) { c(e) }}, c)
         });
+    } else if(m._event) {
+        return ({_event: (t, c) =>
+            m._event(v => {try { f(v)._event(t, c) } catch(e) { c(e) }}, c)
+        });
     } else {
         console.error("Operator <- not supported for: " + m);
         throw "Operator <- not supported for: " + m;

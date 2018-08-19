@@ -3,6 +3,7 @@ exports.of_ = function(value) {
     if(value === null) return {_tag: "span", children: ["Null"]};
     if(value._tag !== undefined) return value;
     if(value._task !== undefined) return {_tag: "span", children: ["Task"]};
+    if(value._event !== undefined) return {_tag: "span", children: ["Event"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
     if(typeof value === 'number') return {_tag: "span", children: [JSON.stringify(value)]};
     var result = [];

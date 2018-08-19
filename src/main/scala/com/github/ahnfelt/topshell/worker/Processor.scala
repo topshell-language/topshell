@@ -80,6 +80,8 @@ object Processor {
                 v
             } else if(v.contains("_task")) {
                 tag("span", "Task")
+            } else if(v.contains("_event")) {
+                tag("span", "Event")
             } else {
                 val items : Seq[Any] = v.toSeq.flatMap { case (k, i) => Seq(", ", k.replace("_", ""), ": ", toHtml(i)) }.drop(1)
                 tag("span", Seq("{") ++ items ++ Seq("}") : _*)
