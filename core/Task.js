@@ -48,6 +48,10 @@ exports.sleep_ = s => ({_task: (t, c) =>
     void setTimeout(v => {try { t(void v) } catch(e) { c(e) }}, s * 1000)
 });
 
+exports.random_ = ({_task: (t, c) => {
+    try { t(Math.random()) } catch(e) { c(e) }
+}});
+
 exports.log_ = message => ({_task: (t, c) => {
     try { t(void console.log(message)) } catch(e) { c(e) }
 }});
