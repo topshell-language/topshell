@@ -10,7 +10,8 @@ exports.text_ = response => ({_task: (t, c) => {
     try { response.text().then(t, c) } catch(e) { c(e) }
 }});
 
-exports.headers_ = response => response.headers;
+exports.header_ = header => response => response.headers.get(header);
+
 exports.ok_ = response => response.ok;
 exports.redirected_ = response => response.redirected;
 exports.status_ = response => response.status;
