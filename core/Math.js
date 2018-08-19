@@ -1,6 +1,8 @@
 exports.pi_ = Math.PI;
 exports.e_ = Math.E;
 exports.mod_ = top => bottom => top % bottom;
+exports.isFinite_ = isFinite;
+exports.isNaN_ = isNaN;
 
 exports.abs_ = Math.abs;
 exports.acos_ = Math.acos;

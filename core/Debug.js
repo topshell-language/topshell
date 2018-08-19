@@ -1,7 +1,9 @@
 exports.log_ = v => { console.log(v); return v };
 exports.dir_ = v => { console.dir(v); return v };
 
-exports.logThen_ = v => r => { console.log(v); return r };
-exports.dirThen_ = v => r => { console.dir(v); return r };
+exports.logBy_ = f => v => { console.log(f(v)); return v };
+exports.dirBy_ = f => v => { console.dir(f(v)); return v };
 
-exports.crash_ = m => { throw m };
+exports.throw_ = m => { throw m };
+
+exports.runTaskNow_ = task => {task._task(v => void v, e => {throw e}); return task};

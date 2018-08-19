@@ -8,12 +8,28 @@ object Emitter {
         "if(!_g.tsh) _g.tsh = {};\n" +
         "var _s = _g.tsh;\n" +
         """
-function _a(m, r) {
+function _record(m, r) {
     for(var k in r) {
         if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
     }
     return m;
-};
+}
+function _then(m, f) {
+    if(Array.isArray(m)) {
+        var result = [];
+        for(var i = 0; i < r.length; i++) {
+            var a = f(r[i]);
+            for(var j = 0; j < a.length; j++) {
+                result.push(a[j]);
+            }
+        }
+        return result;
+    } else {
+        return ({_task: (t, c) =>
+            m._task(v => {try { f(v)._task(t, c) } catch(e) { c(e) }}, c)
+        });
+    }
+}
         """ +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
@@ -93,13 +109,13 @@ function _a(m, r) {
         case ELet(at, bindings, body) => "(function() {\n" + emitBody(term) + "})()"
         case EBind(at, binding, body) =>
             // TODO: Opened modules should be stored in _o, and then it should be _o.then_
-            "List_.then_(" + emitTerm(binding.value) + ")(function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
+            "_then(" + emitTerm(binding.value) + ", function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
         case EList(at, elements, rest) =>
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
         case ERecord(at, fields, rest) =>
             val record = "{" + fields.map(b => b.name + "_:" + emitTerm(b.value)).mkString(", ") + "}"
-            rest.map(r => "_a(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
+            rest.map(r => "_record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
         case EField(at, record, field) =>
             emitTerm(record) + "." + field + "_"
         case EIf(at, condition, thenBody, elseBody) =>

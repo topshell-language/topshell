@@ -64,7 +64,12 @@ object Tokenizer {
                     List(iterator.collectFirst { case Some(t) => t }.get)
                 }
                 val all = m.group(0)
-                if(m.start == lineStart && all != "}" && all != "]" && all != ")" && all.trim.nonEmpty) {
+                if
+                    (m.start == lineStart &&
+                    all != "}" && all != "]" && all != ")" && all != "|" &&
+                    m.group(groups("comment")) == null &&
+                    all.trim.nonEmpty
+                ) {
                     Token(location, "top", "top level symbol") :: token
                 } else token
             }
