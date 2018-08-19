@@ -24,10 +24,13 @@ function _then(m, f) {
             }
         }
         return result;
-    } else {
+    } else if(m._task) {
         return ({_task: (t, c) =>
             m._task(v => {try { f(v)._task(t, c) } catch(e) { c(e) }}, c)
         });
+    } else {
+        console.error("Operator <- not supported for: " + m);
+        throw "Operator <- not supported for: " + m;
     }
 }
         """ +
