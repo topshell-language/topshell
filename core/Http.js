@@ -9,3 +9,10 @@ exports.fetch_ = configuration => url => ({_task: (t, c) => {
 exports.text_ = response => ({_task: (t, c) => {
     try { response.text().then(t, c) } catch(e) { c(e) }
 }});
+
+exports.headers_ = response => response.headers;
+exports.ok_ = response => response.ok;
+exports.redirected_ = response => response.redirected;
+exports.status_ = response => response.status;
+exports.statusText_ = response => response.statusText;
+exports.type_ = response => response.type;
