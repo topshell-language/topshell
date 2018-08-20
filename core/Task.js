@@ -25,6 +25,30 @@ exports.all_ = tasks => ({_task: (t, c) => {
     });
 }});
 
+exports.zipWith_ = f => task1 => task2 => ({_task: (t, c) => {
+    var failed = 0;
+    var pending = 2;
+    var result1, result2;
+    task1._task(v => {
+        result1 = v;
+        if(--pending === 0 && !failed) {
+            try { t(f(result1)(result2)) } catch(e) { c(e) }
+        }
+    }, e => {
+        --pending;
+        if(++failed === 1) c(e);
+    });
+    task2._task(v => {
+        result2 = v;
+        if(--pending === 0 && !failed) {
+            try { t(f(result1)(result2)) } catch(e) { c(e) }
+        }
+    }, e => {
+        --pending;
+        if(++failed === 1) c(e);
+    });
+}});
+
 exports.any_ = tasks => ({_task: (t, c) => {
     var pending = tasks.length;
     tasks.forEach((task, i) => {
