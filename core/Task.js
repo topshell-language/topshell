@@ -146,7 +146,7 @@ exports.sleep_ = s => ({_run: (t, c) => {
     return () => clearInterval(handle);
 }});
 
-exports.periodic_ = s => ({_run: (t, c) => {
+exports.interval_ = s => ({_run: (t, c) => {
     var handle = setInterval(_ => {
         try {
             t(void _)
