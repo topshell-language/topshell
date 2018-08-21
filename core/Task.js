@@ -133,7 +133,15 @@ exports.zipWith_ = f => task1 => task2 => ({_run: (w, t, c) => {
     }
 }});
 
-exports.map_ = f => exports.then_(v => exports.of_(f(v)));
+exports.map_ = f => task => ({_run: (w, t, c) => {
+    return task._run(w, v => {
+        try {
+            t(f(v))
+        } catch(e) {
+            c(e)
+        }
+    }, c);
+}});
 
 exports.sleep_ = s => ({_run: (w, t, c) => {
     var handle = setTimeout(_ => {
