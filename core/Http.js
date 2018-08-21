@@ -3,7 +3,14 @@ exports.fetch_ = configuration => url => ({_run: (w, t, c) => {
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
         options[k.replace("_", "")] = configuration[k];
     }
-    try { fetch(url, options).then(t, c) } catch(e) { c(e) }
+    try {
+        fetch(url, options).then(response => {
+            if(response.ok || options.check === false) t(response);
+            else c(new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url));
+        }, c)
+    } catch(e) {
+        c(e)
+    }
 }});
 
 exports.text_ = response => ({_run: (w, t, c) => {
