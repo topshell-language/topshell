@@ -24,14 +24,26 @@ function _then(m, f) {
             }
         }
         return result;
-    } else if(m._task) {
-        return ({_task: (t, c) =>
-            m._task(v => {try { f(v)._task(t, c) } catch(e) { c(e) }}, c)
-        });
-    } else if(m._event) {
-        return ({_event: (t, c) =>
-            m._event(v => {try { f(v)._event(t, c) } catch(e) { c(e) }}, c)
-        });
+    } else if(m._run) {
+        return {_run: (t, c) => {
+            var cancel1 = null;
+            try {
+                var cancel2 = m._run(v => {
+                    try {
+                        if(cancel1 instanceof Function) cancel1();
+                        cancel1 = f(v)._run(t, c);
+                    } catch(e) {
+                        c(e)
+                    }
+                }, c);
+            } catch(e) {
+                c(e);
+            }
+            return () => {
+                if(cancel2 instanceof Function) cancel2();
+                if(cancel1 instanceof Function) cancel1();
+            };
+        }};
     } else {
         console.error("Operator <- not supported for: " + m);
         throw "Operator <- not supported for: " + m;
