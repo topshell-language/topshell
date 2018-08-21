@@ -25,13 +25,13 @@ function _then(m, f) {
         }
         return result;
     } else if(m._run) {
-        return {_run: (t, c) => {
+        return {_run: (w, t, c) => {
             var cancel1 = null;
             try {
-                var cancel2 = m._run(v => {
+                var cancel2 = m._run(w, v => {
                     try {
                         if(cancel1 instanceof Function) cancel1();
-                        cancel1 = f(v)._run(t, c);
+                        cancel1 = f(v)._run(w, t, c);
                     } catch(e) {
                         c(e)
                     }
