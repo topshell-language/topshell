@@ -94,6 +94,25 @@ exports.merge_ = task1 => task2 => ({_run: (w, t, c) => {
     }
 }});
 
+exports.race_ = task1 => task2 => ({_run: (w, t, c) => {
+    try {
+        var cancel1 = task1._run(w, v => {
+            if(cancel2 instanceof Function) cancel2();
+            t(v)
+        }, c);
+        var cancel2 = task2._run(w, v => {
+            if(cancel1 instanceof Function) cancel1();
+            t(v)
+        }, c);
+        return () => {
+            if(cancel1 instanceof Function) cancel1();
+            if(cancel2 instanceof Function) cancel2();
+        }
+    } catch(e) {
+        c(e)
+    }
+}});
+
 exports.zipWith_ = f => task1 => task2 => ({_run: (w, t, c) => {
     var result1, result2;
     var ok1, ok2;
