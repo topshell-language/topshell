@@ -3,18 +3,40 @@ exports.fetch_ = configuration => url => ({_run: (w, t, c) => {
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
         options[k.replace("_", "")] = configuration[k];
     }
+    var canceled = false;
+    var controller = new AbortController();
+    options.signal = controller.signal;
+    console.dir(options);
     try {
         fetch(url, options).then(response => {
-            if(response.ok || options.check === false) t(response);
-            else c(new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url));
-        }, c)
+            if(!canceled) {
+                if(response.ok || options.check === false) t(response);
+                else c(new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url));
+            }
+        }, e => {
+            if(!canceled) c(e)
+        })
     } catch(e) {
         c(e)
+    }
+    return () => {
+        canceled = true;
+        controller.abort();
     }
 }});
 
 exports.text_ = response => ({_run: (w, t, c) => {
-    try { response.text().then(t, c) } catch(e) { c(e) }
+    var canceled = false;
+    try {
+        response.text().then(v => {
+            if(!canceled) t(v)
+        }, e => {
+            if(!canceled) c(e)
+        })
+    } catch(e) {
+        c(e)
+    }
+    return () => canceled = true;
 }});
 
 exports.header_ = header => response => response.headers.get(header);
