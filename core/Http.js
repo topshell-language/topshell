@@ -1,4 +1,4 @@
-exports.fetch_ = configuration => url => ({_run: (w, t, c) => {
+exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
     var options = {};
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
         options[k.replace("_", "")] = configuration[k];
@@ -6,13 +6,16 @@ exports.fetch_ = configuration => url => ({_run: (w, t, c) => {
     var canceled = false;
     var controller = new AbortController();
     options.signal = controller.signal;
-    console.dir(options);
     try {
         fetch(url, options).then(response => {
             if(!canceled) {
-                if(response.ok || options.check === false) t(response);
+                if(response.ok || options.check === false) try { return f(response); } catch(e) { c(e) }
                 else c(new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url));
             }
+        }, e => {
+            if(!canceled) c(e)
+        }).then(result => {
+            if(!canceled) try { t(result); } catch(e) { c(e) }
         }, e => {
             if(!canceled) c(e)
         })
@@ -24,6 +27,10 @@ exports.fetch_ = configuration => url => ({_run: (w, t, c) => {
         controller.abort();
     }
 }});
+
+exports.fetch_ = exports._fetchThen(r => r);
+
+exports.fetchText_ = exports._fetchThen(r => r.text());
 
 exports.text_ = response => ({_run: (w, t, c) => {
     var canceled = false;
