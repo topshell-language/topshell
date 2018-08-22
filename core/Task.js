@@ -193,9 +193,5 @@ exports.random_ = ({_run: (w, t, c) => {
 }});
 
 exports.log_ = message => ({_run: (w, t, c) => {
-    try { t(void console.log(message)) } catch(e) { c(e) }
-}});
-
-exports.dir_ = message => ({_run: (w, t, c) => {
     try { t(void console.dir(message)) } catch(e) { c(e) }
 }});
