@@ -10,6 +10,8 @@ self.tsh.toHtml = value => {
     if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["Bytes"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
     if(typeof value === 'number') return {_tag: "span", children: [JSON.stringify(value)]};
+    if(value === true) return {_tag: "span", children: ["True"]};
+    if(value === false) return {_tag: "span", children: ["False"]};
     var result = [];
     if(Array.isArray(value)) {
         result.push("[");

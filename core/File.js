@@ -1,5 +1,5 @@
-exports.readText_ = path => ({_run: (w, t, c) => {
-    var action = {action: "File.readText", data: {fileName: path}};
+exports._action = actionName => parameter => ({_run: (w, t, c) => {
+    var action = {action: actionName, data: parameter};
     var options = {method: "POST", body: JSON.stringify(action)};
     var canceled = false;
     var controller = new AbortController();
@@ -24,3 +24,8 @@ exports.readText_ = path => ({_run: (w, t, c) => {
         controller.abort();
     }
 }});
+
+
+exports.readText_ = path => exports._action("File.readText")({path: path});
+exports.list_ = path => exports._action("File.list")({path: path});
+exports.status_ = path => exports._action("File.status")({path: path});
