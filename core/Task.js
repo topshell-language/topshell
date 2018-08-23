@@ -34,26 +34,7 @@ exports.catch_ = f => task => ({_run: (w, t, c) => {
     };
 }});
 
-// Remember to copy this definition into Emitter if changed
-exports.then_ = f => task => ({_run: (w, t, c) => {
-    var cancel1 = null;
-    try {
-        var cancel2 = task._run(w, v => {
-            try {
-                if(cancel1 instanceof Function) cancel1();
-                cancel1 = f(v)._run(w, t, c);
-            } catch(e) {
-                c(e)
-            }
-        }, c);
-    } catch(e) {
-        c(e);
-    }
-    return () => {
-        if(cancel2 instanceof Function) cancel2();
-        if(cancel1 instanceof Function) cancel1();
-    };
-}});
+exports.then_ = self.tsh.then;
 
 exports.filter_ = f => task => ({_run: (w, t, c) => {
     try {
