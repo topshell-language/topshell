@@ -2,6 +2,34 @@ self.tsh = {};
 
 self.tsh.symbols = {};
 
+self.tsh.toHtml = value => {
+    if(value === undefined) return {_tag: "span", children: ["Undefined"]};
+    if(value === null) return {_tag: "span", children: ["Null"]};
+    if(value._tag !== undefined) return value;
+    if(value._run !== undefined) return {_tag: "span", children: ["Task"]};
+    if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["Bytes"]};
+    if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
+    if(typeof value === 'number') return {_tag: "span", children: [JSON.stringify(value)]};
+    var result = [];
+    if(Array.isArray(value)) {
+        result.push("[");
+        for(var i = 0; i < value.length; i++) {
+            if(result.length > 1) result.push(", ");
+            result.push(self.tsh.toHtml(value[i]));
+        }
+        result.push("]");
+    } else {
+        result.push("{");
+        for(var k in value) if(Object.prototype.hasOwnProperty.call(value, k)) {
+            if(result.length > 1) result.push(", ");
+            result.push(k.replace("_", "") + ": ");
+            result.push(self.tsh.toHtml(value[k]));
+        }
+        result.push("}");
+    }
+    return {_tag: "span", children: result};
+};
+
 self.tsh.record = (m, r) => {
     for(var k in r) {
         if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
