@@ -34,7 +34,7 @@ exports.catch_ = f => task => ({_run: (w, t, c) => {
     };
 }});
 
-exports.then_ = self.tsh.then;
+exports.then_ = self.tsh.taskThen;
 
 exports.filter_ = f => task => ({_run: (w, t, c) => {
     try {

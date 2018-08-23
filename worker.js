@@ -9,6 +9,26 @@ self.tsh.record = (m, r) => {
     return m;
 };
 
+self.tsh.taskThen = f => task => ({_run: (w, t, c) => {
+    var cancel1 = null;
+    try {
+        var cancel2 = task._run(w, v => {
+            try {
+                if(cancel1 instanceof Function) cancel1();
+                cancel1 = f(v)._run(w, t, c);
+            } catch(e) {
+                c(e)
+            }
+        }, c);
+    } catch(e) {
+        c(e);
+    }
+    return () => {
+        if(cancel2 instanceof Function) cancel2();
+        if(cancel1 instanceof Function) cancel1();
+    };
+}});
+
 self.tsh.then = (m, f) => {
     if(Array.isArray(m)) {
         var result = [];
@@ -20,25 +40,7 @@ self.tsh.then = (m, f) => {
         }
         return result;
     } else if(m._run) {
-        return {_run: (w, t, c) => {
-                var cancel1 = null;
-                try {
-                    var cancel2 = m._run(w, v => {
-                        try {
-                            if(cancel1 instanceof Function) cancel1();
-                            cancel1 = f(v)._run(w, t, c);
-                        } catch(e) {
-                            c(e)
-                        }
-                    }, c);
-                } catch(e) {
-                    c(e);
-                }
-                return () => {
-                    if(cancel2 instanceof Function) cancel2();
-                    if(cancel1 instanceof Function) cancel1();
-                };
-            }};
+        return self.tsh.taskThen(f)(m);
     } else {
         console.error("Operator <- not supported for: " + m);
         throw "Operator <- not supported for: " + m;
