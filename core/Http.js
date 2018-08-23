@@ -31,12 +31,27 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
 exports.fetch_ = exports._fetchThen(r => r);
 
 exports.fetchText_ = exports._fetchThen(r => r.text());
+exports.fetchBytes_ = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
 exports.text_ = response => ({_run: (w, t, c) => {
     var canceled = false;
     try {
         response.text().then(v => {
             if(!canceled) t(v)
+        }, e => {
+            if(!canceled) c(e)
+        })
+    } catch(e) {
+        c(e)
+    }
+    return () => canceled = true;
+}});
+
+exports.bytes_ = response => ({_run: (w, t, c) => {
+    var canceled = false;
+    try {
+        response.arrayBuffer().then(v => {
+            if(!canceled) t(new Uint8ClampedArray(v))
         }, e => {
             if(!canceled) c(e)
         })

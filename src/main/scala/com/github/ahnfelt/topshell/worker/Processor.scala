@@ -7,6 +7,7 @@ import org.scalajs.dom.raw.DedicatedWorkerGlobalScope
 
 import scala.scalajs.js
 import scala.scalajs.js.JSON
+import scala.scalajs.js.typedarray.Uint8ClampedArray
 
 object Processor {
 
@@ -61,6 +62,7 @@ object Processor {
         case v : Double => tag("span", JSON.stringify(v))
         case v : Boolean => tag("span", if(v) "True" else "False")
         case _ : js.Function => tag("span", "Function")
+        case _ : Uint8ClampedArray => tag("span", "Bytes")
         case v : js.Array[_] =>
             val items : Seq[Any] = v.toSeq.flatMap(i => Seq(", ", toHtml(i))).drop(1)
             tag("span", Seq("[") ++ items ++ Seq("]") : _*)
