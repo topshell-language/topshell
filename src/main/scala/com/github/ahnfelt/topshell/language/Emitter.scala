@@ -2,110 +2,44 @@ package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
 
+import scala.scalajs.js.JSON
+
 object Emitter {
 
     def emit(version : Double, topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
-        "if(!_g.tsh) _g.tsh = {};\n" +
-        "var _s = _g.tsh;\n" +
-        """
-function _record(m, r) {
-    for(var k in r) {
-        if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
-    }
-    return m;
-}
-function _then(m, f) {
-    if(Array.isArray(m)) {
-        var result = [];
-        for(var i = 0; i < r.length; i++) {
-            var a = f(r[i]);
-            for(var j = 0; j < a.length; j++) {
-                result.push(a[j]);
-            }
-        }
-        return result;
-    } else if(m._run) {
-        return {_run: (w, t, c) => {
-            var cancel1 = null;
-            try {
-                var cancel2 = m._run(w, v => {
-                    try {
-                        if(cancel1 instanceof Function) cancel1();
-                        cancel1 = f(v)._run(w, t, c);
-                    } catch(e) {
-                        c(e)
-                    }
-                }, c);
-            } catch(e) {
-                c(e);
-            }
-            return () => {
-                if(cancel2 instanceof Function) cancel2();
-                if(cancel1 instanceof Function) cancel1();
-            };
-        }};
-    } else {
-        console.error("Operator <- not supported for: " + m);
-        throw "Operator <- not supported for: " + m;
-    }
-}
-        """ +
+        "var _h = _g.tsh;\n" +
+        "var _n = {};\n" +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
-        (if(topSymbols.isEmpty) "" else emitStart(version, topImports.map(_.name) ++ topSymbols.map(_.binding.name)))
-    }
-
-    def emitStart(version : Double, symbols : List[String]) : String = symbols match {
-        case List() => "_g.tsh.last = v;\n"
-        case s::ss =>
-            "_s." + s + "_f(function(v) {\n" +
-            "if(_g._tsh_code_version === " + version + ") " + emitStart(version, ss) +
-            "});\n"
+        "_g.tsh.setSymbols(_d, _n);\n"
     }
 
     def emitImport(topImport : TopImport) : String = {
-        "var " + topImport.name + "_ = void 0;\n" +
-        "_s." + topImport.name + "_ = " + topImport.name + "_;\n" +
-        "_s." + topImport.name + "_e = void 0;\n" +
-        "_s." + topImport.name + "_f = function(_c) {\n" +
-        (if(topImport.error.isEmpty) emitImportFetch(topImport) else "") +
+        "_n." + topImport.name + "_ = {\n" +
+        "run: true,\n" +
+        "dependencies: [],\n" +
+        (topImport.error match {
+            case Some(value) =>
+                "error: " + JSON.stringify(value.message) + "\n"
+            case None =>
+                "compute: function(_s) { return _h.loadImport(" + JSON.stringify(topImport.url) + "); }\n"
+        }) +
         "};\n"
     }
 
-    def emitImportFetch(topImport : TopImport) : String = {
-        s"""
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', '${topImport.url.replaceAll("[\\r\\n'\\\"\\\\]", "")}');
-            xhr.onload = function() {
-                if(xhr.status === 200) {
-                    var f = new Function('exports', xhr.responseText);
-                    var exported = {};
-                    f(exported);
-                    ${topImport.name}_ = exported;
-                } else {
-                    _s.${topImport.name}_e = 'Could not load module';
-                }
-                _s.${topImport.name}_ = ${topImport.name}_;
-                _d("${topImport.name}", {_tag: "span", children: ["Module ${topImport.url}"]}, _s.${topImport.name}_e);
-                _c(${topImport.name}_, _s.${topImport.name}_e);
-            };
-            xhr.send();
-        """
-    }
-
     def emitTopSymbol(symbol : TopSymbol) : String = {
-        "var " + symbol.binding.name + "_ = void 0;\n" +
-        "_s." + symbol.binding.name + "_ = " + symbol.binding.name + "_;\n" +
-        "_s." + symbol.binding.name + "_e = void 0;\n" +
-        "_s." + symbol.binding.name + "_f = function(_c) {\n" +
-        "try {\n" +
-        (if(symbol.error.isEmpty) symbol.binding.name + "_ = " + emitTerm(symbol.binding.value) + ";\n" else "") +
-        "} catch(e) {\n" +
-        "_s." + symbol.binding.name + "_e = e;\n" +
-        "}\n" +
-        "_s." + symbol.binding.name + "_ = " + symbol.binding.name + "_;\n" +
-        s"""_d("${symbol.binding.name}", ${symbol.binding.name}_, _s.${symbol.binding.name}_e);""" + "\n" +
-        "_g.setTimeout(() => _c(" + symbol.binding.name + "_, _s." + symbol.binding.name + "_e), 0);\n" +
+        "_n." + symbol.binding.name + "_ = {\n" +
+        "run: " + symbol.bind + ",\n" +
+        "dependencies: [" + symbol.dependencies.map("\"" + _ + "_\"").mkString(", ") + "],\n" +
+        (symbol.error match {
+            case Some(value) =>
+                "error: " + JSON.stringify(value.message) + "\n"
+            case None =>
+                "compute: function(_s) {\n" +
+                symbol.dependencies.map(d => "var " + d + "_ = _s." + d + "_.result;\n").mkString("") +
+                emitBody(symbol.binding.value) +
+                "}\n"
+        }) +
         "};\n"
     }
 
@@ -127,14 +61,13 @@ function _then(m, f) {
         case EApply(at, function, argument) => "(" + emitTerm(function) + ")(" + emitTerm(argument) + ")"
         case ELet(at, bindings, body) => "(function() {\n" + emitBody(term) + "})()"
         case EBind(at, binding, body) =>
-            // TODO: Opened modules should be stored in _o, and then it should be _o.then_
-            "_then(" + emitTerm(binding.value) + ", function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
+            "_h.then(" + emitTerm(binding.value) + ", function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
         case EList(at, elements, rest) =>
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
         case ERecord(at, fields, rest) =>
             val record = "{" + fields.map(b => b.name + "_:" + emitTerm(b.value)).mkString(", ") + "}"
-            rest.map(r => "_record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
+            rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
         case EField(at, record, field) =>
             emitTerm(record) + "." + field + "_"
         case EIf(at, condition, thenBody, elseBody) =>

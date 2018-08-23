@@ -11,7 +11,7 @@ object Syntax {
 
     case class Binding(at : Location, name : String, value : Term)
 
-    case class TopSymbol(bind : Boolean, binding : Binding, error : Option[ParseException])
+    case class TopSymbol(bind : Boolean, binding : Binding, dependencies : List[String], error : Option[ParseException])
 
     case class TopImport(at : Location, name : String, url : String, error : Option[ParseException])
 

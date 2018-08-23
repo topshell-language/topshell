@@ -8,19 +8,16 @@ import org.scalajs.dom.raw.DedicatedWorkerGlobalScope
 import scala.scalajs.js
 import scala.scalajs.js.JSON
 
-// Render the results into a hypertext-like format here. Then render that to html in the UI thread.
-
 object Processor {
 
     def process(code : String) : Unit = {
         val currentVersion = Main.codeVersion
-        js.Dynamic.global.updateDynamic("_tsh_code_version")(currentVersion)
 
         val tokens = Tokenizer.tokenize("Unnamed.tsh", code)
         val (newImports, newSymbols) = new Parser("Unnamed.tsh", tokens).parseTopLevel()
         val topImports = UsedImports.completeImports(newSymbols, newImports)
         val topSymbols = Checker.check(topImports, newSymbols)
-        val emitted = Emitter.emit(currentVersion, topImports.filter(_.error.isEmpty), topSymbols.filter(_.error.isEmpty))
+        val emitted = Emitter.emit(currentVersion, topImports, topSymbols)
 
         val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
         val message = js.Dictionary(
@@ -32,7 +29,8 @@ object Processor {
         DedicatedWorkerGlobalScope.self.postMessage(message)
 
         val _g = DedicatedWorkerGlobalScope.self
-        val _d = { (name : js.Any, value : js.Any, error : js.Any) =>
+        val _d = { (escapedName : String, value : js.Any, error : js.Any) =>
+            val name = if(escapedName.endsWith("_")) escapedName.dropRight(1) else escapedName
             if(Main.codeVersion == currentVersion) {
                 val message = if(!js.isUndefined(error) && error != null) {
                     js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error), "codeVersion" -> currentVersion)
@@ -46,15 +44,7 @@ object Processor {
                 }
                 DedicatedWorkerGlobalScope.self.postMessage(message)
             }
-        } : js.Function3[js.Any, js.Any, js.Any, Unit]
-
-        for(i <- topImports.filter(_.error.nonEmpty)) {
-            _d(i.name, js.undefined, "" + i.error.get.getMessage)
-        }
-        for(i <- topSymbols.filter(_.error.nonEmpty)) i.error.get match {
-            case e : ParseException => _d(i.binding.name, js.undefined, "" + e.message)
-            case e => _d(i.binding.name, js.undefined, "" + e.getMessage)
-        }
+        } : js.Function3[String, js.Any, js.Any, Unit]
 
         js.Dynamic.newInstance(js.Dynamic.global.Function)("_g", "_d", emitted)(_g, _d)
 

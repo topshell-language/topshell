@@ -86,16 +86,16 @@ class Parser(file : String, tokens : Array[Token]) {
         val at = if(isDefinition) ahead.at else current.at
         try {
             if(!isDefinition) {
-                TopSymbol(bind, Binding(at, variable, parseTerm()), None)
+                TopSymbol(bind, Binding(at, variable, parseTerm()), List(), None)
             } else {
                 skip("definition").raw
                 if(bind) skip("separator", Some("<-")).at else skip("separator", Some("=")).at
                 val binding = Binding(at, variable, parseTerm())
-                TopSymbol(bind, binding, None)
+                TopSymbol(bind, binding, List(), None)
             }
         } catch { case e : ParseException =>
             val binding = Binding(at, variable, ERecord(at, List(), None))
-            TopSymbol(bind, binding, Some(e))
+            TopSymbol(bind, binding, List(), Some(e))
         }
     }
 
