@@ -53,3 +53,4 @@ exports.redirected_ = response => response.redirected;
 exports.status_ = response => response.status;
 exports.statusText_ = response => response.statusText;
 exports.type_ = response => response.type;
+exports.url_ = response => response.url;
