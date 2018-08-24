@@ -94,8 +94,8 @@ self.tsh.taskThen = f => task => ({_run: (w, t, c) => {
 self.tsh.then = (m, f) => {
     if(Array.isArray(m)) {
         var result = [];
-        for(var i = 0; i < r.length; i++) {
-            var a = f(r[i]);
+        for(var i = 0; i < m.length; i++) {
+            var a = f(m[i]);
             for(var j = 0; j < a.length; j++) {
                 result.push(a[j]);
             }
