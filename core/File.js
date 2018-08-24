@@ -15,7 +15,7 @@ exports._action = actionName => parameter => ({_run: (w, t, c) => {
                 } else {
                     return Promise.resolve(r)
                         .then(r => {if(!canceled) return r.json()})
-                        .then(j => {if(!canceled) return self.tsh.underscore(j.data)})
+                        .then(j => {if(!canceled) return self.tsh.underscores(j.data)})
                         .then(v => {if(!canceled) t(v)}, e => {if(!canceled) c(e)})
                 }
             })

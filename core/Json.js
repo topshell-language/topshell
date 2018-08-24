@@ -1,4 +1,4 @@
-exports.read_ = text => JSON.parse(text);
-exports.write_ = text => JSON.stringify(text);
-exports.pretty_ = indentation => text => JSON.stringify(text, null, indentation);
+exports.read_ = text => self.tsh.underscores(JSON.parse(text));
+exports.write_ = json => JSON.stringify(self.tsh.removeUnderscores(json));
+exports.pretty_ = indentation => json => JSON.stringify(self.tsh.removeUnderscores(json), null, indentation);
 

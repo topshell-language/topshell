@@ -32,15 +32,31 @@ self.tsh.toHtml = value => {
     return {_tag: "span", children: result};
 };
 
-self.tsh.underscore = o => {
+self.tsh.underscores = o => {
     if(Array.isArray(o)) {
-        return o.map(self.tsh.underscore);
+        return o.map(self.tsh.underscores);
     } else if(typeof o === 'object') {
         var result = {};
         for(var k in o) if(Object.prototype.hasOwnProperty.call(o, k)) {
-            var v = self.tsh.underscore(o[k]);
+            var v = self.tsh.underscores(o[k]);
             if(k.includes("_")) result[k] = v;
             else result[k + "_"] = v;
+        }
+        return result;
+    } else {
+        return o;
+    }
+};
+
+self.tsh.removeUnderscores = o => {
+    if(Array.isArray(o)) {
+        return o.map(self.tsh.removeUnderscores);
+    } else if(typeof o === 'object') {
+        var result = {};
+        for(var k in o) if(Object.prototype.hasOwnProperty.call(o, k)) {
+            var v = self.tsh.removeUnderscores(o[k]);
+            if(k.endsWith("_")) result[k.slice(0, -1)] = v;
+            else result[k] = v;
         }
         return result;
     } else {
