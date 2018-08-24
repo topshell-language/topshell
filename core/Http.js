@@ -31,7 +31,7 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
 exports.fetch_ = exports._fetchThen(r => r);
 
 exports.fetchText_ = exports._fetchThen(r => r.text());
-exports.fetchJson_ = exports._fetchThen(r => r.json());
+exports.fetchJson_ = exports._fetchThen(r => r.json().then(j => Promise.resolve(self.tsh.underscore(j))));
 exports.fetchBytes_ = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
 exports._processResponse = f => resonse => ({_run: (w, t, c) => {
@@ -49,7 +49,7 @@ exports._processResponse = f => resonse => ({_run: (w, t, c) => {
 }});
 
 exports.text_ = exports._processResponse(r => r.text());
-exports.json_ = exports._processResponse(r => r.json());
+exports.json_ = exports._processResponse(r => r.json().then(j => Promise.resolve(self.tsh.underscore(j))));
 exports.bytes_ = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
 exports.header_ = header => response => response.headers.get(header);

@@ -24,7 +24,8 @@ var server = http.createServer((request, response) => {
 
         utils.readJsonRequest(request, json => {
             handler(json, (err, result) => {
-                if (err) utils.sendResponse(response, 'Error: ' + err, 500, {'Content-Type': 'text/plain'});
+                var problem = err ? (err.message ? err.message : "" + err) : "";
+                if(err) utils.sendResponse(response, problem, 500, {'Content-Type': 'text/plain'});
                 else utils.sendResponse(response, result, 200, {'Content-Type': 'application/json'});
             });
         });

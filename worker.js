@@ -32,6 +32,22 @@ self.tsh.toHtml = value => {
     return {_tag: "span", children: result};
 };
 
+self.tsh.underscore = o => {
+    if(Array.isArray(o)) {
+        return o.map(self.tsh.underscore);
+    } else if(typeof o === 'object') {
+        var result = {};
+        for(var k in o) if(Object.prototype.hasOwnProperty.call(o, k)) {
+            var v = self.tsh.underscore(o[k]);
+            if(k.includes("_")) result[k] = v;
+            else result[k + "_"] = v;
+        }
+        return result;
+    } else {
+        return o;
+    }
+};
+
 self.tsh.record = (m, r) => {
     for(var k in r) {
         if(Object.prototype.hasOwnProperty.call(r, k) && !Object.prototype.hasOwnProperty.call(m, k)) m[k] = r[k];
