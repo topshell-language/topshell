@@ -31,16 +31,16 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
     }
 }});
 
-exports.fetch_ = exports._fetchThen(r => r);
+exports.fetch_ = exports._fetchThen(r => Promise.resolve(r));
 
 exports.fetchText_ = exports._fetchThen(r => r.text());
 exports.fetchJson_ = exports._fetchThen(r => r.json().then(j => Promise.resolve(self.tsh.underscores(j))));
 exports.fetchBytes_ = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
-exports._processResponse = f => resonse => ({_run: (w, t, c) => {
+exports._processResponse = f => response => ({_run: (w, t, c) => {
     var canceled = false;
     try {
-        f.text().then(v => {
+        f(response).then(v => {
             if(!canceled) t(v)
         }, e => {
             if(!canceled) c(e)
