@@ -28,11 +28,22 @@ var handler = (json, callback) => {
     }
 };
 
+proxy.on('error', (error, request, response) => {
+    response.writeHead(500, {
+        'Content-Type': 'text/plain'
+    });
+    response.end('' + error);
+});
+
 var server = http.createServer((request, response) => {
 
     var parts = url.parse(request.url);
 
     if(parts.pathname && parts.pathname.startsWith('/proxy/')) {
+        // Prevent forwarding of cookie and authorization headers to third parties
+        delete request.headers.cookie;
+        delete request.headers.authorization;
+        delete request.rawHeaders;
         var target = parts.pathname.slice('/proxy/'.length);
         if(proxy) proxy.web(request, response, {target: decodeURI(target)});
         else utils.sendResponse(response, 'Proxying is disabled', 500, {'Content-Type': 'text/plain'});
