@@ -13,8 +13,11 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
     try {
         fetch(url, options).then(response => {
             if(!canceled) {
-                if(response.ok || options.check === false) try { return f(response).then(t); } catch(e) { c(e) }
-                else c(new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url));
+                if(response.ok || options.check === false) {
+                    try { return f(response).then(v => Promise.resolve(t(v))); } catch(e) { c(e) }
+                } else {
+                    c(new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url));
+                }
             }
         }, e => {
             if(!canceled) c(e)
