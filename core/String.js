@@ -21,3 +21,5 @@ exports.toInt_ = i => parseInt(i, 10);
 exports.fromInt_ = i => "" + i;
 exports.toIntBase_ = b => i => parseInt(i, b);
 exports.fromIntBase_ = b => i => i.toString(b);
+exports.split_ = r => s => s.split(r);
+exports.lines_ = s => s.split("\n");
