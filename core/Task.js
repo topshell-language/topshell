@@ -133,6 +133,33 @@ exports.zipWith_ = f => task1 => task2 => ({_run: (w, t, c) => {
     }
 }});
 
+exports.all_ = tasks => ({_run: (w, t, c) => {
+    var results = new Array(tasks.length);
+    var status = new Array(tasks.length);
+    var cancels = new Array(tasks.length);
+    var pending = tasks.length;
+    tasks.forEach((_, i) => {
+        cancels[i] = tasks[i]._run(w, v => {
+            if(pending === 0) results = results.slice();
+            results[i] = v;
+            if(!status[i]) pending--;
+            status[i] = true;
+            if(pending === 0) {
+                try {
+                    t(results)
+                } catch(e) {
+                    c(e)
+                }
+            }
+        }, e => {
+            c(e);
+        });
+    });
+    return () => {
+        cancels.forEach(cancel => { if(cancel instanceof Function) cancel() });
+    }
+}});
+
 exports.map_ = f => task => ({_run: (w, t, c) => {
     return task._run(w, v => {
         try {
