@@ -4,6 +4,19 @@ var fs = require('fs');
 var utils = require('./utilities');
 var actions = require('./actions');
 
+var httpProxy;
+try {
+    httpProxy = require('http-proxy');
+} catch(e) {
+    console.log("HTTP proxying disabled. To enable, npm install http-proxy")
+}
+
+var proxy = httpProxy ? httpProxy.createProxyServer({
+    followRedirects: true,
+    ignorePath: true,
+    changeOrigin: true
+}) : null;
+
 var handler = (json, callback) => {
     var action = actions[json.action];
     if(action) {
@@ -16,7 +29,15 @@ var handler = (json, callback) => {
 };
 
 var server = http.createServer((request, response) => {
+
     var parts = url.parse(request.url);
+
+    if(parts.pathname && parts.pathname.startsWith('/proxy/')) {
+        var target = parts.pathname.slice('/proxy/'.length);
+        if(proxy) proxy.web(request, response, {target: decodeURI(target)});
+        else utils.sendResponse(response, 'Proxying is disabled', 500, {'Content-Type': 'text/plain'});
+        return;
+    }
 
     var base = "/topshell/";
  

@@ -1,4 +1,8 @@
 exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
+    if(configuration.mode_ === "proxy") {
+        url = "/proxy/" + encodeURI(url);
+        delete configuration.mode_;
+    }
     var options = {};
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
         options[k.replace("_", "")] = configuration[k];
