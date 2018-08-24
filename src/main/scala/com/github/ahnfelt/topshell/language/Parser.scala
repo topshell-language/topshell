@@ -3,6 +3,8 @@ package com.github.ahnfelt.topshell.language
 import com.github.ahnfelt.topshell.language.Syntax._
 import com.github.ahnfelt.topshell.language.Tokenizer.{ParseException, Token}
 
+import scala.scalajs.js.JSON
+
 class Parser(file : String, tokens : Array[Token]) {
 
     //println(tokens.map(_.kind).mkString(" "))
@@ -66,7 +68,7 @@ class Parser(file : String, tokens : Array[Token]) {
         try {
             skip("definition")
             skip("operator", Some("@"))
-            val url = skip("string").raw
+            val url = JSON.parse(skip("string").raw).asInstanceOf[String]
             if(current.kind != "top" && current.kind != "end") {
                 val unexpectedAt = current.at
                 while (current.kind != "top" && current.kind != "end") offset += 1

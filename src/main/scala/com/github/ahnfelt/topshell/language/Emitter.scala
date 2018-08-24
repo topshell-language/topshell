@@ -16,6 +16,7 @@ object Emitter {
 
     def emitImport(topImport : TopImport) : String = {
         "_n." + topImport.name + "_ = {\n" +
+        "kind: \"import\",\n" +
         "run: true,\n" +
         "dependencies: [],\n" +
         (topImport.error match {

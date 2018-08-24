@@ -121,7 +121,6 @@ self.tsh.loadImport = url => ({_run: (w, t, e) => {
         } else {
             e('Could not load module');
         }
-        //_d("${topImport.name}", {_tag: "span", children: ["Module ${topImport.url}"]}, _s.${topImport.name}_e);
     };
     xhr.send();
 }});
@@ -161,6 +160,7 @@ self.tsh.setSymbols = (emit, newSymbols) => {
                             symbols[name].cancel = result._run({}, v => {
                                 symbols[name].done = true;
                                 symbols[name].result = v;
+                                if(symbols[name].kind === "import") v = {_tag: "span", children: []};
                                 emit(name, v, void 0);
                                 proceed(name);
                             }, e => {
