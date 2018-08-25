@@ -3,6 +3,7 @@ var url = require('url');
 var fs = require('fs');
 var utils = require('./utilities');
 var actions = require('./actions');
+var ssh_actions = require('./ssh_actions');
 
 var httpProxy;
 try {
@@ -25,7 +26,7 @@ proxy.on('error', (error, request, response) => {
 });
 
 var handler = (json, callback) => {
-    var action = actions[json.action];
+    var action = json.context.ssh && ssh_actions[json.action] ? ssh_actions[json.action] : actions[json.action];
     if(action) {
         action(json.data, json.context, (err, data) => callback(err,
             JSON.stringify({data: data === undefined ? null : data})
