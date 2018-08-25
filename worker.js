@@ -111,7 +111,7 @@ self.tsh.then = (m, f) => {
 };
 
 self.tsh.action = actionName => parameter => ({_run: (w, t, c) => {
-    var action = {action: actionName, data: parameter};
+    var action = {action: actionName, data: parameter, context: self.tsh.removeUnderscores(w)};
     var options = {method: "POST", body: JSON.stringify(action)};
     var canceled = false;
     var controller = new AbortController();

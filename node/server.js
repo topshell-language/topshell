@@ -4,11 +4,17 @@ var fs = require('fs');
 var utils = require('./utilities');
 var actions = require('./actions');
 
+try {
+    void require('ssh2').Client;
+} catch(e) {
+    console.log("SSH disabled. " + (e.code === 'MODULE_NOT_FOUND' ? "To enable, npm install ssh2" : e.message))
+}
+
 var httpProxy;
 try {
     httpProxy = require('http-proxy');
 } catch(e) {
-    console.log("HTTP proxying disabled. To enable, npm install http-proxy")
+    console.log("HTTP proxying disabled. " + (e.code === 'MODULE_NOT_FOUND' ? "To enable, npm install http-proxy" : e.message))
 }
 
 var proxy = httpProxy ? httpProxy.createProxyServer({
@@ -20,7 +26,7 @@ var proxy = httpProxy ? httpProxy.createProxyServer({
 var handler = (json, callback) => {
     var action = actions[json.action];
     if(action) {
-        action(json.data, (err, data) => callback(err,
+        action(json.data, json.context, (err, data) => callback(err,
             JSON.stringify({data: data === undefined ? null : data})
         ));
     } else {
