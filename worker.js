@@ -187,16 +187,20 @@ self.tsh.setSymbols = (emit, newSymbols) => {
                     try {
                         let result = symbols[name].compute(symbols);
                         symbols[name].computed = true;
-                        if(symbols[name].run && result._run instanceof Function) {
-                            symbols[name].cancel = result._run({}, v => {
-                                symbols[name].done = true;
-                                symbols[name].result = v;
-                                if(symbols[name].kind === "import") v = {_tag: "span", children: []};
-                                emit(name, v, void 0);
-                                proceed(name);
-                            }, e => {
-                                emit(name, void 0, e);
-                            })
+                        if(symbols[name].run) {
+                            if(result._run instanceof Function) {
+                                symbols[name].cancel = result._run({}, v => {
+                                    symbols[name].done = true;
+                                    symbols[name].result = v;
+                                    if(symbols[name].kind === "import") v = {_tag: "span", children: []};
+                                    emit(name, v, void 0);
+                                    proceed(name);
+                                }, e => {
+                                    emit(name, void 0, e);
+                                })
+                            } else {
+                                emit(name, void 0, "Not a task: " + result);
+                            }
                         } else {
                             symbols[name].done = true;
                             symbols[name].result = result;
