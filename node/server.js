@@ -4,12 +4,6 @@ var fs = require('fs');
 var utils = require('./utilities');
 var actions = require('./actions');
 
-try {
-    void require('ssh2').Client;
-} catch(e) {
-    console.log("SSH disabled. " + (e.code === 'MODULE_NOT_FOUND' ? "To enable, npm install ssh2" : e.message))
-}
-
 var httpProxy;
 try {
     httpProxy = require('http-proxy');
