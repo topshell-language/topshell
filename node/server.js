@@ -23,6 +23,13 @@ var proxy = httpProxy ? httpProxy.createProxyServer({
     changeOrigin: true
 }) : null;
 
+proxy.on('error', (error, request, response) => {
+    response.writeHead(500, {
+        'Content-Type': 'text/plain'
+    });
+    response.end('' + error);
+});
+
 var handler = (json, callback) => {
     var action = actions[json.action];
     if(action) {
@@ -33,13 +40,6 @@ var handler = (json, callback) => {
         callback("No such action");
     }
 };
-
-proxy.on('error', (error, request, response) => {
-    response.writeHead(500, {
-        'Content-Type': 'text/plain'
-    });
-    response.end('' + error);
-});
 
 var server = http.createServer((request, response) => {
 

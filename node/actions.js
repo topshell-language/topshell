@@ -1,9 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var child_process = require('child_process');
-var utils = require('./utilities');
-
-try { var Client = require('ssh2').Client } catch(e) {}
+var ssh_actions = require('./ssh_actions');
 
 
 module.exports = {
@@ -55,21 +53,18 @@ module.exports = {
             }
         });
     },
-    'Process.run': (json, context, callback) => handleSsh(context, callback, child_process => {
+    'Process.run': (json, context, callback) => {
+        if(context.ssh) return ssh_actions['Process.run'](json, context.ssh, callback);
         child_process.execFile(json.path, json.arguments, json.config, (error, stdout, stderr) => {
             if(json.config.check !== false) callback(error, {out: stdout, error: stderr});
             else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
         });
-    }),
-    'Process.shell': (json, context, callback) => handleSsh(context, callback, child_process => {
+    },
+    'Process.shell': (json, context, callback) => {
+        if(context.ssh) return ssh_actions['Process.shell'](json, context.ssh, callback);
         child_process.exec(json.command, json.config, (error, stdout, stderr) => {
             if(json.config.check !== false) callback(error, {out: stdout, error: stderr});
             else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
         });
-    }),
+    },
 };
-
-function handleSsh(context, callback, action) {
-    if(!context.ssh) return action(child_process);
-    callback("SSH not implemented")
-}

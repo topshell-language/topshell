@@ -7,6 +7,7 @@ self.tsh.toHtml = value => {
     if(value === null) return {_tag: "span", children: ["Null"]};
     if(value._tag !== undefined) return value;
     if(value._run !== undefined) return {_tag: "span", children: ["Task"]};
+    if(value instanceof Function) return {_tag: "span", children: ["Function"]};
     if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["Bytes"]};
     if(value instanceof Response) return {_tag: "span", children: ["Response"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
