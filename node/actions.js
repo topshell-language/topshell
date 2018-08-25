@@ -54,12 +54,14 @@ module.exports = {
     },
     'Process.run': (json, callback) => {
         child_process.execFile(json.path, json.arguments, json.config, (error, stdout, stderr) => {
-            callback(error, {out: stdout, error: stderr})
+            if(json.config.check !== false) callback(error, {out: stdout, error: stderr});
+            else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
         });
     },
     'Process.shell': (json, callback) => {
         child_process.exec(json.command, json.config, (error, stdout, stderr) => {
-            callback(error, {out: stdout, error: stderr})
+            if(json.config.check !== false) callback(error, {out: stdout, error: stderr});
+            else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
         });
     },
 };

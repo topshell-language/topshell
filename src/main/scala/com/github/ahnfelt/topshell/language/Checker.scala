@@ -5,12 +5,9 @@ import com.github.ahnfelt.topshell.language.Tokenizer.ParseException
 
 object Checker {
 
-    private val globals = List("tag", "visual", "true", "false", "null")
-
     def check(imports : List[TopImport], symbols : List[TopSymbol]) : List[TopSymbol] = {
         for((s, i) <- symbols.zipWithIndex) yield {
             val visible =
-                globals ++
                 imports.map(_.name) ++
                 symbols.take(i).map(_.binding.name) ++
                 symbols.drop(i).takeWhile(s => !s.bind).map(_.binding.name)
