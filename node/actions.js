@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var child_process = require('child_process');
 var utils = require('./utilities');
 
 module.exports = {
@@ -49,6 +50,16 @@ module.exports = {
                     status: stats
                 });
             }
+        });
+    },
+    'Process.run': (json, callback) => {
+        child_process.execFile(json.path, json.arguments, json.config, (error, stdout, stderr) => {
+            callback(error, {out: stdout, error: stderr})
+        });
+    },
+    'Process.shell': (json, callback) => {
+        child_process.exec(json.command, json.config, (error, stdout, stderr) => {
+            callback(error, {out: stdout, error: stderr})
         });
     },
 };
