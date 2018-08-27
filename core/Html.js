@@ -16,5 +16,3 @@ exports.attribute = function(key) { return function(value) {
 exports.style = function(key) { return function(value) {
     return {_tag: ">style", key: "" + key, value: "" + value, };
 }};
-
-exports.view = render => value => ({_tag: ">view", html: exports.of(render(value)), value: value});
