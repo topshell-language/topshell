@@ -4,7 +4,10 @@ var child_process = require('child_process');
 
 module.exports = {
     'File.readText': (json, context, callback) => {
-        execFile(context.ssh, json.config, "cat", [json.path], "", callback);
+        execFile(context.ssh, json.config, "cat", [json.path], "", (error, result) => {
+            if(error == null) callback(void 0, result.out);
+            else callback(error, result);
+        });
     },
     'File.writeText': (json, context, callback) => {
         execFile(context.ssh, json.config, "dd", ["of=" + json.path], json.contents, (error, result) => {

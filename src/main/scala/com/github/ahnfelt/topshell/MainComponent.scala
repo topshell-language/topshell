@@ -100,11 +100,11 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             if(tagName == ">text") {
                 Text(v("text").asInstanceOf[String])
             } else if(tagName == ">view") {
-                renderValue(v("html_"))
+                renderValue(v("html"))
             } else if(tagName == ">attribute") {
-                A("" + v("key_"), "" + v("value_"))
+                A("" + v("key"), "" + v("value"))
             } else if(tagName == ">style") {
-                S("" + v("key_"), "" + v("value_"))
+                S("" + v("key"), "" + v("value"))
             } else {
                 E(tagName, renderValue(v("children")))
             }
