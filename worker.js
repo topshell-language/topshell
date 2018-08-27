@@ -3,17 +3,17 @@ self.tsh = {};
 self.tsh.symbols = {};
 
 self.tsh.toHtml = value => {
-    if(value === undefined) return {_tag: "span", children: ["Undefined"]};
-    if(value === null) return {_tag: "span", children: ["Null"]};
+    if(value === undefined) return {_tag: "span", children: ["undefined"]};
+    if(value === null) return {_tag: "span", children: ["null"]};
     if(value._tag !== undefined) return value;
-    if(value._run !== undefined) return {_tag: "span", children: ["Task"]};
-    if(value instanceof Function) return {_tag: "span", children: ["Function"]};
-    if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["Bytes"]};
-    if(value instanceof Response) return {_tag: "span", children: ["Response"]};
+    if(value._run !== undefined) return {_tag: "span", children: ["task"]};
+    if(value instanceof Function) return {_tag: "span", children: ["function"]};
+    if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["bytes"]};
+    if(value instanceof Response) return {_tag: "span", children: ["response"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
     if(typeof value === 'number') return {_tag: "span", children: [JSON.stringify(value)]};
-    if(value === true) return {_tag: "span", children: ["True"]};
-    if(value === false) return {_tag: "span", children: ["False"]};
+    if(value === true) return {_tag: "span", children: ["true"]};
+    if(value === false) return {_tag: "span", children: ["false"]};
     var result = [];
     if(Array.isArray(value)) {
         result.push("[");

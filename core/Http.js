@@ -14,7 +14,6 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
         for(var i = 0; i < headers.length; i++) {
             options.headers[headers[i].key] = headers[i].value;
         }
-        console.dir(options.headers);
     }
     var canceled = false;
     var controller = new AbortController();
