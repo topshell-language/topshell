@@ -166,7 +166,9 @@ class Parser(file : String, tokens : Array[Token]) {
         var result = parseAtom()
         while(current.raw == ".") {
             val c = skip("separator", Some("."))
-            val label = skip("lower").raw
+            val label =
+                if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
+                else skip("lower").raw
             result = EField(c.at, result, label)
         }
         result
@@ -183,7 +185,9 @@ class Parser(file : String, tokens : Array[Token]) {
                 ))
             } else if(current.raw == ".") {
                 val at = skip("separator").at
-                val field = skip("lower").raw
+                val field =
+                    if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
+                    else skip("lower").raw
                 EFunction(at, "_1", EField(at, EVariable(at, "_1"), field))
             } else {
                 parseTerm()
@@ -209,9 +213,13 @@ class Parser(file : String, tokens : Array[Token]) {
             var bindings : List[Binding] = List.empty
             var rest : Option[Term] = None
             while(current.raw != "}" && rest.isEmpty) {
-                val c = skip("lower")
-                val name = c.raw
-                val value = if(current.raw == "," || current.raw == "}") EVariable(c.at, c.raw) else {
+                val c = current
+                val name =
+                    if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
+                    else skip("lower").raw
+                val value = if((current.raw == "," || current.raw == "}") && c.kind == "lower") {
+                    EVariable(c.at, name)
+                } else {
                     skip("separator", Some(":")).at
                     parseTerm()
                 }

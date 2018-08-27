@@ -67,10 +67,10 @@ object Emitter {
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
         case ERecord(at, fields, rest) =>
-            val record = "{" + fields.map(b => b.name + ": " + emitTerm(b.value)).mkString(", ") + "}"
+            val record = "{" + fields.map(b => escapeField(b.name, None) + ": " + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
         case EField(at, record, field) =>
-            emitTerm(record) + "." + field
+            escapeField(field, Some(record))
         case EIf(at, condition, thenBody, elseBody) =>
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
         case EUnary(at, operator, operand) =>
@@ -84,5 +84,12 @@ object Emitter {
         case EBinary(at, operator, left, right) =>
             "((" + emitTerm(left) + ") " + operator + " (" + emitTerm(right) + "))"
     }
+
+    def escapeField(label : String, record : Option[Term]) = {
+        if(fieldPattern.findFirstIn(label).isDefined) record.map(emitTerm).map(_ + "." + label).getOrElse(label)
+        else record.map(emitTerm).map(_ + "[" + JSON.stringify(label) + "]").getOrElse(JSON.stringify(label))
+    }
+
+    val fieldPattern = """^[a-zA-z][a-zA-Z0-9_$]*$""".r
 
 }
