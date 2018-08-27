@@ -79,6 +79,8 @@ object Emitter {
             "Math.pow(" + emitTerm(left) + ", " + emitTerm(right) + ")"
         case EBinary(at, "|", left, right) =>
             "((" + emitTerm(right) + ")(" + emitTerm(left) + "))"
+        case EBinary(at, "~>", left, right) =>
+            "{key: " + emitTerm(left) + ", value: " + emitTerm(right) + "}"
         case EBinary(at, operator, left, right) =>
             "((" + emitTerm(left) + ") " + operator + " (" + emitTerm(right) + "))"
     }

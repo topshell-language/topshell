@@ -127,6 +127,7 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private val allBinary = Seq(
         Seq("|"),
+        Seq("~>"),
         Seq("&&", "||"),
         Seq(">", "<", ">=", "<=", "==", "!="),
         Seq("+", "-"),
@@ -134,7 +135,8 @@ class Parser(file : String, tokens : Array[Token]) {
         Seq("^"),
     ).flatten
 
-    private def parsePipe() : Term = parseBinary(Seq("|"), parseAndOr)
+    private def parsePipe() : Term = parseBinary(Seq("|"), parsePair)
+    private def parsePair() : Term = parseBinary(Seq("~>"), parseAndOr)
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), parseCompare)
     private def parseCompare() : Term = parseBinary(Seq(">", "<", ">=", "<=", "==", "!="), parsePlus)
     private def parsePlus() : Term = parseBinary(Seq("+", "-"), parseMultiply)
