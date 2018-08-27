@@ -28,10 +28,9 @@ module.exports = {
                         } else if(!failed) {
                             pending--;
                             results[i] = {
-                                path: filePath,
+                                name: file,
                                 isFile: stats.isFile(),
-                                isDirectory: stats.isDirectory(),
-                                status: stats
+                                isDirectory: stats.isDirectory()
                             };
                             if(pending === 0) callback(void 0, results);
                         }
@@ -44,7 +43,7 @@ module.exports = {
         fs.stat(json.path, (error, stats) => {
             if(error) callback(error); else {
                 callback(void 0, {
-                    path: json.path,
+                    name: path.basename(json.path),
                     isFile: stats.isFile(),
                     isDirectory: stats.isDirectory(),
                     status: stats

@@ -1,5 +1,4 @@
 var fs = require('fs');
-var path = require('path');
 var child_process = require('child_process');
 
 module.exports = {
@@ -22,10 +21,26 @@ module.exports = {
         });
     },
     'File.listStatus': (json, context, callback) => {
-        callback('File.listStatus not yet implemented for ssh', void 0);
+        execFile(context.ssh, json.config, "ls", ["--almost-all", "--escape", "--quote", "--file-type", json.path], "", (error, result) => {
+            function parse(f) {
+                // TODO: JSON.parse isn't quite the right parser here
+                if(f.endsWith("\"")) return {name: JSON.parse(f), isFile: true, isDirectory: false};
+                else return {name: JSON.parse(f.slice(0, -1)), isFile: false, isDirectory: f.slice(-1) === "/"};
+            }
+            if(error == null) callback(void 0, result.out.split("\n").filter(s => s.length !== 0).map(parse));
+            else callback(error, result);
+        });
     },
     'File.status': (json, context, callback) => {
-        callback('File.status not yet implemented for ssh', void 0);
+        execFile(context.ssh, json.config, "ls", ["--almost-all", "--escape", "--quote", "--file-type", "--directory", json.path], "", (error, result) => {
+            function parse(f) {
+                // TODO: JSON.parse isn't quite the right parser here
+                if(f.endsWith("\"")) return {name: JSON.parse(f), isFile: true, isDirectory: false};
+                else return {name: JSON.parse(f.slice(0, -1)), isFile: false, isDirectory: f.slice(-1) === "/"};
+            }
+            if(error == null) callback(void 0, result.out.split("\n").filter(s => s.length !== 0).map(parse)[0]);
+            else callback(error, result);
+        });
     },
     'Process.run': (json, context, callback) => {
         execFile(context.ssh, json.config, json.path, json.arguments, json.config.in || "", callback);
