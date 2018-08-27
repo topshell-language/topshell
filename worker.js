@@ -26,7 +26,8 @@ self.tsh.toHtml = value => {
         result.push("{");
         for(var k in value) if(Object.prototype.hasOwnProperty.call(value, k)) {
             if(result.length > 1) result.push(", ");
-            result.push(k + ": ");
+            var l = k.match(/^[a-z][a-zA-Z0-9]*$/g) ? k : JSON.stringify(k);
+            result.push(l + ": ");
             result.push(self.tsh.toHtml(value[k]));
         }
         result.push("}");
