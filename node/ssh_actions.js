@@ -25,14 +25,15 @@ module.exports = {
         callback('File.status not yet implemented for ssh', void 0);
     },
     'Process.run': (json, context, callback) => {
-        execFile(context.ssh, json.config, json.path, json.arguments, "", callback);
+        execFile(context.ssh, json.config, json.path, json.arguments, json.config.in || "", callback);
     },
     'Process.shell': (json, context, callback) => {
         var arguments = ["-o", "BatchMode yes", context.ssh.user + "@" + context.ssh.host, json.command];
-        child_process.execFile("ssh", arguments, json.config, (error, stdout, stderr) => {
+        let child = child_process.execFile("ssh", arguments, json.config, (error, stdout, stderr) => {
             if(json.config.check !== false) callback(error, {out: stdout, error: stderr});
             else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
         });
+        child.stdin.end(json.config.in || "");
     },
 };
 
