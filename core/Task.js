@@ -1,4 +1,4 @@
-exports.of_ = value => ({_run: (w, t, c) => {
+exports.of = value => ({_run: (w, t, c) => {
     try {
         t(value)
     } catch(e) {
@@ -6,7 +6,7 @@ exports.of_ = value => ({_run: (w, t, c) => {
     }
 }});
 
-exports.throw_ = error => ({_run: (w, t, c) => {
+exports.throw = error => ({_run: (w, t, c) => {
     try {
         c(error)
     } catch(e) {
@@ -14,7 +14,7 @@ exports.throw_ = error => ({_run: (w, t, c) => {
     }
 }});
 
-exports.catch_ = f => task => ({_run: (w, t, c) => {
+exports.catch = f => task => ({_run: (w, t, c) => {
     var cancel1 = null;
     try {
         var cancel2 = task._run(w, t, error => {
@@ -34,9 +34,9 @@ exports.catch_ = f => task => ({_run: (w, t, c) => {
     };
 }});
 
-exports.then_ = self.tsh.taskThen;
+exports.then = self.tsh.taskThen;
 
-exports.filter_ = f => task => ({_run: (w, t, c) => {
+exports.filter = f => task => ({_run: (w, t, c) => {
     try {
         return task._run(w, v => {
             try {
@@ -50,7 +50,7 @@ exports.filter_ = f => task => ({_run: (w, t, c) => {
     }
 }});
 
-exports.scan_ = f => z => task => ({_run: (w, t, c) => {
+exports.scan = f => z => task => ({_run: (w, t, c) => {
     var state = z;
     return task._run(w, v => {
         try {
@@ -62,7 +62,7 @@ exports.scan_ = f => z => task => ({_run: (w, t, c) => {
     }, c)
 }});
 
-exports.merge_ = task1 => task2 => ({_run: (w, t, c) => {
+exports.merge = task1 => task2 => ({_run: (w, t, c) => {
     try {
         var cancel1 = task1._run(w, t, c);
         var cancel2 = task2._run(w, t, c);
@@ -75,7 +75,7 @@ exports.merge_ = task1 => task2 => ({_run: (w, t, c) => {
     }
 }});
 
-exports.race_ = task1 => task2 => ({_run: (w, t, c) => {
+exports.race = task1 => task2 => ({_run: (w, t, c) => {
     try {
         var cancel1 = task1._run(w, v => {
             if(cancel2 instanceof Function) cancel2();
@@ -94,7 +94,7 @@ exports.race_ = task1 => task2 => ({_run: (w, t, c) => {
     }
 }});
 
-exports.zipWith_ = f => task1 => task2 => ({_run: (w, t, c) => {
+exports.zipWith = f => task1 => task2 => ({_run: (w, t, c) => {
     var result1, result2;
     var ok1, ok2;
     var cancel1 = task1._run(w, v => {
@@ -133,7 +133,7 @@ exports.zipWith_ = f => task1 => task2 => ({_run: (w, t, c) => {
     }
 }});
 
-exports.all_ = tasks => ({_run: (w, t, c) => {
+exports.all = tasks => ({_run: (w, t, c) => {
     var results = new Array(tasks.length);
     var status = new Array(tasks.length);
     var cancels = new Array(tasks.length);
@@ -160,7 +160,7 @@ exports.all_ = tasks => ({_run: (w, t, c) => {
     }
 }});
 
-exports.map_ = f => task => ({_run: (w, t, c) => {
+exports.map = f => task => ({_run: (w, t, c) => {
     return task._run(w, v => {
         try {
             t(f(v))
@@ -170,7 +170,7 @@ exports.map_ = f => task => ({_run: (w, t, c) => {
     }, c);
 }});
 
-exports.sleep_ = s => ({_run: (w, t, c) => {
+exports.sleep = s => ({_run: (w, t, c) => {
     var handle = setTimeout(_ => {
         try {
             t(void _)
@@ -181,7 +181,7 @@ exports.sleep_ = s => ({_run: (w, t, c) => {
     return () => clearInterval(handle);
 }});
 
-exports.interval_ = s => ({_run: (w, t, c) => {
+exports.interval = s => ({_run: (w, t, c) => {
     var handle = setInterval(_ => {
         try {
             t(void _)
@@ -192,14 +192,14 @@ exports.interval_ = s => ({_run: (w, t, c) => {
     return () => clearTimeout(handle);
 }});
 
-exports.now_ = ({_run: (w, t, c) => {
+exports.now = ({_run: (w, t, c) => {
     try { t(Date.now() * 0.001) } catch(e) { c(e) }
 }});
 
-exports.random_ = ({_run: (w, t, c) => {
+exports.random = ({_run: (w, t, c) => {
     try { t(Math.random()) } catch(e) { c(e) }
 }});
 
-exports.log_ = message => ({_run: (w, t, c) => {
+exports.log = message => ({_run: (w, t, c) => {
     try { t(void console.dir(message)) } catch(e) { c(e) }
 }});

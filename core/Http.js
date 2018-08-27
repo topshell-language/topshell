@@ -1,9 +1,10 @@
 exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
     var options = {};
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
-        options[k.replace("_", "")] = configuration[k];
+        options[k] = configuration[k];
     }
     if(options.mode === "proxy") {
+        options.credentials = "omit"; // Don't send cookies etc. to third parties
         url = "/proxy/" + encodeURI(url);
         delete options.mode;
     }
@@ -31,11 +32,11 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
     }
 }});
 
-exports.fetch_ = exports._fetchThen(r => Promise.resolve(r));
+exports.fetch = exports._fetchThen(r => Promise.resolve(r));
 
-exports.fetchText_ = exports._fetchThen(r => r.text());
-exports.fetchJson_ = exports._fetchThen(r => r.json().then(j => Promise.resolve(self.tsh.underscores(j))));
-exports.fetchBytes_ = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
+exports.fetchText = exports._fetchThen(r => r.text());
+exports.fetchJson = exports._fetchThen(r => r.json().then(j => Promise.resolve(j)));
+exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
 exports._processResponse = f => response => ({_run: (w, t, c) => {
     var canceled = false;
@@ -51,15 +52,15 @@ exports._processResponse = f => response => ({_run: (w, t, c) => {
     return () => canceled = true;
 }});
 
-exports.text_ = exports._processResponse(r => r.text());
-exports.json_ = exports._processResponse(r => r.json().then(j => Promise.resolve(self.tsh.underscores(j))));
-exports.bytes_ = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
+exports.text = exports._processResponse(r => r.text());
+exports.json = exports._processResponse(r => r.json().then(j => Promise.resolve(j)));
+exports.bytes = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
-exports.header_ = header => response => response.headers.get(header);
+exports.header = header => response => response.headers.get(header);
 
-exports.ok_ = response => response.ok;
-exports.redirected_ = response => response.redirected;
-exports.status_ = response => response.status;
-exports.statusText_ = response => response.statusText;
-exports.type_ = response => response.type;
-exports.url_ = response => response.url;
+exports.ok = response => response.ok;
+exports.redirected = response => response.redirected;
+exports.status = response => response.status;
+exports.statusText = response => response.statusText;
+exports.type = response => response.type;
+exports.url = response => response.url;

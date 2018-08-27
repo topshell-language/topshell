@@ -67,10 +67,10 @@ object Emitter {
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
         case ERecord(at, fields, rest) =>
-            val record = "{" + fields.map(b => b.name + "_:" + emitTerm(b.value)).mkString(", ") + "}"
+            val record = "{" + fields.map(b => b.name + ": " + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
         case EField(at, record, field) =>
-            emitTerm(record) + "." + field + "_"
+            emitTerm(record) + "." + field
         case EIf(at, condition, thenBody, elseBody) =>
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
         case EUnary(at, operator, operand) =>

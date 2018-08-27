@@ -26,44 +26,12 @@ self.tsh.toHtml = value => {
         result.push("{");
         for(var k in value) if(Object.prototype.hasOwnProperty.call(value, k)) {
             if(result.length > 1) result.push(", ");
-            result.push(k.replace("_", "") + ": ");
+            result.push(k + ": ");
             result.push(self.tsh.toHtml(value[k]));
         }
         result.push("}");
     }
     return {_tag: "span", children: result};
-};
-
-self.tsh.underscores = o => {
-    if(Array.isArray(o)) {
-        return o.map(self.tsh.underscores);
-    } else if(typeof o === 'object') {
-        var result = {};
-        for(var k in o) if(Object.prototype.hasOwnProperty.call(o, k)) {
-            var v = self.tsh.underscores(o[k]);
-            if(k.includes("_")) result[k] = v;
-            else result[k + "_"] = v;
-        }
-        return result;
-    } else {
-        return o;
-    }
-};
-
-self.tsh.removeUnderscores = o => {
-    if(Array.isArray(o)) {
-        return o.map(self.tsh.removeUnderscores);
-    } else if(typeof o === 'object') {
-        var result = {};
-        for(var k in o) if(Object.prototype.hasOwnProperty.call(o, k)) {
-            var v = self.tsh.removeUnderscores(o[k]);
-            if(k.endsWith("_")) result[k.slice(0, -1)] = v;
-            else result[k] = v;
-        }
-        return result;
-    } else {
-        return o;
-    }
 };
 
 self.tsh.record = (m, r) => {
@@ -112,7 +80,7 @@ self.tsh.then = (m, f) => {
 };
 
 self.tsh.action = actionName => parameter => ({_run: (w, t, c) => {
-    var action = {action: actionName, data: parameter, context: self.tsh.removeUnderscores(w)};
+    var action = {action: actionName, data: parameter, context: w};
     var options = {method: "POST", body: JSON.stringify(action)};
     var canceled = false;
     var controller = new AbortController();
@@ -128,7 +96,7 @@ self.tsh.action = actionName => parameter => ({_run: (w, t, c) => {
                 } else {
                     return Promise.resolve(r)
                         .then(r => {if(!canceled) return r.json()})
-                        .then(j => {if(!canceled) return self.tsh.underscores(j.data)})
+                        .then(j => {if(!canceled) return j.data})
                         .then(v => {if(!canceled) t(v)}, e => {if(!canceled) c(e)})
                 }
             })

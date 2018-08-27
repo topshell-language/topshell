@@ -1,4 +1,4 @@
-exports.dictionaryBy_ = g => f => v => {
+exports.dictionaryBy = g => f => v => {
     var cache = {};
     function h(x) {
         var k = g(x);
@@ -8,5 +8,5 @@ exports.dictionaryBy_ = g => f => v => {
     return h(v);
 };
 
-exports.dictionary_ = exports.dictionaryBy_(k => "" + k);
+exports.dictionary = exports.dictionaryBy(k => "" + k);
 

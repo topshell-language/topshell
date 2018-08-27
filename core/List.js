@@ -1,4 +1,4 @@
-exports.map_ = function(f) {
+exports.map = function(f) {
     return function(r) {
         var result = [];
         for(var i = 0; i < r.length; i++) {
@@ -9,7 +9,7 @@ exports.map_ = function(f) {
     };
 };
 
-exports.then_ = function(f) {
+exports.then = function(f) {
     return function(r) {
         var result = [];
         for(var i = 0; i < r.length; i++) {
@@ -22,7 +22,7 @@ exports.then_ = function(f) {
     };
 };
 
-exports.range_ = function(start) {
+exports.range = function(start) {
     return function(stop) {
         var result = [];
         for(var i = start; i <= stop; i++) {
@@ -32,41 +32,41 @@ exports.range_ = function(start) {
     };
 };
 
-exports.size_ = function(r) { return r.length; };
-exports.isEmpty_ = function(r) { return r.length === 0; };
-exports.at_ = function(i) { return function(r) { return r[i]; }; };
-exports.take_ = function(i) { return function(r) { return r.slice(0, i); }; };
-exports.drop_ = function(i) { return function(r) { return r.slice(i); }; };
-exports.takeLast_ = function(i) { return function(r) { return r.slice(-i); }; };
-exports.dropLast_ = function(i) { return function(r) { return r.slice(0, -i); }; };
+exports.size = function(r) { return r.length; };
+exports.isEmpty = function(r) { return r.length === 0; };
+exports.at = function(i) { return function(r) { return r[i]; }; };
+exports.take = function(i) { return function(r) { return r.slice(0, i); }; };
+exports.drop = function(i) { return function(r) { return r.slice(i); }; };
+exports.takeLast = function(i) { return function(r) { return r.slice(-i); }; };
+exports.dropLast = function(i) { return function(r) { return r.slice(0, -i); }; };
 
-exports.filter_ = function(f) { return function(r) { return r.filter(f); }; };
-exports.reverse_ = function(r) { return r.slice().reverse(); };
-exports.find_ = function(f) { return function(r) { return r.find(f); }; };
-exports.all_ = function(f) { return function(r) { return r.every(f); }; };
-exports.any_ = function(f) { return function(r) { return r.some(f); }; };
+exports.filter = function(f) { return function(r) { return r.filter(f); }; };
+exports.reverse = function(r) { return r.slice().reverse(); };
+exports.find = function(f) { return function(r) { return r.find(f); }; };
+exports.all = function(f) { return function(r) { return r.every(f); }; };
+exports.any = function(f) { return function(r) { return r.some(f); }; };
 
-exports.head_ = function(r) { return r[0]; };
-exports.tail_ = function(r) { return r.slice(1); };
-exports.append_ = function(r) { return function(a) { return r.concat(a); }; };
+exports.head = function(r) { return r[0]; };
+exports.tail = function(r) { return r.slice(1); };
+exports.append = function(r) { return function(a) { return r.concat(a); }; };
 
-exports.foldLeft_ = f => z => a => a.reduce((x, y) => f(x)(y), z);
-exports.foldRight_ = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
+exports.foldLeft = f => z => a => a.reduce((x, y) => f(x)(y), z);
+exports.foldRight = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
 
-exports.sort_ = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
+exports.sort = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
 
-exports.repeat_ = n => v => new Array(n).fill(v);
+exports.repeat = n => v => new Array(n).fill(v);
 
 
-exports.takeWhile_ = function(r) { return r.takeWhile_; };
-exports.dropWhile_ = function(r) { return r.dropWhile_; };
-exports.takeLastWhile_ = function(r) { return r.takeLastWhile_; };
-exports.dropLastWhile_ = function(r) { return r.dropLastWhile_; };
-exports.zip_ = function(r) { return r.zip_; };
-exports.unzip_ = function(r) { return r.unzip_; };
-exports.indexes_ = function(r) { return r.indexes_; };
-exports.startsWith_ = function(r) { return r.startsWith_; };
-exports.endsWith_ = function(r) { return r.endsWith_; };
+exports.takeWhile = function(r) { return r.takeWhile; };
+exports.dropWhile = function(r) { return r.dropWhile; };
+exports.takeLastWhile = function(r) { return r.takeLastWhile; };
+exports.dropLastWhile = function(r) { return r.dropLastWhile; };
+exports.zip = function(r) { return r.zip; };
+exports.unzip = function(r) { return r.unzip; };
+exports.indexes = function(r) { return r.indexes; };
+exports.startsWith = function(r) { return r.startsWith; };
+exports.endsWith = function(r) { return r.endsWith; };
 
-exports.scanLeft_ = function(r) { return r.scanLeft_; };
-exports.scanRight_ = function(r) { return r.scanRight_; };
+exports.scanLeft = function(r) { return r.scanLeft; };
+exports.scanRight = function(r) { return r.scanRight; };
