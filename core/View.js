@@ -68,7 +68,7 @@ exports.tree = data => {
             ]},
             {_tag: ">text", text: "]"},
         ]};
-    } else if(data != null && Object.keys(data).length !== 0 && Object.keys(data).every(s => !s.startsWith("_"))) {
+    } else if(data != null && typeof data === "object" && Object.keys(data).every(s => !s.startsWith("_tag") && !s.startsWith("_view"))) {
         return {_tag: "div", children: [
             {_tag: ">text", text: "{"},
             {_tag: "div", children: [
