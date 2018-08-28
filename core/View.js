@@ -57,7 +57,7 @@ exports.text = data => {
 
 exports.tree = data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
-    if(Array.isArray(data)) {
+    if(Array.isArray(data) && data.length > 0) {
         return {_tag: "div", children: [
             {_tag: ">text", text: "["},
             {_tag: "div", children: [
@@ -68,7 +68,7 @@ exports.tree = data => {
             ]},
             {_tag: ">text", text: "]"},
         ]};
-    } else if(data != null && typeof data === "object" && Object.keys(data).every(s => !s.startsWith("_tag") && !s.startsWith("_view"))) {
+    } else if(data != null && typeof data === "object" && Object.keys(data).size > 0 && Object.keys(data).every(s => !s.startsWith("_tag") && !s.startsWith("_view"))) {
         return {_tag: "div", children: [
             {_tag: ">text", text: "{"},
             {_tag: "div", children: [
