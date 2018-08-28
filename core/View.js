@@ -69,14 +69,15 @@ exports.tree = data => {
             {_tag: ">text", text: "]"},
         ]};
     } else if(data != null && typeof data === "object" && Object.keys(data).length > 0 && Object.keys(data).every(s => !s.startsWith("_tag") && !s.startsWith("_view"))) {
+        let keys = Object.keys(data);
         return {_tag: "div", children: [
             {_tag: ">text", text: "{"},
             {_tag: "div", children: [
                 style("margin-left", "10px"),
-                {_tag: "div", children: Object.keys(data).map((l, i) => {
+                {_tag: "div", children: keys.map((l, i) => {
                     var k = {_tag: ">text", text: l};
                     var e = exports.tree(data[l]);
-                    return {_tag: "div", children: i < data.length - 1 ?
+                    return {_tag: "div", children: i < keys.length - 1 ?
                         [k, {_tag: ">text", text: ": "}, e, {_tag: ">text", text: ", "}] :
                         [k, {_tag: ">text", text: ": "}, e]
                     }
