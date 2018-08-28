@@ -59,13 +59,19 @@ exports.repeat = n => v => new Array(n).fill(v);
 
 exports.flatten = l => Array.prototype.concat.apply(...l);
 
+exports.zip = a => b => {
+    let result = [];
+    for(var i = 0; i < a.length && i < b.length; i++) {
+        result.push({key: a[i], value: b[i]});
+    }
+    return result;
+};
 
 
 exports.takeWhile = function(r) { return r.takeWhile; };
 exports.dropWhile = function(r) { return r.dropWhile; };
 exports.takeLastWhile = function(r) { return r.takeLastWhile; };
 exports.dropLastWhile = function(r) { return r.dropLastWhile; };
-exports.zip = function(r) { return r.zip; };
 exports.unzip = function(r) { return r.unzip; };
 exports.indexes = function(r) { return r.indexes; };
 exports.startsWith = function(r) { return r.startsWith; };
