@@ -1,15 +1,13 @@
 package com.github.ahnfelt.topshell
 
 import com.github.ahnfelt.react4s._
-import com.github.ahnfelt.topshell.language.Syntax.{Term, TopImport, TopSymbol}
-import com.github.ahnfelt.topshell.language._
-import com.github.ahnfelt.topshell.language.Tokenizer.{ParseException, Token}
+import org.scalajs.dom
 
 import scala.scalajs.js
 
 case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
 
-    val code = State("")
+    val code = State(Option(dom.window.localStorage.getItem("code")).getOrElse(""))
     val debouncedCode = Debounce(this, code.map(_.trim))
     var lastCode = ""
 
@@ -18,6 +16,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
         if(get(debouncedCode) != lastCode) {
             lastCode = get(debouncedCode)
             Main.worker.postMessage(js.Dictionary("code" -> lastCode, "codeVersion" -> Main.codeVersion))
+            dom.window.localStorage.setItem("code", lastCode)
         }
     }
 
@@ -32,6 +31,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.textarea(
                     EditorCss,
                     A.onKeyDown(onKeyDown),
+                    A.value(get(code)),
                     A.onChangeText(code.set),
                     A.autoFocus(),
                     A.spellCheck("false")
