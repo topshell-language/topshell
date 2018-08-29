@@ -58,10 +58,10 @@ exports.text = data => {
 exports.tree = data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
     if(Array.isArray(data) && data.length > 0) {
-        return {_tag: "div", children: [
+        return {_tag: "span", children: [
             {_tag: ">text", text: "["},
             {_tag: "div", children: [
-                style("margin-left", "10px"),
+                style("margin-left", "20px"),
                 {_tag: "div", children: data.map(exports.tree).map((e, i) => (
                     {_tag: "div", children: i < data.length - 1 ? [e, {_tag: ">text", text: ", "}] : [e]}
                 ))},
@@ -70,12 +70,12 @@ exports.tree = data => {
         ]};
     } else if(data != null && typeof data === "object" && Object.keys(data).length > 0 && Object.keys(data).every(s => !s.startsWith("_tag") && !s.startsWith("_view"))) {
         let keys = Object.keys(data);
-        return {_tag: "div", children: [
+        return {_tag: "span", children: [
             {_tag: ">text", text: "{"},
             {_tag: "div", children: [
-                style("margin-left", "10px"),
+                style("margin-left", "20px"),
                 {_tag: "div", children: keys.map((l, i) => {
-                    var k = {_tag: ">text", text: l};
+                    var k = {_tag: ">text", text: /^[a-z][a-zA-Z0-9]*$/g.test(l) ? l : JSON.stringify(l)};
                     var e = exports.tree(data[l]);
                     return {_tag: "div", children: i < keys.length - 1 ?
                         [k, {_tag: ">text", text: ": "}, e, {_tag: ">text", text: ", "}] :
