@@ -178,18 +178,25 @@ exports.sleep = s => ({_run: (w, t, c) => {
             c(e)
         }
     }, s * 1000);
-    return () => clearInterval(handle);
+    return () => clearTimeout(handle);
 }});
 
 exports.interval = s => ({_run: (w, t, c) => {
+    try {
+        t(void 0)
+    } catch(e) {
+        c(e)
+    }
     var handle = setInterval(_ => {
         try {
-            t(void _)
+            t(void 0)
         } catch(e) {
             c(e)
         }
     }, s * 1000);
-    return () => clearTimeout(handle);
+    return () => {
+        clearInterval(handle);
+    }
 }});
 
 exports.now = ({_run: (w, t, c) => {

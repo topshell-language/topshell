@@ -30,9 +30,13 @@ if(proxy) {
 var handler = (json, callback) => {
     var action = json.context.ssh && ssh_actions[json.action] ? ssh_actions[json.action] : actions[json.action];
     if(action) {
-        action(json.data, json.context, (err, data) => callback(err,
-            JSON.stringify({data: data === undefined ? null : data})
-        ));
+        try {
+            action(json.data, json.context, (err, data) => callback(err,
+                JSON.stringify({data: data === undefined ? null : data})
+            ));
+        } catch(e) {
+            callback(e);
+        }
     } else {
         callback("No such action");
     }

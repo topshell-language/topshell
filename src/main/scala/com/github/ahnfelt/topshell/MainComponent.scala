@@ -62,7 +62,12 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                             status match {
                                 case Loader.Loading() => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3))
                                 case Loader.Error(e) => E.span(CodeCss, S.color(Palette.textError), Text(e.getMessage))
-                                case Loader.Result(html) => E.span(CodeCss, renderValue(html))
+                                case Loader.Result(html) => try {
+                                    E.span(CodeCss, renderValue(html))
+                                } catch {
+                                    case e : Error => E.span(CodeCss, S.color(Palette.textError), Text(e.getMessage))
+                                    case e : Throwable => E.span(CodeCss, S.color(Palette.textError), Text(e.getMessage))
+                                }
                             }
                         )
                     ).withKey(symbol)
