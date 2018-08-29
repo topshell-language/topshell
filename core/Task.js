@@ -194,9 +194,7 @@ exports.interval = s => ({_run: (w, t, c) => {
             c(e)
         }
     }, s * 1000);
-    return () => {
-        clearInterval(handle);
-    }
+    return () => clearInterval(handle);
 }});
 
 exports.now = ({_run: (w, t, c) => {
