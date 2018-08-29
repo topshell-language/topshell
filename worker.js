@@ -19,10 +19,10 @@ self.tsh.View = class extends self.tsh.AbstractView {
 self.tsh.Tag = class extends self.tsh.AbstractView {
     constructor(tag) {
         super();
-        this.value = tag;
+        this.tag = tag;
     }
     toHtml() {
-        return this.value;
+        return this.tag;
     }
 };
 
