@@ -1,14 +1,14 @@
-exports.by = render => value => ({_tag: ">view", html: self.tsh.toHtml(render(value)), value: value});
+exports.by = render => value => new self.tsh.View(render, value);
 
 exports.tableBy = columns => exports.by(rows => {
     let header = c => ({_tag: "th", children: {_tag: ">text", text: "" + c.key}});
     let cell = r => c => ({_tag: "td", children: [self.tsh.toHtml(c.value(r))]});
     let row = r => ({_tag: "tr", children: columns.map(cell(r))});
-    return {_tag: "table", children: [
+    return new self.tsh.Tag({_tag: "table", children: [
         {_tag: ">attribute", key: "border", value: "1"},
         {_tag: "thead", children: {_tag: "tr", children: columns.map(header)}},
         {_tag: "tbody", children: rows.map(row)},
-    ]};
+    ]});
 });
 
 exports.table = exports.by(rows => {
@@ -24,18 +24,18 @@ exports.table = exports.by(rows => {
         Object.prototype.hasOwnProperty.call(r, c) ? self.tsh.toHtml(r[c]) : {_tag: ">text", text: ""}
     ]});
     let row = r => ({_tag: "tr", children: columns.map(cell(r))});
-    return {_tag: "table", children: [
+    return new self.tsh.Tag({_tag: "table", children: [
         {_tag: ">attribute", key: "border", value: "1"},
         {_tag: "thead", children: {_tag: "tr", children: columns.map(header)}},
         {_tag: "tbody", children: rows.map(row)},
-    ]};
+    ]});
 });
 
-exports.bars = data => {
+exports.bars = exports.by(data => {
     let attribute = (k, v) => ({_tag: ">attribute", key: k, value: v});
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
     let max = Math.max(...data);
-    return {_tag: "div", children: data.map(d => ({
+    return new self.tsh.Tag({_tag: "div", children: data.map(d => ({
         _tag: "div", children: [
             style("background-color", "pink"),
             style("width", Math.max(0, d / max * 100) + "%"),
@@ -44,33 +44,33 @@ exports.bars = data => {
             style("transition", "width 0.5s"),
             attribute("title", "" + d),
         ]
-    }))};
-};
+    }))});
+});
 
-exports.text = data => {
+exports.text = exports.by(data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
-    return {_tag: "div", children: [
+    return new self.tsh.Tag({_tag: "div", children: [
         style("white-space", "pre-wrap"),
         {_tag: ">text", text: "" + data}
-    ]};
-};
+    ]});
+});
 
-exports.tree = data => {
+exports.tree = exports.by(data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
-    if(Array.isArray(data) && data.length > 0) {
-        return {_tag: "span", children: [
+    if(Array.isArray(data)) {
+        return new self.tsh.Tag({_tag: "span", children: [
             {_tag: ">text", text: "["},
             {_tag: "div", children: [
                 style("margin-left", "20px"),
                 {_tag: "div", children: data.map(exports.tree).map((e, i) => (
-                    {_tag: "div", children: i < data.length - 1 ? [e, {_tag: ">text", text: ", "}] : [e]}
+                    {_tag: "div", children: i < data.length - 1 ? [e.toHtml(), {_tag: ">text", text: ", "}] : [e.toHtml()]}
                 ))},
             ]},
             {_tag: ">text", text: "]"},
-        ]};
-    } else if(data != null && typeof data === "object" && Object.keys(data).length > 0 && Object.keys(data).every(s => !s.startsWith("_tag") && !s.startsWith("_view"))) {
+        ]});
+    } else if(data && data.constructor === Object) {
         let keys = Object.keys(data);
-        return {_tag: "span", children: [
+        return new self.tsh.Tag({_tag: "span", children: [
             {_tag: ">text", text: "{"},
             {_tag: "div", children: [
                 style("margin-left", "20px"),
@@ -78,14 +78,14 @@ exports.tree = data => {
                     var k = {_tag: ">text", text: /^[a-z][a-zA-Z0-9]*$/g.test(l) ? l : JSON.stringify(l)};
                     var e = exports.tree(data[l]);
                     return {_tag: "div", children: i < keys.length - 1 ?
-                        [k, {_tag: ">text", text: ": "}, e, {_tag: ">text", text: ", "}] :
-                        [k, {_tag: ">text", text: ": "}, e]
+                        [k, {_tag: ">text", text: ": "}, e.toHtml(), {_tag: ">text", text: ", "}] :
+                        [k, {_tag: ">text", text: ": "}, e.toHtml()]
                     }
                 })},
             ]},
             {_tag: ">text", text: "}"},
-        ]};
+        ]});
     } else {
-        return self.tsh.toHtml(data);
+        return new self.tsh.Tag(self.tsh.toHtml(data));
     }
-};
+});

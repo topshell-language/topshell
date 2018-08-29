@@ -1,4 +1,4 @@
-exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
+exports._fetchThen = f => configuration => url => new self.tsh.Task((w, t, c) => {
     var options = {};
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
         options[k] = configuration[k];
@@ -37,7 +37,7 @@ exports._fetchThen = f => configuration => url => ({_run: (w, t, c) => {
         canceled = true;
         controller.abort();
     }
-}});
+});
 
 exports.fetch = exports._fetchThen(r => Promise.resolve(r));
 
@@ -45,7 +45,7 @@ exports.fetchText = exports._fetchThen(r => r.text());
 exports.fetchJson = exports._fetchThen(r => r.json().then(j => Promise.resolve(j)));
 exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
-exports._processResponse = f => response => ({_run: (w, t, c) => {
+exports._processResponse = f => response => new self.tsh.Task((w, t, c) => {
     var canceled = false;
     try {
         f(response).then(v => {
@@ -57,7 +57,7 @@ exports._processResponse = f => response => ({_run: (w, t, c) => {
         c(e)
     }
     return () => canceled = true;
-}});
+});
 
 exports.text = exports._processResponse(r => r.text());
 exports.json = exports._processResponse(r => r.json().then(j => Promise.resolve(j)));

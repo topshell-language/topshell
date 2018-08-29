@@ -47,10 +47,6 @@ object Processor {
 
     }
 
-    def tag(tagName : String, children : Any*) = {
-        js.Dictionary("_tag" -> tagName, "children" -> js.Array(children : _*))
-    }
-
     case class AbortedException() extends RuntimeException("Aborted due to new version of the code")
 
 }

@@ -1,20 +1,20 @@
-exports.of = value => ({_run: (w, t, c) => {
+exports.of = value => new self.tsh.Task((w, t, c) => {
     try {
         t(value)
     } catch(e) {
         c(e)
     }
-}});
+});
 
-exports.throw = error => ({_run: (w, t, c) => {
+exports.throw = error => new self.tsh.Task((w, t, c) => {
     try {
         c(error)
     } catch(e) {
         c(e)
     }
-}});
+});
 
-exports.catch = f => task => ({_run: (w, t, c) => {
+exports.catch = f => task => new self.tsh.Task((w, t, c) => {
     var cancel1 = null;
     try {
         var cancel2 = task._run(w, t, error => {
@@ -32,11 +32,11 @@ exports.catch = f => task => ({_run: (w, t, c) => {
         if(cancel2 instanceof Function) cancel2();
         if(cancel1 instanceof Function) cancel1();
     };
-}});
+});
 
 exports.then = self.tsh.taskThen;
 
-exports.filter = f => task => ({_run: (w, t, c) => {
+exports.filter = f => task => new self.tsh.Task((w, t, c) => {
     try {
         return task._run(w, v => {
             try {
@@ -48,9 +48,9 @@ exports.filter = f => task => ({_run: (w, t, c) => {
     } catch(e) {
         c(e)
     }
-}});
+});
 
-exports.scan = f => z => task => ({_run: (w, t, c) => {
+exports.scan = f => z => task => new self.tsh.Task((w, t, c) => {
     var state = z;
     return task._run(w, v => {
         try {
@@ -60,9 +60,9 @@ exports.scan = f => z => task => ({_run: (w, t, c) => {
             c(e)
         }
     }, c)
-}});
+});
 
-exports.merge = task1 => task2 => ({_run: (w, t, c) => {
+exports.merge = task1 => task2 => new self.tsh.Task((w, t, c) => {
     try {
         var cancel1 = task1._run(w, t, c);
         var cancel2 = task2._run(w, t, c);
@@ -73,9 +73,9 @@ exports.merge = task1 => task2 => ({_run: (w, t, c) => {
     } catch(e) {
         c(e)
     }
-}});
+});
 
-exports.race = task1 => task2 => ({_run: (w, t, c) => {
+exports.race = task1 => task2 => new self.tsh.Task((w, t, c) => {
     try {
         var cancel1 = task1._run(w, v => {
             if(cancel2 instanceof Function) cancel2();
@@ -92,9 +92,9 @@ exports.race = task1 => task2 => ({_run: (w, t, c) => {
     } catch(e) {
         c(e)
     }
-}});
+});
 
-exports.zipWith = f => task1 => task2 => ({_run: (w, t, c) => {
+exports.zipWith = f => task1 => task2 => new self.tsh.Task((w, t, c) => {
     var result1, result2;
     var ok1, ok2;
     var cancel1 = task1._run(w, v => {
@@ -131,9 +131,9 @@ exports.zipWith = f => task1 => task2 => ({_run: (w, t, c) => {
         if(cancel1 instanceof Function) cancel1();
         if(cancel2 instanceof Function) cancel2();
     }
-}});
+});
 
-exports.all = tasks => ({_run: (w, t, c) => {
+exports.all = tasks => new self.tsh.Task((w, t, c) => {
     var results = new Array(tasks.length);
     var status = new Array(tasks.length);
     var cancels = new Array(tasks.length);
@@ -158,9 +158,9 @@ exports.all = tasks => ({_run: (w, t, c) => {
     return () => {
         cancels.forEach(cancel => { if(cancel instanceof Function) cancel() });
     }
-}});
+});
 
-exports.map = f => task => ({_run: (w, t, c) => {
+exports.map = f => task => new self.tsh.Task((w, t, c) => {
     return task._run(w, v => {
         try {
             t(f(v))
@@ -168,9 +168,9 @@ exports.map = f => task => ({_run: (w, t, c) => {
             c(e)
         }
     }, c);
-}});
+});
 
-exports.sleep = s => ({_run: (w, t, c) => {
+exports.sleep = s => new self.tsh.Task((w, t, c) => {
     var handle = setTimeout(_ => {
         try {
             t(void _)
@@ -179,9 +179,9 @@ exports.sleep = s => ({_run: (w, t, c) => {
         }
     }, s * 1000);
     return () => clearTimeout(handle);
-}});
+});
 
-exports.interval = s => ({_run: (w, t, c) => {
+exports.interval = s => new self.tsh.Task((w, t, c) => {
     try {
         t(void 0)
     } catch(e) {
@@ -195,16 +195,16 @@ exports.interval = s => ({_run: (w, t, c) => {
         }
     }, s * 1000);
     return () => clearInterval(handle);
-}});
+});
 
-exports.now = ({_run: (w, t, c) => {
+exports.now = new self.tsh.Task((w, t, c) => {
     try { t(Date.now() * 0.001) } catch(e) { c(e) }
-}});
+});
 
-exports.random = ({_run: (w, t, c) => {
+exports.random = new self.tsh.Task((w, t, c) => {
     try { t(Math.random()) } catch(e) { c(e) }
-}});
+});
 
-exports.log = message => ({_run: (w, t, c) => {
+exports.log = message => new self.tsh.Task((w, t, c) => {
     try { t(void console.dir(message)) } catch(e) { c(e) }
-}});
+});

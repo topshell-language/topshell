@@ -65,8 +65,8 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                                 case Loader.Result(html) => try {
                                     E.span(CodeCss, renderValue(html))
                                 } catch {
-                                    case e : Error => E.span(CodeCss, S.color(Palette.textError), Text(e.getMessage))
-                                    case e : Throwable => E.span(CodeCss, S.color(Palette.textError), Text(e.getMessage))
+                                    case e : Throwable =>
+                                        E.span(CodeCss, S.color(Palette.textError), Text("Internal error: " + e.getMessage))
                                 }
                             }
                         )

@@ -2,16 +2,49 @@ self.tsh = {};
 
 self.tsh.symbols = {};
 
+
+self.tsh.AbstractView = class {};
+
+self.tsh.View = class extends self.tsh.AbstractView {
+    constructor(render, value) {
+        super();
+        this.render = render;
+        this.value = value;
+    }
+    toHtml() {
+        return this.render(this.value).toHtml();
+    }
+};
+
+self.tsh.Tag = class extends self.tsh.AbstractView {
+    constructor(tag) {
+        super();
+        this.value = tag;
+    }
+    toHtml() {
+        return this.value;
+    }
+};
+
+self.tsh.Task = class extends self.tsh.AbstractView {
+    constructor(run) {
+        super();
+        this._run = run;
+    }
+    toHtml() {
+        return {_tag: "span", children: ["task"]};
+    }
+};
+
 self.tsh.toHtml = value => {
-    if(value === undefined) return {_tag: "span", children: ["undefined"]};
-    if(value === null) return {_tag: "span", children: ["null"]};
-    if(value._tag !== undefined) return value;
-    if(value._run !== undefined) return {_tag: "span", children: ["task"]};
+    if(value instanceof self.tsh.AbstractView) return value.toHtml();
     if(value instanceof Function) return {_tag: "span", children: ["function"]};
     if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["bytes"]};
     if(value instanceof Response) return {_tag: "span", children: ["response"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
     if(typeof value === 'number') return {_tag: "span", children: [JSON.stringify(value)]};
+    if(value === void 0) return {_tag: "span", children: ["undefined"]};
+    if(value === null) return {_tag: "span", children: ["null"]};
     if(value === true) return {_tag: "span", children: ["true"]};
     if(value === false) return {_tag: "span", children: ["false"]};
     var result = [];
@@ -42,7 +75,7 @@ self.tsh.record = (m, r) => {
     return m;
 };
 
-self.tsh.taskThen = f => task => ({_run: (w, t, c) => {
+self.tsh.taskThen = f => task => new self.tsh.Task((w, t, c) => {
     var cancel1 = null;
     try {
         var cancel2 = task._run(w, v => {
@@ -60,7 +93,7 @@ self.tsh.taskThen = f => task => ({_run: (w, t, c) => {
         if(cancel2 instanceof Function) cancel2();
         if(cancel1 instanceof Function) cancel1();
     };
-}});
+});
 
 self.tsh.then = (m, f) => {
     if(Array.isArray(m)) {
@@ -72,7 +105,7 @@ self.tsh.then = (m, f) => {
             }
         }
         return result;
-    } else if(m._run) {
+    } else if(m instanceof self.tsh.Task) {
         return self.tsh.taskThen(f)(m);
     } else {
         console.error("Operator <- not supported for: " + m);
@@ -80,7 +113,7 @@ self.tsh.then = (m, f) => {
     }
 };
 
-self.tsh.action = actionName => parameter => ({_run: (w, t, c) => {
+self.tsh.action = actionName => parameter => new self.tsh.Task((w, t, c) => {
     var action = {action: actionName, data: parameter, context: w};
     var options = {method: "POST", body: JSON.stringify(action)};
     var canceled = false;
@@ -108,9 +141,9 @@ self.tsh.action = actionName => parameter => ({_run: (w, t, c) => {
         canceled = true;
         controller.abort();
     }
-}});
+});
 
-self.tsh.loadImport = url => ({_run: (w, t, e) => {
+self.tsh.loadImport = url => new self.tsh.Task((w, t, e) => {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.onload = function() {
@@ -124,7 +157,7 @@ self.tsh.loadImport = url => ({_run: (w, t, e) => {
         }
     };
     xhr.send();
-}});
+});
 
 self.tsh.setSymbols = (emit, newSymbols) => {
 
@@ -162,7 +195,7 @@ self.tsh.setSymbols = (emit, newSymbols) => {
                                 symbols[name].cancel = result._run({}, v => {
                                     symbols[name].done = true;
                                     symbols[name].result = v;
-                                    if(symbols[name].kind === "import") v = {_tag: "span", children: []};
+                                    if(symbols[name].kind === "import") v = new self.tsh.Tag({_tag: "span", children: []});
                                     emit(name, v, void 0);
                                     proceed(name);
                                 }, e => {
