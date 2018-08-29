@@ -14,7 +14,7 @@ object Tokenizer {
         operator:   [!@#$%&/=?+|^~*<>.:-]+
         separator:  [,;]|[.][.]?|[:][:]?
         bracket:    [(){}\[\]]
-        space:      [ ]+
+        space:      [ \t]+
         newline:    [\r]?[\n]
         unknown:    [^\n ]+
     """
