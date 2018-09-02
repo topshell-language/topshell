@@ -28,14 +28,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.input(InputBarCss, A.placeholder("Open file ...")),
             ),
             E.div(LeftAreaCss,
-                E.textarea(
-                    EditorCss,
-                    A.onKeyDown(onKeyDown),
-                    A.value(get(code)),
-                    A.onChangeText(code.set),
-                    A.autoFocus(),
-                    A.spellCheck("false")
-                ),
+                Component(EditorComponent, get(code)).withHandler(code.set)
             ),
             E.div(BottomLeftAreaCss,
                 E.div(ShortcutAreaCss, Text("Ctrl + F / R")),
