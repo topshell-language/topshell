@@ -30,6 +30,8 @@ case class EditorComponent(code : P[String]) extends Component[String] {
                 "Tab" -> {editor => editor.execCommand("indentMore")},
                 "Shift-Tab" -> {editor => editor.execCommand("indentLess")},
                 "Ctrl-Space" -> {editor => editor.execCommand("autocomplete")},
+                //"Ctrl-R" -> {editor => editor.execCommand("replace")},
+                //"Escape" -> {editor => editor.execCommand("clearSearch")},
             ),
         )
         val editor = js.Dynamic.global.CodeMirror(newElement.asInstanceOf[js.Any], config).asInstanceOf[CodeMirror]
@@ -51,4 +53,11 @@ trait CodeMirror extends js.Any {
 trait CodeMirrorDocument extends js.Any {
     def getValue() : String
     def setValue(value : String) : Unit
+    def getAllMarks() : js.Array[CodeMirrorTextMarker]
 }
+
+@js.native
+trait CodeMirrorTextMarker extends js.Any {
+    def clear() : Unit
+}
+
