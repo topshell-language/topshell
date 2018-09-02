@@ -198,3 +198,25 @@
 
     CodeMirror.defineMIME("text/x-topshell", "topshell");
 });
+
+
+CodeMirror.hint.topshell = function (editor) {
+    var list = ["Base64.encode", "Base64.decode", "Bool.true", "Bool.false", "Bool.xor", "Bool.implies", "Bytes.fromList", "Bytes.toList", "Bytes.size", "Bytes.slice", "Debug.log", "Debug.logBy", "Debug.throw", "Debug.null", "Debug.undefined", "File.readText", "File.writeText", "File.list", "File.listStatus", "File.status", "Html.of", "Html.tag", "Html.text", "Html.attribute", "Html.style", "Http.fetch", "Http.fetchText", "Http.fetchJson", "Http.fetchBytes", "Http.text", "Http.json", "Http.bytes", "Http.header", "Http.ok", "Http.redirected", "Http.status", "Http.statusText", "Http.type", "Http.url", "Json.read", "Json.write", "Json.pretty", "List.map", "List.then", "List.range", "List.size", "List.isEmpty", "List.at", "List.take", "List.drop", "List.takeLast", "List.dropLast", "List.filter", "List.reverse", "List.find", "List.all", "List.any", "List.head", "List.tail", "List.append", "List.foldLeft", "List.foldRight", "List.sort", "List.repeat", "List.flatten", "List.zip", "List.takeWhile", "List.dropWhile", "List.takeLastWhile", "List.dropLastWhile", "List.unzip", "List.indexes", "List.startsWith", "List.endsWith", "List.scanLeft", "List.scanRight", "Math.pi", "Math.e", "Math.remainder", "Math.isFinite", "Math.isNaN", "Math.abs", "Math.acos", "Math.acosh", "Math.asin", "Math.asinh", "Math.atan", "Math.atan2", "Math.atanh", "Math.cbrt", "Math.ceil", "Math.clz32", "Math.cos", "Math.cosh", "Math.exp", "Math.expm1", "Math.floor", "Math.fround", "Math.hypot", "Math.imul", "Math.log", "Math.log10", "Math.log1p", "Math.log2", "Math.max", "Math.min", "Math.round", "Math.sign", "Math.sin", "Math.sinh", "Math.sqrt", "Math.tan", "Math.tanh", "Math.trunc", "Memo.dictionaryBy", "Memo.dictionary", "Process.run", "Process.shell", "Ssh.do", "String.fromCodePoints", "String.toCodePoints", "String.join", "String.padStart", "String.padEnd", "String.repeat", "String.replace", "String.startsWith", "String.endsWith", "String.split", "String.at", "String.size", "String.includes", "String.slice", "String.take", "String.drop", "String.trim", "String.toUpper", "String.toLower", "String.toInt", "String.fromInt", "String.toIntBase", "String.fromIntBase", "String.split", "String.lines", "Task.of", "Task.throw", "Task.catch", "Task.then", "Task.filter", "Task.scan", "Task.merge", "Task.race", "Task.zipWith", "Task.all", "Task.map", "Task.sleep", "Task.interval", "Task.now", "Task.random", "Task.log", "View.by", "View.tableBy", "View.table", "View.bars", "View.text", "View.tree"];
+    var cursor = editor.getCursor();
+    var currentLine = editor.getLine(cursor.line);
+    var start = cursor.ch;
+    var end = start;
+    while (end < currentLine.length && /[\w$]+/.test(currentLine.charAt(end))) ++end;
+    while (start && /[\w$.]+/.test(currentLine.charAt(start - 1))) --start;
+    var curWord = start != end && currentLine.slice(start, end);
+    var regex = new RegExp('^' + curWord, 'i');
+    var result = {
+        list: (!curWord ? list : list.filter(function (item) {
+            return item.match(regex);
+        })).sort(),
+        from: CodeMirror.Pos(cursor.line, start),
+        to: CodeMirror.Pos(cursor.line, end)
+    };
+
+    return result;
+};

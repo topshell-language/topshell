@@ -29,6 +29,7 @@ case class EditorComponent(code : P[String]) extends Component[String] {
             "extraKeys" -> js.Dictionary[js.Function1[CodeMirror, Unit]](
                 "Tab" -> {editor => editor.execCommand("indentMore")},
                 "Shift-Tab" -> {editor => editor.execCommand("indentLess")},
+                "Ctrl-Space" -> {editor => editor.execCommand("autocomplete")},
             ),
         )
         val editor = js.Dynamic.global.CodeMirror(newElement.asInstanceOf[js.Any], config).asInstanceOf[CodeMirror]
