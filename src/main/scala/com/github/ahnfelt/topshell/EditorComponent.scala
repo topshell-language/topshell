@@ -30,6 +30,11 @@ case class EditorComponent(code : P[String]) extends Component[String] {
                 "Tab" -> {editor => editor.execCommand("indentMore")},
                 "Shift-Tab" -> {editor => editor.execCommand("indentLess")},
                 "Ctrl-Space" -> {editor => editor.execCommand("autocomplete")},
+                "Ctrl-Enter" -> {editor =>
+                    val from = editor.getDoc().getCursor("from").line + 1
+                    val to = editor.getDoc().getCursor("to").line + 1
+                    println(from + " " + to)
+                },
                 //"Ctrl-R" -> {editor => editor.execCommand("replace")},
                 //"Escape" -> {editor => editor.execCommand("clearSearch")},
             ),
@@ -54,10 +59,17 @@ trait CodeMirrorDocument extends js.Any {
     def getValue() : String
     def setValue(value : String) : Unit
     def getAllMarks() : js.Array[CodeMirrorTextMarker]
+    def getCursor(start : String = "head") : CodeMirrorCursor
 }
 
 @js.native
 trait CodeMirrorTextMarker extends js.Any {
     def clear() : Unit
+}
+
+@js.native
+trait CodeMirrorCursor extends js.Any {
+    val line : Int
+    val ch : Int
 }
 
