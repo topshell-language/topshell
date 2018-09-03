@@ -57,7 +57,7 @@ exports.text = exports.by(data => {
 
 exports.tree = exports.by(data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
-    if(Array.isArray(data)) {
+    if(Array.isArray(data) && data.length > 0) {
         return new self.tsh.Tag({_tag: "span", children: [
             {_tag: ">text", text: "["},
             {_tag: "div", children: [
@@ -68,7 +68,7 @@ exports.tree = exports.by(data => {
             ]},
             {_tag: ">text", text: "]"},
         ]});
-    } else if(data && data.constructor === Object) {
+    } else if(data && data.constructor === Object && Object.keys(data).length > 0) {
         let keys = Object.keys(data);
         return new self.tsh.Tag({_tag: "span", children: [
             {_tag: ">text", text: "{"},

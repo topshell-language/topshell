@@ -73,7 +73,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.div(ShortcutAreaCss, Text("TopShell 2018.1")),
                 E.div(CenterTextCss,
                     S.color(Palette.textHint),
-                    Text(if(get(code) == get(debouncedCode)) "Saved." else "Saving...")
+                    Text("Saved.") // Text(if(get(code) == get(debouncedCode)) "Saved." else "Saving...")
                 ),
                 E.div(HintAreaCss,
                     Text {

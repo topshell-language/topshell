@@ -155,6 +155,13 @@ exports.all = tasks => new self.tsh.Task((w, t, c) => {
             c(e);
         });
     });
+    if(tasks.length === 0) {
+        try {
+            t([])
+        } catch(e) {
+            c(e)
+        }
+    }
     return () => {
         cancels.forEach(cancel => { if(cancel instanceof Function) cancel() });
     }
