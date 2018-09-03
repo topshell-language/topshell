@@ -5,7 +5,7 @@ import org.scalajs.dom
 
 import scala.scalajs.js
 
-case class EditorComponent(code : P[String]) extends Component[String] {
+case class EditorComponent(code : P[String]) extends Component[EditorMessage] {
 
     var codeMirror : Option[CodeMirror] = None
 
@@ -35,13 +35,14 @@ case class EditorComponent(code : P[String]) extends Component[String] {
                 "Ctrl-Space" -> {editor => editor.execCommand("autocomplete")},
                 "Ctrl-Enter" -> {editor =>
                     val from = editor.getDoc().getCursor("from").line + 1
-                    val to = editor.getDoc().getCursor("to").line + 1
-                    println(from + " " + to)
+                    val cursor = editor.getDoc().getCursor("to")
+                    val to = if(cursor.ch == 0) Math.max(cursor.line, from) else cursor.line + 1
+                    emit(Execute(from, to))
                 },
                 "Shift-Ctrl-Enter" -> {editor =>
                     val from = 1
                     val to = editor.getDoc().lineCount()
-                    println(from + " " + to)
+                    emit(Execute(from, to))
                 },
                 //"Ctrl-R" -> {editor => editor.execCommand("replace")},
                 //"Escape" -> {editor => editor.execCommand("clearSearch")},
@@ -50,12 +51,16 @@ case class EditorComponent(code : P[String]) extends Component[String] {
         val editor = js.Dynamic.global.CodeMirror(newElement.asInstanceOf[js.Any], config).asInstanceOf[CodeMirror]
         editor.on("changes", {editor =>
             val value = editor.getDoc().getValue()
-            if(value != get(code)) emit(value)
+            if(value != get(code)) emit(SetCode(value))
         })
         codeMirror = Some(editor)
     }
 
 }
+
+sealed abstract class EditorMessage
+case class SetCode(code : String) extends EditorMessage
+case class Execute(fromLine : Int, toLine : Int) extends EditorMessage
 
 @js.native
 trait CodeMirror extends js.Any {

@@ -97,7 +97,7 @@
                     return t;
                 }
 
-                /*if (symbolRE.test(ch)) {
+                if (symbolRE.test(ch)) {
                     if (ch == '/' && source.eat(/\//)) {
                         source.eatWhile(/\//);
                         if (!source.eat(symbolRE)) {
@@ -107,7 +107,7 @@
                     }
                     source.eatWhile(symbolRE);
                     return "builtin";
-                }*/
+                }
 
                 return "error";
             }

@@ -28,7 +28,10 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.input(InputBarCss, A.placeholder("Open file ...")),
             ),
             E.div(LeftAreaCss,
-                Component(EditorComponent, get(code)).withHandler(code.set)
+                Component(EditorComponent, get(code)).withHandler {
+                    case SetCode(c) => code.set(c)
+                    case Execute(fromLine, toLine) => println("From line " + fromLine + " to line " + toLine)
+                }
             ),
             E.div(BottomLeftAreaCss,
                 E.div(ShortcutAreaCss, Text("Ctrl + F / R")),
