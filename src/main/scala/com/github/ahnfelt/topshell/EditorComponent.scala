@@ -10,8 +10,11 @@ case class EditorComponent(code : P[String]) extends Component[String] {
     var codeMirror : Option[CodeMirror] = None
 
     override def componentWillRender(get : Get) : Unit = {
-        for(editor <- codeMirror if get(code) != editor.getDoc().getValue()) {
-            editor.getDoc().setValue(get(code))
+        for(editor <- codeMirror) {
+            val value = editor.getDoc().getValue()
+            if(value != get(code)) {
+                editor.getDoc().setValue(get(code))
+            }
         }
     }
 
@@ -35,12 +38,20 @@ case class EditorComponent(code : P[String]) extends Component[String] {
                     val to = editor.getDoc().getCursor("to").line + 1
                     println(from + " " + to)
                 },
+                "Shift-Ctrl-Enter" -> {editor =>
+                    val from = 1
+                    val to = editor.getDoc().lineCount()
+                    println(from + " " + to)
+                },
                 //"Ctrl-R" -> {editor => editor.execCommand("replace")},
                 //"Escape" -> {editor => editor.execCommand("clearSearch")},
             ),
         )
         val editor = js.Dynamic.global.CodeMirror(newElement.asInstanceOf[js.Any], config).asInstanceOf[CodeMirror]
-        editor.on("changes", editor => emit(editor.getDoc().getValue()))
+        editor.on("changes", {editor =>
+            val value = editor.getDoc().getValue()
+            if(value != get(code)) emit(value)
+        })
         codeMirror = Some(editor)
     }
 
@@ -60,6 +71,7 @@ trait CodeMirrorDocument extends js.Any {
     def setValue(value : String) : Unit
     def getAllMarks() : js.Array[CodeMirrorTextMarker]
     def getCursor(start : String = "head") : CodeMirrorCursor
+    def lineCount() : Int
 }
 
 @js.native
