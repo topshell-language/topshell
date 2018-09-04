@@ -164,7 +164,7 @@ self.tsh.runLines = (emit, fromLine, toLine) => {
     let symbols = self.tsh.symbols;
 
     for(let name of Object.keys(symbols)) {
-        if(symbols[name].fromLine <= toLine && symbols[name].toLine >= fromLine && symbols[name].run) {
+        if(symbols[name].fromLine <= toLine && symbols[name].toLine >= fromLine && symbols[name].effect) {
             self.tsh.startSymbol(emit, name);
         }
     }
@@ -180,6 +180,7 @@ self.tsh.startSymbol = (emit, name) => {
     self.tsh.clearDependants(emit, name);
 
     if(symbols[name].run) {
+        symbols[name].start = false;
         symbols[name].cancel = symbols[name].run({}, v => {
             symbols[name].done = true;
             symbols[name].result = v;
@@ -215,14 +216,16 @@ self.tsh.clearDependants = (emit, name) => {
 
     let symbols = self.tsh.symbols;
 
-    for(let k of Object.keys(symbols)) if(symbols[k].dependencies.includes(name)) if(symbols[k].fromLine > symbols[name].toLine) {
-        if(symbols[k].cancel instanceof Function) symbols[k].cancel();
-        symbols[k].cancel = null;
-        symbols[k].computed = false;
-        symbols[k].started = false;
-        symbols[k].done = false;
-        self.tsh.emitPending(emit, k);
-        self.tsh.clearDependants(emit, k); // TODO: Mutually recursive symbols
+    for(let k of Object.keys(symbols)) if(symbols[k].dependencies.includes(name)) {
+        if(symbols[k].fromLine > symbols[name].toLine) {
+            if(symbols[k].cancel instanceof Function) symbols[k].cancel();
+            symbols[k].cancel = null;
+            symbols[k].computed = false;
+            symbols[k].started = false;
+            symbols[k].done = false;
+            self.tsh.emitPending(emit, k);
+            self.tsh.clearDependants(emit, k);
+        }
     }
 
 };
@@ -249,7 +252,6 @@ self.tsh.proceed = (emit, previousName) => {
                     }
                     if(symbols[name].run) {
                         if(symbols[name].start) {
-                            symbols[name].start = false;
                             self.tsh.startSymbol(emit, name);
                         } else {
                             emit(name, new self.tsh.Tag({_tag: "span", children: [

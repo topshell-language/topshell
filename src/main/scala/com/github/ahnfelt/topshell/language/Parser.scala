@@ -108,7 +108,7 @@ class Parser(file : String, tokens : Array[Token]) {
         if(current.raw != "?") condition else {
             val at = skip("separator", Some("?")).at
             val thenBody = parseTerm()
-            skip("separator", Some(","))
+            skip("separator", Some(";"))
             val elseBody = parseTerm()
             EIf(at, condition, thenBody, elseBody)
         }
