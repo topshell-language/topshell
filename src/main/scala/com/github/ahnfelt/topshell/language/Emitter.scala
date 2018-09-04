@@ -8,17 +8,17 @@ object Emitter {
 
     def emit(version : Double, topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
         "var _h = _g.tsh;\n" +
-        "var _n = {};\n" +
+        "var _n = {_blocks: []};\n" +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
-        "_g.tsh.setSymbols(_d, _n);\n"
+        "return _n;\n"
     }
 
     def emitImport(topImport : TopImport) : String = {
         "_n." + topImport.name + "_ = {\n" +
-        "kind: \"import\",\n" +
+        "name: " + JSON.stringify(topImport.name + "_") + ",\n" +
+        "module: true,\n" +
         "effect: true,\n" +
-        "start: true,\n" +
         "fromLine: 0,\n" +
         "toLine: 0,\n" +
         "dependencies: [],\n" +
@@ -28,11 +28,14 @@ object Emitter {
             case None =>
                 "compute: function(_s) { return _h.loadImport(" + JSON.stringify(topImport.url) + "); }\n"
         }) +
-        "};\n"
+        "};\n" +
+        "_n._blocks.push(_n." + topImport.name + "_);\n"
     }
 
     def emitTopSymbol(symbol : TopSymbol) : String = {
         "_n." + symbol.binding.name + "_ = {\n" +
+        "name: " + JSON.stringify(symbol.binding.name + "_") + ",\n" +
+        "module: false,\n" +
         "effect: " + symbol.bind + ",\n" +
         "fromLine: " + symbol.binding.at.line + ",\n" +
         "toLine: " + symbol.binding.at.line + ",\n" +
@@ -46,7 +49,8 @@ object Emitter {
                 emitBody(symbol.binding.value) +
                 "}\n"
         }) +
-        "};\n"
+        "};\n" +
+        "_n._blocks.push(_n." + symbol.binding.name + "_);\n"
     }
 
     def emitBody(term : Term) : String = {

@@ -12,7 +12,7 @@ import scala.scalajs.js.typedarray.Uint8ClampedArray
 object Processor {
 
     def start(fromLine : Int, toLine : Int) : Unit = {
-        js.Dynamic.global.tsh.runLines(emit : js.Function3[String, js.Any, js.Any, Unit], fromLine, toLine)
+        Block.globalRunLines(fromLine, toLine)
     }
 
     def emit(escapedName : String, value : js.Any, error : js.Any) : Unit = {
@@ -37,7 +37,6 @@ object Processor {
         val topImports = UsedImports.completeImports(newSymbols, newImports)
         val topSymbols = Checker.check(topImports, newSymbols)
         val emitted = Emitter.emit(currentVersion, topImports, topSymbols)
-        //println(emitted)
 
         val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
         val message = js.Dictionary(
@@ -51,7 +50,13 @@ object Processor {
         val _g = DedicatedWorkerGlobalScope.self
         val _d = emit : js.Function3[String, js.Any, js.Any, Unit]
 
-        js.Dynamic.newInstance(js.Dynamic.global.Function)("_g", "_d", emitted)(_g, _d)
+        val symbols = js.Dynamic.newInstance(js.Dynamic.global.Function)("_g", "_d", emitted)(_g, _d)
+
+        js.Dynamic.global.tsh.updateDynamic("symbols")(symbols)
+
+        Block.globalStart = Set.empty
+        Block.globalBlocks = symbols.selectDynamic("_blocks").asInstanceOf[js.Array[Block]]
+        Block.globalStepAll()
 
     }
 

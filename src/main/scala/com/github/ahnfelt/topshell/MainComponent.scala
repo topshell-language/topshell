@@ -126,6 +126,14 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 A("" + v("key"), "" + v("value"))
             } else if(tagName == ">style") {
                 S("" + v("key"), "" + v("value"))
+            } else if(tagName == ">status") {
+                E.span(TextCss, S.color(Palette.textHint), v("key") match {
+                    case "Pending" => Text("Pending: " + v("value"))
+                    case "Runnable" => E.span(Text("Ready to run "), E.span(S.fontStyle.italic(), Text("(Ctrl + Enter)")))
+                    case "Computing" => Text("Computing...")
+                    case "Running" => Text("Running...")
+                    case _ => Text(v("key") + ": " + v("value"))
+                })
             } else {
                 E(tagName, renderValue(v("children")))
             }
