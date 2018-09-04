@@ -53,8 +53,15 @@ object Main {
             dom.window.onload = _ => update()
         } else {
             DedicatedWorkerGlobalScope.self.onmessage = m => {
-                codeVersion = m.data.asInstanceOf[js.Dynamic].codeVersion.asInstanceOf[Double]
-                Processor.process(m.data.asInstanceOf[js.Dynamic].code.asInstanceOf[String])
+                val data = m.data.asInstanceOf[js.Dynamic]
+                if(data.event.asInstanceOf[String] == "code") {
+                    codeVersion = data.codeVersion.asInstanceOf[Double]
+                    Processor.process(data.asInstanceOf[js.Dynamic].code.asInstanceOf[String])
+                } else if(data.event.asInstanceOf[String] == "start") {
+                    Processor.start(data.fromLine.asInstanceOf[Int], data.toLine.asInstanceOf[Int])
+                } else {
+                    println("Could not understand message to worker: " + m)
+                }
             }
         }
     }

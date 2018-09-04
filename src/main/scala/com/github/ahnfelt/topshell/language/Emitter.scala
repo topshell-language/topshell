@@ -17,7 +17,10 @@ object Emitter {
     def emitImport(topImport : TopImport) : String = {
         "_n." + topImport.name + "_ = {\n" +
         "kind: \"import\",\n" +
-        "run: true,\n" +
+        "effect: true,\n" +
+        "start: true,\n" +
+        "fromLine: 0,\n" +
+        "toLine: 0,\n" +
         "dependencies: [],\n" +
         (topImport.error match {
             case Some(value) =>
@@ -30,7 +33,9 @@ object Emitter {
 
     def emitTopSymbol(symbol : TopSymbol) : String = {
         "_n." + symbol.binding.name + "_ = {\n" +
-        "run: " + symbol.bind + ",\n" +
+        "effect: " + symbol.bind + ",\n" +
+        "fromLine: " + symbol.binding.at.line + ",\n" +
+        "toLine: " + symbol.binding.at.line + ",\n" +
         "dependencies: [" + symbol.dependencies.map("\"" + _ + "_\"").mkString(", ") + "],\n" +
         (symbol.error match {
             case Some(value) =>

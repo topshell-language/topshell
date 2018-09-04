@@ -159,6 +159,126 @@ self.tsh.loadImport = url => new self.tsh.Task((w, t, e) => {
     xhr.send();
 });
 
+self.tsh.runLines = (emit, fromLine, toLine) => {
+
+    let symbols = self.tsh.symbols;
+
+    for(let name of Object.keys(symbols)) {
+        if(symbols[name].fromLine <= toLine && symbols[name].toLine >= fromLine && symbols[name].run) {
+            self.tsh.startSymbol(emit, name);
+        }
+    }
+
+};
+
+self.tsh.startSymbol = (emit, name) => {
+
+    let symbols = self.tsh.symbols;
+
+    if(symbols[name].cancel instanceof Function) symbols[name].cancel();
+
+    self.tsh.clearDependants(emit, name);
+
+    if(symbols[name].run) {
+        symbols[name].cancel = symbols[name].run({}, v => {
+            symbols[name].done = true;
+            symbols[name].result = v;
+            if(symbols[name].kind === "import") v = new self.tsh.Tag({_tag: "span", children: []});
+            emit(name, v, void 0);
+            self.tsh.proceed(emit, name);
+        }, e => {
+            emit(name, void 0, e);
+        });
+    } else {
+        symbols[name].start = true;
+    }
+
+};
+
+self.tsh.emitPending = (emit, name) => {
+
+    let symbols = self.tsh.symbols;
+
+    let pending = symbols[name].dependencies.filter(d => {
+        return !symbols[d].done;
+    });
+
+    emit(name, new self.tsh.Tag({_tag: "span", children: [
+        {_tag: ">style", key: "color", value: "#c0d0e0"},
+        {_tag: ">style", key: "font-family", value: "'Montserrat', sans-serif"},
+        "Pending: " + pending.map(s => s.slice(0, -1)).join(", ")
+    ]}), void 0);
+
+};
+
+self.tsh.clearDependants = (emit, name) => {
+
+    let symbols = self.tsh.symbols;
+
+    for(let k of Object.keys(symbols)) if(symbols[k].dependencies.includes(name)) if(symbols[k].fromLine > symbols[name].toLine) {
+        if(symbols[k].cancel instanceof Function) symbols[k].cancel();
+        symbols[k].cancel = null;
+        symbols[k].computed = false;
+        symbols[k].started = false;
+        symbols[k].done = false;
+        self.tsh.emitPending(emit, k);
+        self.tsh.clearDependants(emit, k); // TODO: Mutually recursive symbols
+    }
+
+};
+
+self.tsh.proceed = (emit, previousName) => {
+
+    let symbols = self.tsh.symbols;
+
+    if(previousName) self.tsh.clearDependants(emit, previousName);
+
+    for(let name of Object.keys(symbols)) {
+        if(!symbols[name].started && symbols[name].error == null) {
+            if(symbols[name].dependencies.every(d => symbols[d].done || symbols[d].fromLine > symbols[name].toLine)) {
+                symbols[name].started = true;
+                try {
+                    let result = symbols[name].compute(symbols);
+                    symbols[name].computed = true;
+                    if(symbols[name].effect) {
+                        if(result._run instanceof Function) {
+                            symbols[name].run = result._run;
+                        } else {
+                            emit(name, void 0, "Not a task: " + result);
+                        }
+                    }
+                    if(symbols[name].run) {
+                        if(symbols[name].start) {
+                            symbols[name].start = false;
+                            self.tsh.startSymbol(emit, name);
+                        } else {
+                            emit(name, new self.tsh.Tag({_tag: "span", children: [
+                                {_tag: ">style", key: "color", value: "#c0d0e0"},
+                                {_tag: ">style", key: "font-family", value: "'Montserrat', sans-serif"},
+                                "Ready to run ",
+                                {_tag: "span", children: [
+                                    {_tag: ">style", key: "font-style", value: "italic"},
+                                    "(Ctrl + Enter)"
+                                ]},
+                            ]}), void 0);
+                        }
+                    } else {
+                        symbols[name].done = true;
+                        symbols[name].result = result;
+                        emit(name, symbols[name].result, void 0);
+                        self.tsh.proceed(emit, name);
+                    }
+                } catch(e) {
+                    emit(name, void 0, e);
+                }
+            } else {
+                self.tsh.emitPending(emit, name);
+            }
+        }
+    }
+
+};
+
 self.tsh.setSymbols = (emit, newSymbols) => {
 
     let symbols = self.tsh.symbols;
@@ -174,51 +294,7 @@ self.tsh.setSymbols = (emit, newSymbols) => {
         if(symbols[name].error) emit(name, void 0, symbols[name].error);
     }
 
-    function proceed(previousName) {
-        if(previousName) for(let k of Object.keys(symbols)) if(symbols[k].dependencies.includes(previousName)) {
-            if(symbols[k].cancel instanceof Function) symbols[k].cancel();
-            symbols[k].cancel = null;
-            symbols[k].computed = false;
-            symbols[k].started = false;
-            symbols[k].done = false;
-        }
-
-        for(let name of Object.keys(symbols)) {
-            if(!symbols[name].started && symbols[name].error == null) {
-                if(symbols[name].dependencies.every(d => symbols[d].done)) {
-                    symbols[name].started = true;
-                    try {
-                        let result = symbols[name].compute(symbols);
-                        symbols[name].computed = true;
-                        if(symbols[name].run) {
-                            if(result._run instanceof Function) {
-                                symbols[name].cancel = result._run({}, v => {
-                                    symbols[name].done = true;
-                                    symbols[name].result = v;
-                                    if(symbols[name].kind === "import") v = new self.tsh.Tag({_tag: "span", children: []});
-                                    emit(name, v, void 0);
-                                    proceed(name);
-                                }, e => {
-                                    emit(name, void 0, e);
-                                })
-                            } else {
-                                emit(name, void 0, "Not a task: " + result);
-                            }
-                        } else {
-                            symbols[name].done = true;
-                            symbols[name].result = result;
-                            emit(name, symbols[name].result, void 0);
-                            proceed(name);
-                        }
-                    } catch(e) {
-                        emit(name, void 0, e);
-                    }
-                }
-            }
-        }
-    }
-
-    proceed();
+    self.tsh.proceed(emit, null);
 
 };
 

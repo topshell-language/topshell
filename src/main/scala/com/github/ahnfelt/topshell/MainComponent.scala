@@ -15,7 +15,11 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
         if(get(code).trim != lastCode) Main.codeVersion += 1
         if(get(debouncedCode) != lastCode) {
             lastCode = get(debouncedCode)
-            Main.worker.postMessage(js.Dictionary("code" -> lastCode, "codeVersion" -> Main.codeVersion))
+            Main.worker.postMessage(js.Dictionary(
+                "event" -> "code",
+                "code" -> lastCode,
+                "codeVersion" -> Main.codeVersion
+            ))
             dom.window.localStorage.setItem("code", lastCode)
         }
     }
@@ -30,7 +34,12 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             E.div(LeftAreaCss,
                 Component(EditorComponent, get(code)).withHandler {
                     case SetCode(c) => code.set(c)
-                    case Execute(fromLine, toLine) => println("From line " + fromLine + " to line " + toLine)
+                    case Execute(fromLine, toLine) =>
+                        Main.worker.postMessage(js.Dictionary(
+                            "event" -> "start",
+                            "fromLine" -> fromLine,
+                            "toLine" -> toLine
+                        ))
                 }
             ),
             E.div(BottomLeftAreaCss,
@@ -46,8 +55,19 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                     E.i(A.className("fa fa-question"), ButtonCss, A.title("Help")),
                     E.i(A.className("fa fa-cog"), ButtonCss, A.title("Settings")),
                 ),
-                E.i(A.className("fa fa-pause"), ButtonCss, A.title("Pause execution until next edit or re-run")),
-                E.i(A.className("fa fa-forward"), ButtonCss, A.title("Execute all effects (Ctrl + Shift + Enter)")),
+                //E.i(A.className("fa fa-pause"), ButtonCss, A.title("Pause execution until next edit or re-run")),
+                E.i(
+                    A.className("fa fa-forward"),
+                    ButtonCss,
+                    A.title("Execute all top level binds (Ctrl + Shift + Enter)"),
+                    A.onLeftClick { _ =>
+                        Main.worker.postMessage(js.Dictionary(
+                            "event" -> "start",
+                            "fromLine" -> 1,
+                            "toLine" -> 1000000
+                        ))
+                    }
+                ),
             ),
             E.div(RightAreaCss,
                 Tags(for((symbol, status) <- get(symbols) if !get(implied)(symbol) || status.isInstanceOf[Loader.Error[_]]) yield {
@@ -109,17 +129,6 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             } else {
                 E(tagName, renderValue(v("children")))
             }
-    }
-
-    private def onKeyDown(e : KeyboardEvent) : Unit = {
-        if(e.keyCode == 9) {
-            e.preventDefault()
-            val start = e.target.selectionStart.asInstanceOf[Double]
-            val end = e.target.selectionEnd.asInstanceOf[Double]
-            e.target.value = e.target.value.substring(0, start) + "    " + e.target.value.substring(end)
-            e.target.selectionStart = start + 4
-            e.target.selectionEnd = start + 4
-        }
     }
 
 }
