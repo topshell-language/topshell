@@ -71,7 +71,8 @@ object Block {
         val symbols = js.Dynamic.global.tsh.symbols
         var stepped = false
         for(block <- blocks) {
-            val steppedBlock = step(block, done, start, symbols)
+            val ignored = blocks.filter(_.fromLine >= block.fromLine).map(_.name).toSet
+            val steppedBlock = step(block, done ++ ignored, start, symbols)
             if(steppedBlock) sendBlockStatus(block)
             stepped = stepped || steppedBlock
         }
@@ -95,12 +96,16 @@ object Block {
                 block.state = Pending(remaining)
                 if(remaining.isEmpty && block.error.isEmpty) {
                     block.state = Computing()
-                    val result = block.compute.get.apply(symbols)
-                    if(block.effect && !js.isUndefined(result._run)) {
-                        block.state = Runnable(result)
-                    } else {
-                        block.result = result
-                        block.state = Done(result)
+                    try {
+                        val result = block.compute.get.apply(symbols)
+                        if(block.effect && !js.isUndefined(result._run)) {
+                            block.state = Runnable(result)
+                        } else {
+                            block.result = result
+                            block.state = Done(result)
+                        }
+                    } catch {
+                        case e : Exception => block.state = Error(e.getMessage)
                     }
                 }
                 remaining.toSet != awaiting.toSet
@@ -109,21 +114,23 @@ object Block {
                 false
 
             case Runnable(task) if start(block.name) || block.module =>
+                var started = false
                 block.cancel = task._run(
                     js.Dictionary(),
                     { v : js.Dynamic =>
                         block.result = v
                         block.state = Done(v)
-                        sendBlockStatus(block)
-                        js.Dynamic.global.setTimeout((() => globalStepAll()) : js.Function0[Unit], 0)
+                        if(started) sendBlockStatus(block)
+                        if(started) globalStepAll()
                     },
                     { e : js.Dynamic =>
                         val message = "" + e
                         block.state = Error(message)
-                        sendBlockStatus(block)
+                        if(started) sendBlockStatus(block)
                     }
                 ).asInstanceOf[js.UndefOr[js.Function0[Unit]]]
-                block.state = Running(block.cancel)
+                started = true
+                if(block.state.isInstanceOf[Runnable]) block.state = Running(block.cancel)
                 true
 
             case Runnable(_) =>
