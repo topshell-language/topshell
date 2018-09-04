@@ -15,6 +15,7 @@ object Emitter {
     }
 
     def emitImport(topImport : TopImport) : String = {
+        "var " + topImport.name + "_;\n" +
         "_n." + topImport.name + "_ = {\n" +
         "name: " + JSON.stringify(topImport.name + "_") + ",\n" +
         "module: true,\n" +
@@ -24,15 +25,20 @@ object Emitter {
         "dependencies: [],\n" +
         (topImport.error match {
             case Some(value) =>
-                "error: " + JSON.stringify(value.message) + "\n"
+                "error: " + JSON.stringify(value.message) + ",\n"
             case None =>
-                "compute: function(_s) { return _h.loadImport(" + JSON.stringify(topImport.url) + "); }\n"
+                "compute: function(_s) { return _h.loadImport(" + JSON.stringify(topImport.url) + "); },\n"
         }) +
+        "setResult: function(_s, _result) {\n" +
+            topImport.name + "_ = _result;\n" +
+            "_s." + topImport.name + "_.result = _result;\n" +
+        "}\n" +
         "};\n" +
         "_n._blocks.push(_n." + topImport.name + "_);\n"
     }
 
     def emitTopSymbol(symbol : TopSymbol) : String = {
+        "var " + symbol.binding.name + "_;\n" +
         "_n." + symbol.binding.name + "_ = {\n" +
         "name: " + JSON.stringify(symbol.binding.name + "_") + ",\n" +
         "module: false,\n" +
@@ -42,13 +48,16 @@ object Emitter {
         "dependencies: [" + symbol.dependencies.map("\"" + _ + "_\"").mkString(", ") + "],\n" +
         (symbol.error match {
             case Some(value) =>
-                "error: " + JSON.stringify(value.message) + "\n"
+                "error: " + JSON.stringify(value.message) + ",\n"
             case None =>
                 "compute: function(_s) {\n" +
-                symbol.dependencies.map(d => "var " + d + "_ = _s." + d + "_.result;\n").mkString("") +
                 emitBody(symbol.binding.value) +
-                "}\n"
+                "},\n"
         }) +
+        "setResult: function(_s, _result) {\n" +
+            symbol.binding.name + "_ = _result;\n" +
+            "_s." + symbol.binding.name + "_.result = _result;\n" +
+        "}\n" +
         "};\n" +
         "_n._blocks.push(_n." + symbol.binding.name + "_);\n"
     }

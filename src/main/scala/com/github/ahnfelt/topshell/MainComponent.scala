@@ -130,7 +130,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.span(TextCss, S.color(Palette.textHint), v("key") match {
                     case "Pending" => E.span(E.i(A.className("fa fa-hourglass-half"), S.paddingRight.px(8)), Text("" + v("value")))
                     case "Runnable" => E.span(E.i(A.className("fa fa-play"), S.paddingRight.px(8)), Text("Ctrl + Enter"))
-                    case "Computing" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3), Text(" (computing)"))
+                    case "Computing" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3), E.span(S.paddingLeft.px(8), Text("computing")))
                     case "Running" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3))
                     case "Error" => E.span(CodeCss, S.color(Palette.textError), Text("" + v("value")))
                     case _ => Text(v("key") + ": " + v("value"))

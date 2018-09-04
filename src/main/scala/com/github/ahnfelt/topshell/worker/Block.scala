@@ -10,6 +10,7 @@ import scala.scalajs.js
 
 @js.native
 trait Block extends js.Any {
+    def setResult(symbols : js.Any, result : js.Any) : Unit
     val name : String
     val module : Boolean
     val effect : Boolean
@@ -96,12 +97,13 @@ object Block {
                 block.state = Pending(remaining)
                 if(remaining.isEmpty && block.error.isEmpty) {
                     block.state = Computing()
+                    sendBlockStatus(block)
                     try {
                         val result = block.compute.get.apply(symbols)
                         if(block.effect && !js.isUndefined(result._run)) {
                             block.state = Runnable(result)
                         } else {
-                            block.result = result
+                            block.setResult(symbols, result)
                             block.state = Done(result)
                         }
                     } catch {
@@ -118,7 +120,7 @@ object Block {
                 block.cancel = task._run(
                     js.Dictionary(),
                     { v : js.Dynamic =>
-                        block.result = v
+                        block.setResult(symbols, v)
                         block.state = Done(v)
                         if(started) sendBlockStatus(block)
                         if(started) globalStepAll()
