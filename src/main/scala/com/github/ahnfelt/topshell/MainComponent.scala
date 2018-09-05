@@ -8,11 +8,11 @@ import scala.scalajs.js
 case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
 
     val code = State(Option(dom.window.localStorage.getItem("code")).getOrElse(""))
-    val debouncedCode = Debounce(this, code.map(_.trim))
+    val debouncedCode = Debounce(this, code, 500)
     var lastCode = ""
 
     override def componentWillRender(get : Get) : Unit = {
-        if(get(code).trim != lastCode) Main.codeVersion += 1
+        if(get(code) != lastCode) Main.codeVersion += 1
         if(get(debouncedCode) != lastCode) {
             lastCode = get(debouncedCode)
             Main.worker.postMessage(js.Dictionary(
