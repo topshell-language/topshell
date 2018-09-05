@@ -18,6 +18,7 @@ object Main {
             var symbols : List[(String, Loader.Loaded[js.Any])] = List()
             var implied : Set[String] = Set()
             var error : Option[String] = None
+            var resultTimeouts = Map[String, js.timers.SetTimeoutHandle]()
             def update() : Unit = {
                 val component = Component(MainComponent, symbols, implied, error)
                 ReactBridge.renderToDomById(component, "main")
@@ -30,6 +31,7 @@ object Main {
                         case "symbols" =>
                             symbols = data.symbols.asInstanceOf[js.Array[String]].map(_ -> Loader.Loading()).toList
                             implied = data.implied.asInstanceOf[js.Array[String]].toSet
+                            update()
                         case "error" =>
                             val name = data.name.asInstanceOf[String]
                             val index = symbols.indexWhere(_._1 == name)
@@ -37,17 +39,21 @@ object Main {
                                 index,
                                 name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
                             )
+                            update()
                         case "result" =>
                             val name = data.name.asInstanceOf[String]
-                            val index = symbols.indexWhere(_._1 == name)
-                            symbols = symbols.updated(
-                                index,
-                                name -> Loader.Result(data.html)
-                            )
+                            for(handle <- resultTimeouts.get(name)) js.timers.clearTimeout(handle)
+                            resultTimeouts += (name -> js.timers.setTimeout(50.0) {
+                                val index = symbols.indexWhere(_._1 == name)
+                                symbols = symbols.updated(
+                                    index,
+                                    name -> Loader.Result(data.html)
+                                )
+                                update()
+                            })
                         case e =>
                             println("Not handled: " + e)
                     }
-                    update()
                 }
             }
             dom.window.onload = _ => update()

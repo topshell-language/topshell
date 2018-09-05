@@ -64,7 +64,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                         Main.worker.postMessage(js.Dictionary(
                             "event" -> "start",
                             "fromLine" -> 1,
-                            "toLine" -> 1000000
+                            "toLine" -> 1000000000
                         ))
                     }
                 ),

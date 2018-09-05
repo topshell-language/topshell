@@ -34,13 +34,14 @@ object Block {
     case class Error(message : String) extends BlockState
     case class Done(result : js.Dynamic) extends BlockState
 
-    var globalBlocks = js.Array[Block]()
     var globalStart = Set[String]()
+    var globalSymbols : js.Dynamic = _
+    var globalBlocks = js.Array[Block]()
 
     def globalRunLines(fromLine : Int, toLine : Int) : Unit = {
         var start = Set[String]()
         for(block <- globalBlocks) {
-            if(block.fromLine <= toLine && block.toLine >= fromLine) {
+            if(block.effect && block.fromLine <= toLine && block.toLine >= fromLine) {
                 start += block.name
                 resetBlock(block, globalBlocks)
             }
@@ -54,11 +55,21 @@ object Block {
     def resetBlock(block : Block, blocks : js.Array[Block]) : Unit = {
         globalStart -= block.name
         block.cancel.foreach(f => f())
-        block.result = js.undefined
+        block.cancel = js.undefined
+        block.setResult(globalSymbols, js.undefined)
         block.state = Pending(block.dependencies)
         sendBlockStatus(block)
         for(b <- blocks if b.fromLine > block.toLine && b.dependencies.contains(block.name)) {
             resetBlock(b, blocks)
+        }
+    }
+
+    def pendDependants(block : Block, blocks : js.Array[Block]) : Unit = {
+        for(b <- blocks if b.fromLine > block.toLine && b.dependencies.contains(block.name)) {
+            b.cancel.foreach(f => f())
+            b.cancel = js.undefined
+            b.setResult(globalSymbols, js.undefined)
+            b.state = Pending(b.dependencies)
         }
     }
 
@@ -69,11 +80,10 @@ object Block {
     @tailrec
     def stepAll(blocks : js.Array[Block], start : Set[String]) : Unit = {
         val done = blocks.filter(_.state.isInstanceOf[Done]).map(_.name).toSet
-        val symbols = js.Dynamic.global.tsh.symbols
         var stepped = false
         for(block <- blocks) {
             val ignored = blocks.filter(_.fromLine >= block.fromLine).map(_.name).toSet
-            val steppedBlock = step(block, done ++ ignored, start, symbols)
+            val steppedBlock = step(block, done ++ ignored, start, globalSymbols)
             if(steppedBlock) sendBlockStatus(block)
             stepped = stepped || steppedBlock
         }
@@ -100,11 +110,16 @@ object Block {
                     sendBlockStatus(block)
                     try {
                         val result = block.compute.get.apply(symbols)
-                        if(block.effect && !js.isUndefined(result._run)) {
-                            block.state = Runnable(result)
+                        if(block.effect) {
+                            if(js.isUndefined(result._run)) {
+                                block.state = Error("Not a task")
+                            } else {
+                                block.state = Runnable(result)
+                            }
                         } else {
                             block.setResult(symbols, result)
                             block.state = Done(result)
+                            pendDependants(block, globalBlocks) // TODO
                         }
                     } catch {
                         case e : Exception => block.state = Error(e.getMessage)
@@ -122,12 +137,14 @@ object Block {
                     { v : js.Dynamic =>
                         block.setResult(symbols, v)
                         block.state = Done(v)
+                        pendDependants(block, globalBlocks) // TODO
                         if(started) sendBlockStatus(block)
                         if(started) globalStepAll()
                     },
                     { e : js.Dynamic =>
                         val message = "" + e
                         block.state = Error(message)
+                        pendDependants(block, globalBlocks) // TODO
                         if(started) sendBlockStatus(block)
                     }
                 ).asInstanceOf[js.UndefOr[js.Function0[Unit]]]

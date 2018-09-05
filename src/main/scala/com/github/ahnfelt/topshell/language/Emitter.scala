@@ -44,7 +44,7 @@ object Emitter {
         "module: false,\n" +
         "effect: " + symbol.bind + ",\n" +
         "fromLine: " + symbol.binding.at.line + ",\n" +
-        "toLine: " + symbol.binding.at.line + ",\n" +
+        "toLine: " + lastLine(symbol.binding.value) + ",\n" +
         "dependencies: [" + symbol.dependencies.map("\"" + _ + "_\"").mkString(", ") + "],\n" +
         (symbol.error match {
             case Some(value) =>
@@ -60,6 +60,39 @@ object Emitter {
         "}\n" +
         "};\n" +
         "_n._blocks.push(_n." + symbol.binding.name + "_);\n"
+    }
+
+    def lastLine(term : Syntax.Term) : Int = term match {
+        case EString(at, value) =>
+            at.line
+        case ENumber(at, value) =>
+            at.line
+        case EVariable(at, name) =>
+            at.line
+        case EFunction(at, variable, body) =>
+            Math.max(at.line, lastLine(body))
+        case EApply(at, function, argument) =>
+            Math.max(at.line, Math.max(lastLine(function), lastLine(argument)))
+        case ELet(at, bindings, body) =>
+            Math.max(at.line, Math.max((0 :: bindings.map(bindingLastLine)).max, lastLine(body)))
+        case EBind(at, binding, body) =>
+            Math.max(at.line, Math.max(bindingLastLine(binding), lastLine(body)))
+        case EList(at, elements, rest) =>
+            Math.max(at.line, Math.max((0 :: elements.map(lastLine)).max, rest.map(lastLine).getOrElse(0)))
+        case ERecord(at, fields, rest) =>
+            Math.max(at.line, Math.max((0 :: fields.map(bindingLastLine)).max, rest.map(lastLine).getOrElse(0)))
+        case EField(at, record, field) =>
+            Math.max(at.line, lastLine(record))
+        case EIf(at, condition, thenBody, elseBody) =>
+            Math.max(at.line, Math.max(lastLine(condition), Math.max(lastLine(thenBody), lastLine(elseBody))))
+        case EUnary(at, operator, operand) =>
+            Math.max(at.line, lastLine(operand))
+        case EBinary(at, operator, left, right) =>
+            Math.max(at.line, Math.max(lastLine(left), lastLine(right)))
+    }
+
+    def bindingLastLine(binding : Binding) : Int = {
+        Math.max(binding.at.line, lastLine(binding.value))
     }
 
     def emitBody(term : Term) : String = {

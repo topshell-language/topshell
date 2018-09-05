@@ -54,7 +54,10 @@ object Processor {
 
         js.Dynamic.global.tsh.updateDynamic("symbols")(symbols)
 
+        for(block <- Block.globalBlocks) block.cancel.foreach(f => f())
+
         Block.globalStart = Set.empty
+        Block.globalSymbols = symbols
         Block.globalBlocks = symbols.selectDynamic("_blocks").asInstanceOf[js.Array[Block]]
         Block.globalStepAll()
 
