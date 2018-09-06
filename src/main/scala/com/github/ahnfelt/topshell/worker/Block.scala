@@ -1,7 +1,6 @@
 package com.github.ahnfelt.topshell.worker
 
 import com.github.ahnfelt.topshell.Main
-import com.github.ahnfelt.topshell.language.Syntax.TopSymbol
 import com.github.ahnfelt.topshell.worker.Block.BlockState
 import org.scalajs.dom.raw.DedicatedWorkerGlobalScope
 
@@ -22,6 +21,7 @@ trait Block extends js.Any {
     var state : js.UndefOr[BlockState]
     var cancel : js.UndefOr[js.Function0[Unit]]
     var result : js.UndefOr[js.Dynamic]
+    var cacheBlock : js.UndefOr[CacheBlock]
 }
 
 object Block {

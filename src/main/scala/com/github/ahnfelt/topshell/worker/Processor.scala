@@ -54,11 +54,36 @@ object Processor {
 
         js.Dynamic.global.tsh.updateDynamic("symbols")(symbols)
 
-        for(block <- Block.globalBlocks) block.cancel.foreach(f => f())
+        val oldBlocks = Block.globalBlocks.map(b => b.name -> b).toMap
 
         Block.globalStart = Set.empty
         Block.globalSymbols = symbols
         Block.globalBlocks = symbols.selectDynamic("_blocks").asInstanceOf[js.Array[Block]]
+
+        val topBlockMap = (topSymbols ++ topImports).map(s => s.name -> s).toMap
+        for(block <- Block.globalBlocks) {
+            block.cacheBlock = CacheBlock.cacheBlock(topBlockMap(block.name.dropRight(1)), topBlockMap, Set())
+        }
+
+        val usedOldBlocks = for {
+            (block, index) <- Block.globalBlocks.zipWithIndex
+            oldBlock <- oldBlocks.get(block.name)
+            if oldBlock.cacheBlock == block.cacheBlock
+        } yield {
+            Block.globalBlocks(index) = oldBlock
+            // Set done results in the new scope and redirect future results to the new scope
+            if(oldBlock.state.exists(_.isInstanceOf[Block.Done])) {
+                block.setResult(symbols, oldBlock.result)
+            }
+            oldBlock.asInstanceOf[js.Dynamic].setResult = block.asInstanceOf[js.Dynamic].setResult
+            Block.sendBlockStatus(oldBlock)
+            oldBlock.name
+        }
+
+        for(block <- oldBlocks.values if !usedOldBlocks.contains(block.name)) {
+            block.cancel.foreach(f => f())
+        }
+
         Block.globalStepAll()
 
     }

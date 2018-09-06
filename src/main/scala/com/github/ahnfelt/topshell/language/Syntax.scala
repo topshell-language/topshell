@@ -11,9 +11,18 @@ object Syntax {
 
     case class Binding(at : Location, name : String, value : Term)
 
-    case class TopSymbol(bind : Boolean, binding : Binding, dependencies : List[String], error : Option[ParseException])
+    sealed abstract class TopBlock {
+        def name : String
+        def dependencies : List[String]
+    }
 
-    case class TopImport(at : Location, name : String, url : String, error : Option[ParseException])
+    case class TopSymbol(bind : Boolean, binding : Binding, dependencies : List[String], error : Option[ParseException]) extends TopBlock {
+        override def name = binding.name
+    }
+
+    case class TopImport(at : Location, name : String, url : String, error : Option[ParseException]) extends TopBlock {
+        override def dependencies = List()
+    }
 
     sealed abstract class Term { val at : Location }
     case class EString(at : Location, value : String) extends Term
@@ -30,39 +39,4 @@ object Syntax {
     case class EUnary(at : Location, operator : String, operand : Term) extends Term
     case class EBinary(at : Location, operator : String, left : Term, right : Term) extends Term
 
-    private val zeroLocation = Location("", 0, 0)
-
-    def withoutLocation(b : Binding) : Binding = b.copy(at = zeroLocation, value = withoutLocation(b.value))
-
-    def withoutLocation(t : Term) : Term = t match {
-        case e : EString => e.copy(at = zeroLocation)
-        case e : ENumber => e.copy(at = zeroLocation)
-        case e : EVariable => e.copy(at = zeroLocation)
-        case EFunction(_, variable, body) =>
-            EFunction(zeroLocation, variable, withoutLocation(body))
-        case EApply(_, function, argument) =>
-            EApply(zeroLocation, withoutLocation(function), withoutLocation(argument))
-        case ELet(_, bindings, body) =>
-            ELet(zeroLocation, bindings.map(withoutLocation), withoutLocation(body))
-        case EBind(_, binding, body) =>
-            EBind(zeroLocation, withoutLocation(binding), withoutLocation(body))
-        case EList(_, elements, rest) =>
-            EList(zeroLocation, elements.map(withoutLocation), rest.map(withoutLocation))
-        case ERecord(_, fields, rest) =>
-            ERecord(zeroLocation, fields.map(withoutLocation), rest.map(withoutLocation))
-        case EField(_, record, field) =>
-            EField(zeroLocation, withoutLocation(record), field)
-        case EIf(_, condition, thenBody, elseBody) =>
-            EIf(zeroLocation, withoutLocation(condition), withoutLocation(thenBody), withoutLocation(elseBody))
-        case EUnary(_, operator, operand) =>
-            EUnary(zeroLocation, operator, withoutLocation(operand))
-        case EBinary(_, operator, left, right) =>
-            EBinary(zeroLocation, operator, withoutLocation(left), withoutLocation(right))
-    }
-
-    case class FatSymbol(s : TopSymbol, dependencies : Set[FatSymbol])
-
-    def fatSymbol(s : TopSymbol, all : Map[String, TopSymbol]) : FatSymbol = {
-        FatSymbol(s, s.dependencies.map(t => fatSymbol(all(t), all)).toSet)
-    }
 }
