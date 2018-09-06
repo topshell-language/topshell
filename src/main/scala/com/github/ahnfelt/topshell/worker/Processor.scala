@@ -50,12 +50,12 @@ object Processor {
         val _g = DedicatedWorkerGlobalScope.self
         val _d = emit : js.Function3[String, js.Any, js.Any, Unit]
 
-        val symbols = js.Dynamic.newInstance(js.Dynamic.global.Function)("_g", "_d", emitted)(_g, _d)
+        val newBlocks = js.Dynamic.newInstance(js.Dynamic.global.Function)("_g", "_d", emitted)(_g, _d)
 
         val oldBlocks = Block.globalBlocks.map(b => b.name -> b).toMap
 
         Block.globalStart = Set.empty
-        Block.globalBlocks = symbols.asInstanceOf[js.Array[Block]]
+        Block.globalBlocks = newBlocks.asInstanceOf[js.Array[Block]]
 
         val topBlockMap = (topSymbols ++ topImports).map(s => s.name -> s).toMap
         for(block <- Block.globalBlocks) {
