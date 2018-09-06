@@ -55,7 +55,7 @@ object Processor {
         val oldBlocks = Block.globalBlocks.map(b => b.name -> b).toMap
 
         Block.globalStart = Set.empty
-        Block.globalBlocks = symbols.selectDynamic("_blocks").asInstanceOf[js.Array[Block]]
+        Block.globalBlocks = symbols.asInstanceOf[js.Array[Block]]
 
         val topBlockMap = (topSymbols ++ topImports).map(s => s.name -> s).toMap
         for(block <- Block.globalBlocks) {

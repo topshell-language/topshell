@@ -8,7 +8,7 @@ object Emitter {
 
     def emit(version : Double, topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
         "var _h = _g.tsh;\n" +
-        "var _n = {_blocks: []};\n" +
+        "var _n = [];\n" +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
         "return _n;\n"
@@ -16,7 +16,7 @@ object Emitter {
 
     def emitImport(topImport : TopImport) : String = {
         "var " + topImport.name + "_;\n" +
-        "_n." + topImport.name + "_ = {\n" +
+        "_n.push({\n" +
         "name: " + JSON.stringify(topImport.name + "_") + ",\n" +
         "module: true,\n" +
         "effect: true,\n" +
@@ -32,13 +32,12 @@ object Emitter {
         "setResult: function(_result) {\n" +
             topImport.name + "_ = _result;\n" +
         "}\n" +
-        "};\n" +
-        "_n._blocks.push(_n." + topImport.name + "_);\n"
+        "});\n"
     }
 
     def emitTopSymbol(symbol : TopSymbol) : String = {
         "var " + symbol.binding.name + "_;\n" +
-        "_n." + symbol.binding.name + "_ = {\n" +
+        "_n.push({\n" +
         "name: " + JSON.stringify(symbol.binding.name + "_") + ",\n" +
         "module: false,\n" +
         "effect: " + symbol.bind + ",\n" +
@@ -56,8 +55,7 @@ object Emitter {
         "setResult: function(_result) {\n" +
             symbol.binding.name + "_ = _result;\n" +
         "}\n" +
-        "};\n" +
-        "_n._blocks.push(_n." + symbol.binding.name + "_);\n"
+        "});\n"
     }
 
     def lastLine(term : Syntax.Term) : Int = term match {
