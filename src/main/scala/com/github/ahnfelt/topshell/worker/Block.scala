@@ -21,7 +21,7 @@ trait Block extends js.Any {
     var state : js.UndefOr[BlockState]
     var cancel : js.UndefOr[js.Function0[Unit]]
     var result : js.UndefOr[js.Dynamic]
-    var cacheBlock : js.UndefOr[CacheBlock]
+    var cacheKey : js.UndefOr[CacheKey]
 }
 
 object Block {

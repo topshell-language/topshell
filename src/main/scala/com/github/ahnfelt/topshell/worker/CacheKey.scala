@@ -2,14 +2,14 @@ package com.github.ahnfelt.topshell.worker
 
 import com.github.ahnfelt.topshell.language.Syntax._
 
-case class CacheBlock private (s : TopBlock, dependencies : Set[CacheBlock])
+case class CacheKey private (s : TopBlock, dependencies : Set[CacheKey])
 
-object CacheBlock {
+object CacheKey {
 
-    def cacheBlock(symbol : TopBlock, symbols : Map[String, TopBlock], seen : Set[String]) : CacheBlock = {
+    def cacheKey(symbol : TopBlock, symbols : Map[String, TopBlock], seen : Set[String]) : CacheKey = {
         val newSeen = seen + symbol.name
-        CacheBlock(withoutLocation(symbol), symbol.dependencies.filterNot(newSeen).map { s =>
-            cacheBlock(symbols(s), symbols, newSeen)
+        CacheKey(withoutLocation(symbol), symbol.dependencies.filterNot(newSeen).map { s =>
+            cacheKey(symbols(s), symbols, newSeen)
         }.toSet)
     }
 

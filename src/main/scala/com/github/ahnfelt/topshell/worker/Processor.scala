@@ -62,13 +62,13 @@ object Processor {
 
         val topBlockMap = (topSymbols ++ topImports).map(s => s.name -> s).toMap
         for(block <- Block.globalBlocks) {
-            block.cacheBlock = CacheBlock.cacheBlock(topBlockMap(block.name.dropRight(1)), topBlockMap, Set())
+            block.cacheKey = CacheKey.cacheKey(topBlockMap(block.name.dropRight(1)), topBlockMap, Set())
         }
 
         val usedOldBlocks = for {
             (block, index) <- Block.globalBlocks.zipWithIndex
             oldBlock <- oldBlocks.get(block.name)
-            if oldBlock.cacheBlock == block.cacheBlock
+            if oldBlock.cacheKey == block.cacheKey
         } yield {
             Block.globalBlocks(index) = oldBlock
             // Set done results in the new scope and redirect future results to the new scope
