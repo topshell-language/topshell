@@ -9,7 +9,7 @@ import scala.scalajs.js
 
 @js.native
 trait Block extends js.Any {
-    def setResult(symbols : js.Any, result : js.Any) : Unit
+    def setResult(result : js.Any) : Unit
     val name : String
     val module : Boolean
     val effect : Boolean
@@ -35,7 +35,6 @@ object Block {
     case class Done(result : js.Dynamic) extends BlockState
 
     var globalStart = Set[String]()
-    var globalSymbols : js.Dynamic = _
     var globalBlocks = js.Array[Block]()
 
     def globalRunLines(fromLine : Int, toLine : Int) : Unit = {
@@ -56,7 +55,7 @@ object Block {
         globalStart -= block.name
         block.cancel.foreach(f => f())
         block.cancel = js.undefined
-        block.setResult(globalSymbols, js.undefined)
+        block.setResult(js.undefined)
         block.state = Pending(block.dependencies)
         sendBlockStatus(block)
         for(b <- blocks if b.fromLine > block.toLine && b.dependencies.contains(block.name)) {
@@ -68,7 +67,7 @@ object Block {
         for(b <- blocks if b.fromLine > block.toLine && b.dependencies.contains(block.name)) {
             b.cancel.foreach(f => f())
             b.cancel = js.undefined
-            b.setResult(globalSymbols, js.undefined)
+            b.setResult(js.undefined)
             b.state = Pending(b.dependencies)
         }
     }
@@ -83,7 +82,7 @@ object Block {
         var stepped = false
         for(block <- blocks) {
             val ignored = blocks.filter(_.fromLine >= block.fromLine).map(_.name).toSet
-            val steppedBlock = step(block, done ++ ignored, start, globalSymbols)
+            val steppedBlock = step(block, done ++ ignored, start)
             if(steppedBlock) sendBlockStatus(block)
             stepped = stepped || steppedBlock
         }
@@ -91,7 +90,7 @@ object Block {
     }
 
 
-    def step(block : Block, done : Set[String], start : Set[String], symbols : js.Any) : Boolean = {
+    def step(block : Block, done : Set[String], start : Set[String]) : Boolean = {
 
         val initializeState = js.isUndefined(block.state)
         if(initializeState) {
@@ -109,7 +108,7 @@ object Block {
                     block.state = Computing()
                     sendBlockStatus(block)
                     try {
-                        val result = block.compute.get.apply(symbols)
+                        val result = block.compute.get.apply()
                         if(block.effect) {
                             if(js.isUndefined(result._run)) {
                                 block.state = Error("Not a task")
@@ -117,7 +116,7 @@ object Block {
                                 block.state = Runnable(result)
                             }
                         } else {
-                            block.setResult(symbols, result)
+                            block.setResult(result)
                             block.state = Done(result)
                             pendDependants(block, globalBlocks) // TODO
                         }
@@ -135,7 +134,7 @@ object Block {
                 block.cancel = task._run(
                     js.Dictionary(),
                     { v : js.Dynamic =>
-                        block.setResult(symbols, v)
+                        block.setResult(v)
                         block.state = Done(v)
                         pendDependants(block, globalBlocks) // TODO
                         if(started) sendBlockStatus(block)

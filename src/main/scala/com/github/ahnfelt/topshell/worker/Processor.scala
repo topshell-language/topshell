@@ -52,12 +52,9 @@ object Processor {
 
         val symbols = js.Dynamic.newInstance(js.Dynamic.global.Function)("_g", "_d", emitted)(_g, _d)
 
-        js.Dynamic.global.tsh.updateDynamic("symbols")(symbols)
-
         val oldBlocks = Block.globalBlocks.map(b => b.name -> b).toMap
 
         Block.globalStart = Set.empty
-        Block.globalSymbols = symbols
         Block.globalBlocks = symbols.selectDynamic("_blocks").asInstanceOf[js.Array[Block]]
 
         val topBlockMap = (topSymbols ++ topImports).map(s => s.name -> s).toMap
@@ -73,7 +70,7 @@ object Processor {
             Block.globalBlocks(index) = oldBlock
             // Set done results in the new scope and redirect future results to the new scope
             if(oldBlock.state.exists(_.isInstanceOf[Block.Done])) {
-                block.setResult(symbols, oldBlock.result)
+                block.setResult(oldBlock.result)
             }
             oldBlock.asInstanceOf[js.Dynamic].setResult = block.asInstanceOf[js.Dynamic].setResult
             Block.sendBlockStatus(oldBlock)

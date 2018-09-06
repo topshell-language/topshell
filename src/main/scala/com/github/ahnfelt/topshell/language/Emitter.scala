@@ -27,11 +27,10 @@ object Emitter {
             case Some(value) =>
                 "error: " + JSON.stringify(value.message) + ",\n"
             case None =>
-                "compute: function(_s) { return _h.loadImport(" + JSON.stringify(topImport.url) + "); },\n"
+                "compute: function() { return _h.loadImport(" + JSON.stringify(topImport.url) + "); },\n"
         }) +
-        "setResult: function(_s, _result) {\n" +
+        "setResult: function(_result) {\n" +
             topImport.name + "_ = _result;\n" +
-            "_s." + topImport.name + "_.result = _result;\n" +
         "}\n" +
         "};\n" +
         "_n._blocks.push(_n." + topImport.name + "_);\n"
@@ -50,13 +49,12 @@ object Emitter {
             case Some(value) =>
                 "error: " + JSON.stringify(value.message) + ",\n"
             case None =>
-                "compute: function(_s) {\n" +
+                "compute: function() {\n" +
                 emitBody(symbol.binding.value) +
                 "},\n"
         }) +
-        "setResult: function(_s, _result) {\n" +
+        "setResult: function(_result) {\n" +
             symbol.binding.name + "_ = _result;\n" +
-            "_s." + symbol.binding.name + "_.result = _result;\n" +
         "}\n" +
         "};\n" +
         "_n._blocks.push(_n." + symbol.binding.name + "_);\n"
