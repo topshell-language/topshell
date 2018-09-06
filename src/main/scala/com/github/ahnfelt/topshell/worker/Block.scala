@@ -20,7 +20,6 @@ trait Block extends js.Any {
     val compute : js.UndefOr[js.Function1[js.Any, js.Dynamic]]
     var state : js.UndefOr[BlockState]
     var cancel : js.UndefOr[js.Function0[Unit]]
-    var result : js.UndefOr[js.Dynamic]
     var cacheKey : js.UndefOr[CacheKey]
 }
 

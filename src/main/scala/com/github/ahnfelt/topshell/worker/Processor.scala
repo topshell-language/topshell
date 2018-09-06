@@ -69,8 +69,9 @@ object Processor {
         } yield {
             Block.globalBlocks(index) = oldBlock
             // Set done results in the new scope and redirect future results to the new scope
-            if(oldBlock.state.exists(_.isInstanceOf[Block.Done])) {
-                block.setResult(oldBlock.result)
+            oldBlock.state.toOption match {
+                case Some(Block.Done(result)) => block.setResult(result)
+                case _ =>
             }
             oldBlock.asInstanceOf[js.Dynamic].setResult = block.asInstanceOf[js.Dynamic].setResult
             Block.sendBlockStatus(oldBlock)
