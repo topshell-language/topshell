@@ -68,12 +68,13 @@ object Processor {
             if oldBlock.cacheKey == block.cacheKey
         } yield {
             Block.globalBlocks(index) = oldBlock
-            // Set done results in the new scope and redirect future results to the new scope
+            // Set done results in the new scope and redirect future results and reads to the new scope
             oldBlock.state.toOption match {
                 case Some(Block.Done(result)) => block.setResult(result)
                 case _ =>
             }
             oldBlock.asInstanceOf[js.Dynamic].setResult = block.asInstanceOf[js.Dynamic].setResult
+            oldBlock.asInstanceOf[js.Dynamic].compute = block.asInstanceOf[js.Dynamic].compute
             Block.sendBlockStatus(oldBlock)
             oldBlock.name
         }
