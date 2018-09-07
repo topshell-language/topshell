@@ -29,7 +29,11 @@ object Main {
                 if(data.codeVersion.asInstanceOf[Double] == codeVersion) {
                     data.event.asInstanceOf[String] match {
                         case "symbols" =>
-                            symbols = data.symbols.asInstanceOf[js.Array[String]].map(_ -> Loader.Loading()).toList
+                            val cached = data.cached.asInstanceOf[js.Array[String]]
+                            symbols = data.symbols.asInstanceOf[js.Array[String]].map(s =>
+                                if(cached.contains(s)) symbols.find(_._1 == s).get
+                                else s -> Loader.Loading()
+                            ).toList
                             implied = data.implied.asInstanceOf[js.Array[String]].toSet
                             update()
                         case "error" =>

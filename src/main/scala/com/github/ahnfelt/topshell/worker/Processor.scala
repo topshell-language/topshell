@@ -39,13 +39,6 @@ object Processor {
         val emitted = Emitter.emit(currentVersion, topImports, topSymbols)
 
         val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
-        val message = js.Dictionary(
-            "event" -> "symbols",
-            "symbols" -> js.Array(names : _*),
-            "implied" -> js.Array((topImports.map(_.name).toSet -- newImports.map(_.name)).toSeq : _*),
-            "codeVersion" -> currentVersion
-        )
-        DedicatedWorkerGlobalScope.self.postMessage(message)
 
         val _g = DedicatedWorkerGlobalScope.self
         val _d = emit : js.Function3[String, js.Any, js.Any, Unit]
@@ -82,6 +75,15 @@ object Processor {
         for(block <- oldBlocks.values if !usedOldBlocks.contains(block.name)) {
             block.cancel.foreach(f => f())
         }
+
+        val message = js.Dictionary(
+            "event" -> "symbols",
+            "symbols" -> js.Array(names : _*),
+            "implied" -> js.Array((topImports.map(_.name).toSet -- newImports.map(_.name)).toSeq : _*),
+            "cached" -> js.Array(usedOldBlocks.map(_.dropRight(1)) : _*),
+            "codeVersion" -> currentVersion
+        )
+        DedicatedWorkerGlobalScope.self.postMessage(message)
 
         Block.globalStepAll()
 
