@@ -69,11 +69,11 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                     }
                 ),
             ),
-            E.div(RightAreaCss,
+            E.div(RightAreaCss, {
                 Tags(for((symbol, status) <- get(symbols) if !get(implied)(symbol) || status.isInstanceOf[Loader.Error[_]]) yield {
                     Component(BlockComponent, symbol, status).withKey(symbol)
                 }),
-            ),
+            }),
             E.div(BottomRightAreaCss,
                 E.div(ShortcutAreaCss, Text("TopShell 2018.1")),
                 E.div(CenterTextCss,

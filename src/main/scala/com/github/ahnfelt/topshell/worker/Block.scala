@@ -77,7 +77,7 @@ object Block {
 
     @tailrec
     def stepAll(blocks : js.Array[Block], start : Set[String]) : Unit = {
-        val done = blocks.filter(_.state.isInstanceOf[Done]).map(_.name).toSet
+        val done = blocks.filter(b => b.state.isInstanceOf[Done]).map(_.name).toSet
         var stepped = false
         for(block <- blocks) {
             val ignored = blocks.filter(_.fromLine >= block.fromLine).map(_.name).toSet
@@ -174,7 +174,9 @@ object Block {
             case Computing() => status(key, "")
             case Runnable(_) => status(key, "")
             case Running(_) => status(key, "")
-            case Error(message) => status(key, message)
+            case Error(message) =>
+                send(block.name, js.undefined, message)
+                return
             case Done(r) => r
         }
         send(block.name, result, block.error)

@@ -38,12 +38,15 @@ object Main {
                             update()
                         case "error" =>
                             val name = data.name.asInstanceOf[String]
-                            val index = symbols.indexWhere(_._1 == name)
-                            symbols = symbols.updated(
-                                index,
-                                name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
-                            )
-                            update()
+                            for(handle <- resultTimeouts.get(name)) js.timers.clearTimeout(handle)
+                            resultTimeouts += (name -> js.timers.setTimeout(50.0) {
+                                val index = symbols.indexWhere(_._1 == name)
+                                symbols = symbols.updated(
+                                    index,
+                                    name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
+                                )
+                                update()
+                            })
                         case "result" =>
                             val name = data.name.asInstanceOf[String]
                             for(handle <- resultTimeouts.get(name)) js.timers.clearTimeout(handle)
