@@ -54,6 +54,10 @@ case class EditorComponent(codeFile : P[CodeFile]) extends Component[EditorMessa
                     val to = editor.getDoc().lineCount()
                     emit(Execute(from, to))
                 },
+                "Ctrl-N" -> {editor => emit(NewCodeFile)},
+                "Alt-N" -> {editor => emit(NewCodeFile)},
+                "Ctrl-O" -> {editor => emit(OpenCodeFile)},
+                "Ctrl-E" -> {editor => emit(EnterCodeFile)},
                 //"Ctrl-R" -> {editor => editor.execCommand("replace")},
                 //"Escape" -> {editor => editor.execCommand("clearSearch")},
             ),
@@ -68,12 +72,16 @@ case class EditorComponent(codeFile : P[CodeFile]) extends Component[EditorMessa
             )
             if(changed(get, editor)) emit(SetCodeFile(value))
         })
+        editor.getDoc().setCursor(get(codeFile).cursorLine - 1, get(codeFile).cursorColumn - 1)
         codeMirror = Some(editor)
     }
 
 }
 
 sealed abstract class EditorMessage
+case object NewCodeFile extends EditorMessage
+case object OpenCodeFile extends EditorMessage
+case object EnterCodeFile extends EditorMessage
 case class SetCodeFile(codeFile : CodeFile) extends EditorMessage
 case class Execute(fromLine : Int, toLine : Int) extends EditorMessage
 

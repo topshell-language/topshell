@@ -8,13 +8,37 @@ import scala.scalajs.js.JSON
 
 case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
 
-    private def loadCode() : Option[CodeFile] = {
-        Option(dom.window.localStorage.getItem("draft")).map(JSON.parse(_)).
+    private def nextIndex() : Int = {
+        val indexes = for {
+            i <- 0 until dom.window.localStorage.length
+            key = dom.window.localStorage.key(i)
+            if key.startsWith("file-")
+        } yield {
+            key.drop("file-".length).toInt
+        }
+        (0 +: indexes).max + 1
+    }
+
+    private def loadOrCreate() : CodeFile = {
+        val index = nextIndex()
+        val blank = CodeFile.blank(index)
+        if(index == 1) blank else {
+            val codeFile = loadCode("file-" + (index - 1))
+            if(codeFile.exists(_.code.exists(_.trim.isEmpty))) codeFile.getOrElse(blank) else blank
+        }
+    }
+
+    private def loadCode(name : String) : Option[CodeFile] = {
+        Option(dom.window.localStorage.getItem(name)).map(JSON.parse(_)).
             map(_.asInstanceOf[CodeFileJs]).map(CodeFile.fromJs)
     }
 
-    var lastCode = CodeFile.blank(1)
-    val code = State(loadCode().getOrElse(lastCode))
+    private def saveCode(codeFile : CodeFile) : Unit = {
+        dom.window.localStorage.setItem("file-" + codeFile.index, JSON.stringify(CodeFile.toJs(codeFile)))
+    }
+
+    var lastCode = loadOrCreate()
+    val code = State(lastCode)
     val debouncedCode = Debounce(this, code, 500)
 
     override def componentWillRender(get : Get) : Unit = {
@@ -26,7 +50,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 "code" -> lastCode.code.getOrElse(""),
                 "codeVersion" -> Main.codeVersion
             ))
-            dom.window.localStorage.setItem("draft", JSON.stringify(CodeFile.toJs(lastCode)))
+            saveCode(lastCode)
         }
     }
 
@@ -39,7 +63,15 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             ),
             E.div(LeftAreaCss,
                 Component(EditorComponent, get(code)).withHandler {
-                    case SetCodeFile(c) => code.set(c)
+                    case NewCodeFile =>
+                        saveCode(get(code))
+                        code.set(loadOrCreate())
+                    case OpenCodeFile =>
+                        saveCode(get(code))
+                    case EnterCodeFile =>
+                        saveCode(get(code))
+                    case SetCodeFile(c) =>
+                        code.set(c)
                     case Execute(fromLine, toLine) =>
                         Main.worker.postMessage(js.Dictionary(
                             "event" -> "start",
@@ -55,7 +87,12 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             ),
             E.div(TopRightAreaCss,
                 ButtonAreaCss,
-                E.div(CenterTextCss, Text("Unnamed.tsh"), A.title("/home/me/tsh/Unnamed.tsh")),
+                E.div(
+                    CenterTextCss,
+                    S.fontStyle.italic(),
+                    Text("Draft " + get(code).index),
+                    A.title("This is a draft")
+                ),
                 E.div(
                     RightButtonAreaCss,
                     E.i(A.className("fa fa-question"), ButtonCss, A.title("Help")),
@@ -84,7 +121,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.div(ShortcutAreaCss, Text("TopShell 2018.1")),
                 E.div(CenterTextCss,
                     S.color(Palette.textHint),
-                    Text("Saved.") // Text(if(get(code) == get(debouncedCode)) "Saved." else "Saving...")
+                    Text(if(get(code).code == get(debouncedCode).code) "Saved." else "Saving...")
                 ),
                 E.div(HintAreaCss,
                     Text {
