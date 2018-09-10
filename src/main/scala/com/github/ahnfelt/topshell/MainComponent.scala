@@ -4,12 +4,18 @@ import com.github.ahnfelt.react4s._
 import org.scalajs.dom
 
 import scala.scalajs.js
+import scala.scalajs.js.JSON
 
 case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
 
-    val code = State(Option(dom.window.localStorage.getItem("code")).getOrElse(""))
+    private def loadCode() : Option[CodeFile] = {
+        Option(dom.window.localStorage.getItem("draft")).map(JSON.parse(_)).
+            map(_.asInstanceOf[CodeFileJs]).map(CodeFile.fromJs)
+    }
+
+    var lastCode = CodeFile.blank(1)
+    val code = State(loadCode().getOrElse(lastCode))
     val debouncedCode = Debounce(this, code, 500)
-    var lastCode = ""
 
     override def componentWillRender(get : Get) : Unit = {
         if(get(code) != lastCode) Main.codeVersion += 1
@@ -17,10 +23,10 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             lastCode = get(debouncedCode)
             Main.worker.postMessage(js.Dictionary(
                 "event" -> "code",
-                "code" -> lastCode,
+                "code" -> lastCode.code.getOrElse(""),
                 "codeVersion" -> Main.codeVersion
             ))
-            dom.window.localStorage.setItem("code", lastCode)
+            dom.window.localStorage.setItem("draft", JSON.stringify(CodeFile.toJs(lastCode)))
         }
     }
 
@@ -33,7 +39,7 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             ),
             E.div(LeftAreaCss,
                 Component(EditorComponent, get(code)).withHandler {
-                    case SetCode(c) => code.set(c)
+                    case SetCodeFile(c) => code.set(c)
                     case Execute(fromLine, toLine) =>
                         Main.worker.postMessage(js.Dictionary(
                             "event" -> "start",

@@ -215,3 +215,9 @@ exports.random = new self.tsh.Task((w, t, c) => {
 exports.log = message => new self.tsh.Task((w, t, c) => {
     try { t(void console.dir(message)) } catch(e) { c(e) }
 });
+
+
+// Proposal:
+// Task.retry [2, 5, 10] task
+// Retries a task after 2, 5, 10 seconds if it throws.
+// Add jitter 50%-150% to each delay to decouple retries, eg. 10 means between 5 and 15 seconds.
