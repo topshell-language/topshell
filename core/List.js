@@ -67,15 +67,60 @@ exports.zip = a => b => {
     return result;
 };
 
+exports.zipWith = f => a => b => {
+    let result = [];
+    for(var i = 0; i < a.length && i < b.length; i++) {
+        result.push(f(a[i])(b[i]));
+    }
+    return result;
+};
 
-exports.takeWhile = function(r) { return r.takeWhile; };
-exports.dropWhile = function(r) { return r.dropWhile; };
-exports.takeLastWhile = function(r) { return r.takeLastWhile; };
-exports.dropLastWhile = function(r) { return r.dropLastWhile; };
-exports.unzip = function(r) { return r.unzip; };
-exports.indexes = function(r) { return r.indexes; };
-exports.startsWith = function(r) { return r.startsWith; };
-exports.endsWith = function(r) { return r.endsWith; };
+exports.takeWhile = f => a => {
+    let result = [];
+    for(var i = 0; i < a.length; i++) {
+        if(!f(a[i])) return result;
+        result.push(a[i]);
+    }
+    return result;
+};
 
-exports.scanLeft = function(r) { return r.scanLeft; };
-exports.scanRight = function(r) { return r.scanRight; };
+exports.dropWhile = f => a => {
+    let result = [];
+    for(var j = 0; j < a.length && f(a[j]); j++) {}
+    for(var i = j; i < a.length; i++) {
+        result.push(a[i]);
+    }
+    return result;
+};
+
+exports.unzip = a => {
+    let keys = [];
+    let values = [];
+    for(var i = 0; i < a.length; i++) {
+        keys.push(a[i].key);
+        values.push(a[i].key);
+    }
+    return {key: keys, value: values};
+};
+
+exports.withKeys = a => a.map((e, i) => ({key: i, value: e}));
+
+exports.keys = a => a.map((e, i) => i);
+
+exports.scanLeft = f => z => a => {
+    let result = new Array(a.length);
+    for(var i = 0; i < a.length; i++) {
+        z = f(z)(a[i]);
+        result[i] = z;
+    }
+    return result;
+};
+
+exports.scanRight = f => z => a => {
+    let result = new Array(a.length);
+    for(var i = a.length - 1; i >= 0; i--) {
+        z = f(a[i])(z);
+        result[i] = z;
+    }
+    return result;
+};

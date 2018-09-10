@@ -29,17 +29,24 @@ object Main {
                 if(data.codeVersion.asInstanceOf[Double] == codeVersion) {
                     data.event.asInstanceOf[String] match {
                         case "symbols" =>
-                            symbols = data.symbols.asInstanceOf[js.Array[String]].map(_ -> Loader.Loading()).toList
+                            val cached = data.cached.asInstanceOf[js.Array[String]]
+                            symbols = data.symbols.asInstanceOf[js.Array[String]].map(s =>
+                                if(cached.contains(s)) symbols.find(_._1 == s).get
+                                else s -> Loader.Loading()
+                            ).toList
                             implied = data.implied.asInstanceOf[js.Array[String]].toSet
                             update()
                         case "error" =>
                             val name = data.name.asInstanceOf[String]
-                            val index = symbols.indexWhere(_._1 == name)
-                            symbols = symbols.updated(
-                                index,
-                                name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
-                            )
-                            update()
+                            for(handle <- resultTimeouts.get(name)) js.timers.clearTimeout(handle)
+                            resultTimeouts += (name -> js.timers.setTimeout(50.0) {
+                                val index = symbols.indexWhere(_._1 == name)
+                                symbols = symbols.updated(
+                                    index,
+                                    name -> Loader.Error(new RuntimeException(data.error.asInstanceOf[String]))
+                                )
+                                update()
+                            })
                         case "result" =>
                             val name = data.name.asInstanceOf[String]
                             for(handle <- resultTimeouts.get(name)) js.timers.clearTimeout(handle)
