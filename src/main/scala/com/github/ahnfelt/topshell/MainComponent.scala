@@ -8,6 +8,41 @@ import scala.scalajs.js.JSON
 
 case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
 
+    val showOpen = State[Option[Int]](None)
+    var altKey = false
+    var ctrlKey = false
+    var shiftKey = false
+
+    dom.document.addEventListener("keydown", { event : dom.KeyboardEvent =>
+        if(!event.altKey) altKey = false
+        if(!event.ctrlKey) ctrlKey = false
+        if(!event.shiftKey) shiftKey = false
+        if(event.key == "Alt") altKey = true
+        if(event.key == "Control") ctrlKey = true
+        if(event.key == "Shift") shiftKey = true
+        if((event.key == "e" || event.key == "Tab") && ctrlKey) {
+            event.preventDefault()
+            val delta = if(shiftKey) -1 else +1
+            val index = Get.Unsafe(showOpen).getOrElse(0) + delta
+            showOpen.set(Some(index % codeFiles.size))
+        }
+    })
+
+    dom.document.addEventListener("keyup", { event : dom.KeyboardEvent =>
+        if(event.key == "Alt") altKey = false
+        if(event.key == "Control") ctrlKey = false
+        if(event.key == "Shift") shiftKey = false
+        if(event.key == "Escape" && Get.Unsafe(showOpen).nonEmpty) showOpen.set(None)
+        if(event.key == "Control" && Get.Unsafe(showOpen).nonEmpty) {
+            event.preventDefault()
+            lastCode = codeFiles(Get.Unsafe(showOpen).get).copy(lastOpened = System.currentTimeMillis())
+            saveCode(lastCode)
+            codeFiles = loadCodeFiles()
+            code.set(lastCode)
+            showOpen.set(None)
+        }
+    })
+
     private def nextIndex() : Int = {
         val indexes = for {
             i <- 0 until dom.window.localStorage.length
@@ -37,6 +72,18 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
         dom.window.localStorage.setItem("file-" + codeFile.index, JSON.stringify(CodeFile.toJs(codeFile)))
     }
 
+    private def loadCodeFiles() : List[CodeFile] = {
+        for {
+            i <- 0 until Math.min(dom.window.localStorage.length, 1000)
+            key = dom.window.localStorage.key(i)
+            if key.startsWith("file-")
+        } yield {
+            Option(dom.window.localStorage.getItem(key)).map(JSON.parse(_)).
+                map(_.asInstanceOf[CodeFileJs]).map(CodeFile.fromJs).get
+        }
+    }.sortBy(-_.lastOpened).take(20).toList
+
+    var codeFiles = loadCodeFiles()
     var lastCode = loadOrCreate()
     val code = State(lastCode)
     val debouncedCode = Debounce(this, code, 500)
@@ -62,23 +109,31 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 E.input(InputBarCss, A.placeholder("Open file ...")),
             ),
             E.div(LeftAreaCss,
-                Component(EditorComponent, get(code)).withHandler {
-                    case NewCodeFile =>
-                        saveCode(get(code))
-                        code.set(loadOrCreate())
-                    case OpenCodeFile =>
-                        saveCode(get(code))
-                    case EnterCodeFile =>
-                        saveCode(get(code))
-                    case SetCodeFile(c) =>
-                        code.set(c)
-                    case Execute(fromLine, toLine) =>
-                        Main.worker.postMessage(js.Dictionary(
-                            "event" -> "start",
-                            "fromLine" -> fromLine,
-                            "toLine" -> toLine
-                        ))
-                }
+                E.div(
+                    S.position.absolute(),
+                    S.top.px(0),
+                    S.left.px(0),
+                    S.bottom.px(0),
+                    S.right.px(0),
+                    Component(EditorComponent, get(code)).withHandler {
+                        case NewCodeFile =>
+                            saveCode(get(code))
+                            code.set(loadOrCreate())
+                        case OpenCodeFile =>
+                            saveCode(get(code))
+                        case EnterCodeFile =>
+                            saveCode(get(code))
+                        case SetCodeFile(c) =>
+                            code.set(c)
+                        case Execute(fromLine, toLine) =>
+                            Main.worker.postMessage(js.Dictionary(
+                                "event" -> "start",
+                                "fromLine" -> fromLine,
+                                "toLine" -> toLine
+                            ))
+                    }
+                ),
+                Tags(get(showOpen).map(Component(OpenFileComponent, codeFiles, _)))
             ),
             E.div(BottomLeftAreaCss,
                 E.div(ShortcutAreaCss, Text("Ctrl + F / R")),
