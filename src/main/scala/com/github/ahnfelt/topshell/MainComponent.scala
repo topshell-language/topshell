@@ -138,9 +138,9 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
                 Tags(get(showOpen).map(Component(OpenFileComponent, codeFiles, _)))
             ),
             E.div(BottomLeftAreaCss,
-                E.div(ShortcutAreaCss, Text("Ctrl + F / R")),
-                E.div(HintAreaCss, Text("Find / replace ...")),
-                E.input(InputBarCss, A.placeholder("Find in file ...")),
+                E.div(ShortcutAreaCss, Text("Ctrl + F")),
+                E.div(HintAreaCss, Text("Find all ...")),
+                E.input(InputBarCss, A.placeholder("Find all in file ...")),
             ),
             E.div(TopRightAreaCss,
                 ButtonAreaCss,
