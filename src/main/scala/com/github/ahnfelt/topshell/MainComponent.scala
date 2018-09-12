@@ -57,10 +57,12 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
     private def loadOrCreate() : CodeFile = {
         val index = nextIndex()
         val blank = CodeFile.blank(index)
-        if(index == 1) blank else {
+        val file = (if(index == 1) blank else {
             val codeFile = loadCode("file-" + (index - 1))
             if(codeFile.exists(_.code.exists(_.trim.isEmpty))) codeFile.getOrElse(blank) else blank
-        }
+        }).copy(lastOpened = System.currentTimeMillis())
+        saveCode(file)
+        file
     }
 
     private def loadCode(name : String) : Option[CodeFile] = {
@@ -83,10 +85,10 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
         }
     }.sortBy(-_.lastOpened).take(20).toList
 
-    var codeFiles = loadCodeFiles()
     var lastCode = loadOrCreate()
     val code = State(lastCode)
     val debouncedCode = Debounce(this, code, 500)
+    var codeFiles = loadCodeFiles()
 
     override def componentWillRender(get : Get) : Unit = {
         if(get(code) != lastCode) Main.codeVersion += 1
