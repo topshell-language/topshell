@@ -18,7 +18,7 @@ case class OpenFileComponent(codeFiles : P[List[CodeFile]], selectedIndex : P[In
                 S.whiteSpace("nowrap"),
                 S.textAlign.left(),
                 S.display.inlineBlock(),
-                S.width.percent(50),
+                S.width.percent(60),
                 S.marginTop.px(100),
                 S.overflowX("hidden"),
                 S.overflowY("auto"),
