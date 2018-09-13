@@ -12,14 +12,22 @@ case class OpenFileComponent(codeFiles : P[List[CodeFile]], selectedIndex : P[In
             S.bottom.px(0),
             S.right.px(0),
             S.zIndex.number(10000),
-            CodeCss,
-            S.whiteSpace("nowrap"),
-            S.width.percent(100),
-            S.height.percent(100),
-            S.backgroundColor("#fffff0"),
-            Tags(
-                for((codeFile, index) <- get(codeFiles).zipWithIndex)
-                yield renderCodeFile(codeFile, index == get(selectedIndex))
+            S.textAlign.center(),
+            E.div(
+                CodeCss,
+                S.whiteSpace("nowrap"),
+                S.textAlign.left(),
+                S.display.inlineBlock(),
+                S.width.percent(50),
+                S.marginTop.px(100),
+                S.overflowX("hidden"),
+                S.overflowY("auto"),
+                S.backgroundColor("#fffff0"),
+                S.boxShadow("0 2px 5px 1px rgba(0, 0, 0, 0.5)"),
+                Tags(
+                    for((codeFile, index) <- get(codeFiles).zipWithIndex)
+                    yield renderCodeFile(codeFile, index == get(selectedIndex))
+                )
             )
         )
     }
@@ -37,7 +45,7 @@ case class OpenFileComponent(codeFiles : P[List[CodeFile]], selectedIndex : P[In
                 S.fontSize.px(10),
                 S.color(Palette.textStringValue),
                 S.paddingLeft.px(10),
-                Text(codeFile.code.getOrElse(codeFile.path.get).take(200))
+                Text(codeFile.code.getOrElse(codeFile.path.get).take(100))
             )
         )
     }
