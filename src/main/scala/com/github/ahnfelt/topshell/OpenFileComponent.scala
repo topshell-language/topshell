@@ -20,6 +20,8 @@ case class OpenFileComponent(codeFiles : P[List[CodeFile]], selectedIndex : P[In
                 S.display.inlineBlock(),
                 S.width.percent(60),
                 S.marginTop.px(100),
+                S.paddingTop.px(10),
+                S.paddingBottom.px(10),
                 S.overflowX("hidden"),
                 S.overflowY("auto"),
                 S.backgroundColor("#fffff0"),
