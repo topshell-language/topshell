@@ -47,7 +47,7 @@ var server = http.createServer((request, response) => {
     var parts = url.parse(request.url);
 
     if(parts.pathname && parts.pathname.startsWith('/proxy/')) {
-        var target = parts.pathname.slice('/proxy/'.length);
+        var target = parts.pathname.slice('/proxy/'.length) + (parts.search || "");
         if(proxy) proxy.web(request, response, {target: decodeURI(target)});
         else utils.sendResponse(response, 'Proxying is disabled', 500, {'Content-Type': 'text/plain'});
         return;
