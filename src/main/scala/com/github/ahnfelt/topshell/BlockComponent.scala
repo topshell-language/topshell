@@ -7,16 +7,27 @@ import scala.scalajs.js
 
 case class BlockComponent(symbol : P[String], status : P[Loaded[js.Any]]) extends Component[NoEmit] {
 
+    val maxLength = State(10000)
+
     override def render(get : Get) = {
         E.div(
             ResultCss,
-            E.div(ResultHeaderCss, Text(get(symbol))).when(!get(symbol).contains('_')),
+            E.div(ResultHeaderCss, Text(get(symbol) + " ")).when(!get(symbol).contains('_')),
             E.div(ResultBodyCss,
                 get(status) match {
                     case Loader.Loading() => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3))
                     case Loader.Error(e) => E.span(CodeCss, S.color(Palette.textError), Text(e.getMessage))
                     case Loader.Result(html) => try {
-                        E.span(CodeCss, renderValue(html))
+                        length = 0
+                        E.span(
+                            CodeCss,
+                            renderValue(html, get(maxLength)),
+                            E.span(
+                                ButtonCss,
+                                E.i(A.className("fa fa-ellipsis-h")),
+                                A.onLeftClick { _ => maxLength.set(Int.MaxValue) }
+                            ).when(length > get(maxLength))
+                        )
                     } catch {
                         case e : Throwable =>
                             E.span(CodeCss, S.color(Palette.textError), Text("Internal error: " + e.getMessage))
@@ -26,34 +37,50 @@ case class BlockComponent(symbol : P[String], status : P[Loaded[js.Any]]) extend
         )
     }
 
-    private def renderValue(value : Any) : Tag = value match {
-        case v : String => Text(v)
-        case v : js.Array[_] =>
-            val nodes = for(i <- v) yield renderValue(i)
-            Tags(nodes.toSeq)
-        case _ =>
-            val v = value.asInstanceOf[js.Dictionary[_]]
-            val tagName = v("_tag").asInstanceOf[String]
-            if(tagName == ">text") {
-                Text(v("text").asInstanceOf[String])
-            } else if(tagName == ">view") {
-                renderValue(v("html"))
-            } else if(tagName == ">attribute") {
-                A("" + v("key"), "" + v("value"))
-            } else if(tagName == ">style") {
-                S("" + v("key"), "" + v("value"))
-            } else if(tagName == ">status") {
-                E.span(TextCss, S.color(Palette.textHint), v("key") match {
-                    case "Pending" => E.span(E.i(A.className("fa fa-hourglass-half"), S.paddingRight.px(8)), Text("" + v("value")))
-                    case "Runnable" => E.span(E.i(A.className("fa fa-play"), S.paddingRight.px(8)), Text("Ctrl + Enter"))
-                    case "Computing" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3), E.span(S.paddingLeft.px(8), Text("computing")))
-                    case "Running" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3))
-                    case "Error" => E.span(CodeCss, S.color(Palette.textError), Text("" + v("value")))
-                    case _ => Text(v("key") + ": " + v("value"))
-                })
-            } else {
-                E(tagName, renderValue(v("children")))
-            }
+    var length = 0
+
+    private def renderValue(value : Any, maxLength : Int) : Tag = {
+        value match {
+            case v : String =>
+                length += v.length
+                Text(if(length > maxLength) v.dropRight(length - maxLength) else v)
+            case v : js.Array[_] =>
+                val nodes = for(i <- v) yield {
+                    if(length < maxLength) Some(renderValue(i, maxLength))
+                    else None
+                }
+                Tags(nodes.flatten)
+            case _ =>
+                val v = value.asInstanceOf[js.Dictionary[_]]
+                val tagName = v("_tag").asInstanceOf[String]
+                if(tagName == ">text") {
+                    val text = v("text").asInstanceOf[String]
+                    length += text.length
+                    Text(if(length > maxLength) text.dropRight(length - maxLength) else text)
+                } else if(tagName == ">view") {
+                    length += 1
+                    renderValue(v("html"), maxLength)
+                } else if(tagName == ">attribute") {
+                    length += 5
+                    A("" + v("key"), "" + v("value"))
+                } else if(tagName == ">style") {
+                    length += 5
+                    S("" + v("key"), "" + v("value"))
+                } else if(tagName == ">status") {
+                    length += 30
+                    E.span(TextCss, S.color(Palette.textHint), v("key") match {
+                        case "Pending" => E.span(E.i(A.className("fa fa-hourglass-half"), S.paddingRight.px(8)), Text("" + v("value")))
+                        case "Runnable" => E.span(E.i(A.className("fa fa-play"), S.paddingRight.px(8)), Text("Ctrl + Enter"))
+                        case "Computing" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3), E.span(S.paddingLeft.px(8), Text("computing")))
+                        case "Running" => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3))
+                        case "Error" => E.span(CodeCss, S.color(Palette.textError), Text("" + v("value")))
+                        case _ => Text(v("key") + ": " + v("value"))
+                    })
+                } else {
+                    length += 5
+                    E(tagName, renderValue(v("children"), maxLength))
+                }
+        }
     }
 
 }
