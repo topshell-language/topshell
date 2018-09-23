@@ -1,7 +1,6 @@
 package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
-import com.github.ahnfelt.topshell.language.Tokenizer.ParseException
 
 object Checker {
 

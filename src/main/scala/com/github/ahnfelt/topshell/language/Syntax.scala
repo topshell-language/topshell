@@ -1,7 +1,5 @@
 package com.github.ahnfelt.topshell.language
 
-import com.github.ahnfelt.topshell.language.Tokenizer.ParseException
-
 object Syntax {
 
     case class Location(file : String, line : Int, column : Int) {

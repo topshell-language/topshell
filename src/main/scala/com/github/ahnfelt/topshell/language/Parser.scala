@@ -1,17 +1,36 @@
 package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
-import com.github.ahnfelt.topshell.language.Tokenizer.{ParseException, Token}
 
+import scala.scalajs.js
 import scala.scalajs.js.JSON
+import scala.scalajs.js.annotation.JSGlobal
+
+@js.native @JSGlobal("tsh.Token")
+class Token extends js.Object {
+    val file : String = js.native
+    val code : String = js.native
+    val kind : String = js.native
+    val startLine : Int = js.native
+    val startLineOffset : Int = js.native
+    val startOffset : Int = js.native
+    val stopLine : Int = js.native
+    val stopLineOffset : Int = js.native
+    val stopOffset : Int = js.native
+}
+
+case class ParseException(at : Location, message : String) extends RuntimeException(message + " " + at)
 
 class Parser(file : String, tokens : Array[Token]) {
 
-    //println(tokens.map(_.kind).mkString(" "))
+    private implicit class RichToken(token : Token) {
+        def at : Location = Location(token.file, token.startLine, (token.startLineOffset - token.startOffset) + 1)
+        def raw : String = token.code.slice(token.startOffset, token.stopOffset)
+    }
 
     private var nextAnonymousOutput = 0
     private var offset = 0
-    private val end = Token(Location(file, tokens.lastOption.map(_.at.line + 1).getOrElse(1), 1), "end", "end of file")
+    private val end = js.Dynamic.global.tsh.Token.end(file, "").asInstanceOf[Token]
     private def current =
         if(offset < tokens.length) tokens(offset) else end
     private def ahead =

@@ -1,7 +1,7 @@
 package com.github.ahnfelt.topshell.worker
 
 import com.github.ahnfelt.topshell.Main
-import com.github.ahnfelt.topshell.language.Tokenizer.ParseException
+import .ParseException
 import com.github.ahnfelt.topshell.language._
 import org.scalajs.dom.raw.DedicatedWorkerGlobalScope
 
@@ -32,8 +32,10 @@ object Processor {
     def process(code : String) : Unit = {
         val currentVersion = Main.codeVersion
 
-        val tokens = Tokenizer.tokenize("Unnamed.tsh", code)
-        val (newImports, newSymbols) = new Parser("Unnamed.tsh", tokens).parseTopLevel()
+        val beginning = System.currentTimeMillis()
+        val tokens = js.Dynamic.global.tsh.tokenize("Unnamed.tsh", code).asInstanceOf[js.Array[Token]] //Tokenizer.tokenize("Unnamed.tsh", code)
+        println("Tokenization: " + (System.currentTimeMillis() - beginning) + " ms for " + tokens.size + " tokens")
+        val (newImports, newSymbols) = new Parser("Unnamed.tsh", tokens.toArray[Token]).parseTopLevel()
         val topImports = UsedImports.completeImports(newSymbols, newImports)
         val topSymbols = Checker.check(topImports, newSymbols)
         val emitted = Emitter.emit(currentVersion, topImports, topSymbols)
