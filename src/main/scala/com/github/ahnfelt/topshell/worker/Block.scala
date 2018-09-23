@@ -182,6 +182,14 @@ object Block {
         send(block.name, result, block.error)
     }
 
+    def time[T](label : String)(body : => T) : T = {
+        println("Begun " + label + "...")
+        val started = System.currentTimeMillis()
+        val result = body
+        println("Finished " + label + ": " + (System.currentTimeMillis() - started) + " ms")
+        result
+    }
+
     def send(escapedName : String, value : js.Any, error : js.Any) : Unit = {
         val currentVersion = Main.codeVersion // TODO
         val name = if(escapedName.endsWith("_")) escapedName.dropRight(1) else escapedName
@@ -189,10 +197,10 @@ object Block {
             val message = if(!js.isUndefined(error) && error != null) {
                 js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error), "codeVersion" -> currentVersion)
             } else {
-                val html = js.Dynamic.global.tsh.toHtml(value)
+                val html = time("toHtml") { js.Dynamic.global.tsh.toHtml(value) }
                 js.Dictionary("event" -> "result", "name" -> name, "html" -> html, "codeVersion" -> currentVersion)
             }
-            DedicatedWorkerGlobalScope.self.postMessage(message)
+            time("postMessage") { DedicatedWorkerGlobalScope.self.postMessage(message) }
         }
     }
 
