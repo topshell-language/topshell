@@ -25,9 +25,16 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private implicit class RichToken(token : Token) {
         def at : Location = Location(token.file, token.startLine, (token.startLineOffset - token.startOffset) + 1)
-        def raw : String = token.code.slice(token.startOffset, token.stopOffset)
+        def raw : String = {
+            val result = token.code.slice(token.startOffset, token.stopOffset)
+            if(result != "_") result else {
+                nextWildcard += 1
+                "_" + nextWildcard
+            }
+        }
     }
 
+    private var nextWildcard = 0
     private var nextAnonymousOutput = 0
     private var offset = 0
     private val end = js.Dynamic.global.tsh.Token.end(file, "").asInstanceOf[Token]
@@ -102,7 +109,8 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseTopSymbol() : TopSymbol = {
         val isDefinition = current.kind == "definition"
-        val variable = if(isDefinition) current.raw else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
+        val name = if(isDefinition) current.raw else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
+        val variable = if(name != "_") name else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
         val bind = ahead.raw == "<-"
         val at = if(isDefinition) ahead.at else current.at
         try {
