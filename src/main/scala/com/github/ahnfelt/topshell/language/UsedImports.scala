@@ -35,7 +35,7 @@ object UsedImports {
         case ERecord(at, fields, rest) =>
             val list = for(field <- fields.map(_.value)) yield usedImports(field)
             list.foldLeft(rest.map(usedImports).getOrElse(Map.empty))(_ ++ _)
-        case EField(at, record, field) =>
+        case EField(at, record, field, optional) =>
             usedImports(record)
         case EIf(at, condition, thenBody, elseBody) =>
             usedImports(condition) ++

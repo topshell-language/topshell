@@ -216,6 +216,8 @@ exports.log = message => new self.tsh.Task((w, t, c) => {
     try { t(void console.dir(message)) } catch(e) { c(e) }
 });
 
+exports.flatMap = exports.then;
+exports.flatten = exports.flatMap(v => v);
 
 // Proposal:
 // Task.retry [2, 5, 10] task

@@ -75,6 +75,10 @@ self.tsh.record = (m, r) => {
     return m;
 };
 
+self.tsh.lookup = (r, f) => {
+    return r != null && Object.prototype.hasOwnProperty.call(r, f) ? {_: "Some", value: r[f]} : null;
+};
+
 self.tsh.taskThen = f => task => new self.tsh.Task((w, t, c) => {
     var cancel1 = null;
     try {

@@ -38,8 +38,8 @@ object CacheKey {
             EList(zeroLocation, elements.map(withoutLocation), rest.map(withoutLocation))
         case ERecord(_, fields, rest) =>
             ERecord(zeroLocation, fields.map(withoutLocation), rest.map(withoutLocation))
-        case EField(_, record, field) =>
-            EField(zeroLocation, withoutLocation(record), field)
+        case EField(_, record, field, optional) =>
+            EField(zeroLocation, withoutLocation(record), field, optional)
         case EIf(_, condition, thenBody, elseBody) =>
             EIf(zeroLocation, withoutLocation(condition), withoutLocation(thenBody), withoutLocation(elseBody))
         case EUnary(_, operator, operand) =>

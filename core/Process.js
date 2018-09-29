@@ -15,12 +15,12 @@ exports._fixConfig = (config, environment) => {
     return config;
 };
 
-exports.run = config => path => arguments => {
+exports.run = config => {
     config = exports._fixConfig(config);
-    return self.tsh.action("Process.run")({config: config, path: path, arguments : arguments});
+    return self.tsh.action("Process.run")({config: config, path: config.command, arguments : config.arguments});
 };
 
-exports.shell = config => command => {
+exports.shell = config => {
     config = exports._fixConfig(config);
-    return self.tsh.action("Process.shell")({config: config, command: command});
+    return self.tsh.action("Process.shell")({config: config, command: config.command});
 };

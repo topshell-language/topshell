@@ -15,7 +15,7 @@
             return f(source, setState);
         }
 
-        var fieldRE = /[a-z][a-zA-Z0-9]*|["]([^"\\]|[\\][.])*["]/;
+        var fieldRE = /[?]?[a-z][a-zA-Z0-9]*|["]([^"\\]|[\\][.])*["]/;
         var smallRE = /[a-z_]/;
         var largeRE = /[A-Z]/;
         var digitRE = /[0-9]/;

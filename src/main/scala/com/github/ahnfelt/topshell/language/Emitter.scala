@@ -77,7 +77,7 @@ object Emitter {
             Math.max(at.line, Math.max((0 :: elements.map(lastLine)).max, rest.map(lastLine).getOrElse(0)))
         case ERecord(at, fields, rest) =>
             Math.max(at.line, Math.max((0 :: fields.map(bindingLastLine)).max, rest.map(lastLine).getOrElse(0)))
-        case EField(at, record, field) =>
+        case EField(at, record, field, _) =>
             Math.max(at.line, lastLine(record))
         case EIf(at, condition, thenBody, elseBody) =>
             Math.max(at.line, Math.max(lastLine(condition), Math.max(lastLine(thenBody), lastLine(elseBody))))
@@ -116,8 +116,10 @@ object Emitter {
         case ERecord(at, fields, rest) =>
             val record = "{" + fields.map(b => escapeField(b.name, None) + ": " + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)
-        case EField(at, record, field) =>
+        case EField(at, record, field, false) =>
             escapeField(field, Some(record))
+        case EField(at, record, field, true) =>
+            "_h.lookup(" + emitTerm(record) + ", " + JSON.stringify(field) + ")"
         case EIf(at, condition, thenBody, elseBody) =>
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
         case EUnary(at, operator, operand) =>

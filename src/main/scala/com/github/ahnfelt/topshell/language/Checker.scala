@@ -47,7 +47,7 @@ object Checker {
         case ERecord(at, fields, rest) =>
             (for(element <- fields.map(_.value)) yield checkTerm(element, visible)).toSet.flatten ++
             (for(element <- rest) yield checkTerm(element, visible)).toSet.flatten
-        case EField(at, record, field) =>
+        case EField(at, record, field, optional) =>
             checkTerm(record, visible)
         case EIf(at, condition, thenBody, elseBody) =>
             checkTerm(condition, visible) ++

@@ -193,10 +193,12 @@ class Parser(file : String, tokens : Array[Token]) {
         var result = parseAtom()
         while(current.raw == ".") {
             val c = skip("separator", Some("."))
+            val optional = current.raw == "?"
+            if(optional) skip("separator", Some("?"))
             val label =
                 if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
                 else skip("lower").raw
-            result = EField(c.at, result, label)
+            result = EField(c.at, result, label, optional)
         }
         result
     }
@@ -212,10 +214,12 @@ class Parser(file : String, tokens : Array[Token]) {
                 ))
             } else if(current.raw == ".") {
                 val at = skip("separator").at
+                val optional = current.raw == "?"
+                if(optional) skip("separator", Some("?"))
                 val field =
                     if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
                     else skip("lower").raw
-                EFunction(at, "_1", EField(at, EVariable(at, "_1"), field))
+                EFunction(at, "_1", EField(at, EVariable(at, "_1"), field, optional))
             } else {
                 parseTerm()
             }
