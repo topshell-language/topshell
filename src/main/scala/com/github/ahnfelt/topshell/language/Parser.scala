@@ -191,10 +191,9 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseDot() : Term = {
         var result = parseAtom()
-        while(current.raw == ".") {
-            val c = skip("separator", Some("."))
-            val optional = current.raw == "?"
-            if(optional) skip("separator", Some("?"))
+        while(current.raw == "." || current.raw == ".?") {
+            val optional = current.raw == ".?"
+            val c = skip("separator")
             val label =
                 if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
                 else skip("lower").raw
@@ -212,10 +211,9 @@ class Parser(file : String, tokens : Array[Token]) {
                 EFunction(at, "_1", EFunction(at, "_2",
                     EBinary(at, c.raw, EVariable(at, "_1"), EVariable(at, "_2"))
                 ))
-            } else if(current.raw == ".") {
+            } else if(current.raw == "." || current.raw == ".?") {
+                val optional = current.raw == ".?"
                 val at = skip("separator").at
-                val optional = current.raw == "?"
-                if(optional) skip("separator", Some("?"))
                 val field =
                     if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
                     else skip("lower").raw

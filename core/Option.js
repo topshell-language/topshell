@@ -1,7 +1,7 @@
-exports.none = null;
-exports.some = v => ({_: "Some", value: v});
-exports.isNone = v => v === exports.none;
-exports.isSome = v => !exports.isNone(v);
+exports.none = self.tsh.none;
+exports.some = self.tsh.some;
+exports.isNone = self.tsh.isNone;
+exports.isSome = self.tsh.isSome;
 exports.default = d => v => exports.isNone(v) ? d : v.value;
 exports.flatten = v => exports.isNone(v) ? v : v.value;
 exports.map = f => v => exports.isNone(v) ? v : exports.some(f(v.value));

@@ -34,7 +34,7 @@ exports.range = function(start) {
 
 exports.size = function(r) { return r.length; };
 exports.isEmpty = function(r) { return r.length === 0; };
-exports.at = function(i) { return function(r) { return r[i]; }; };
+exports.at = function(i) { return function(r) { return i >= 0 && i < r.length ? self.tsh.some(r[i]) : self.tsh.none; }; };
 exports.take = function(i) { return function(r) { return r.slice(0, i); }; };
 exports.drop = function(i) { return function(r) { return r.slice(i); }; };
 exports.takeLast = function(i) { return function(r) { return r.slice(-i); }; };
@@ -46,7 +46,7 @@ exports.find = function(f) { return function(r) { return r.find(f); }; };
 exports.all = function(f) { return function(r) { return r.every(f); }; };
 exports.any = function(f) { return function(r) { return r.some(f); }; };
 
-exports.head = function(r) { return r[0]; };
+exports.head = function(r) { return r.length > 0 ? self.tsh.some(r[0]) : self.tsh.none; };
 exports.tail = function(r) { return r.slice(1); };
 exports.append = function(r) { return function(a) { return r.concat(a); }; };
 

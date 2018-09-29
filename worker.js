@@ -76,8 +76,13 @@ self.tsh.record = (m, r) => {
 };
 
 self.tsh.lookup = (r, f) => {
-    return r != null && Object.prototype.hasOwnProperty.call(r, f) ? {_: "Some", value: r[f]} : null;
+    return r != null && Object.prototype.hasOwnProperty.call(r, f) ? self.tsh.some(r[f]) : self.tsh.none;
 };
+
+self.tsh.none = {_: "None"};
+self.tsh.some = v => ({_: "Some", value: v});
+self.tsh.isNone = v => v._ === "None";
+self.tsh.isSome = v => v._ === "Some";
 
 self.tsh.taskThen = f => task => new self.tsh.Task((w, t, c) => {
     var cancel1 = null;
@@ -293,7 +298,8 @@ self.tsh.tokenize = (file, code) => {
             var operatorKind =
                 op === "=" || op === "<-" || op === "->" ||
                 op === "," || op === ";" ||
-                op === "." || op === ".." || op === ":" || op === "::" || op === "?" ?
+                op === "." || op === ".?" ||
+                op === ".." || op === ":" || op === "::" || op === "?" ?
                 "separator" : "operator";
             tokens.push(token(operatorKind, start, i));
 
