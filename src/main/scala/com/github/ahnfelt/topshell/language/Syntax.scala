@@ -7,7 +7,7 @@ object Syntax {
         def toShortString = "at line " + line + ", column " + column
     }
 
-    case class Binding(at : Location, name : String, value : Term)
+    case class Binding(at : Location, name : String, scheme : Option[Scheme], value : Term)
 
     sealed abstract class TopBlock {
         def name : String
@@ -36,5 +36,37 @@ object Syntax {
     case class EIf(at : Location, condition : Term, thenBody : Term, elseBody : Term) extends Term
     case class EUnary(at : Location, operator : String, operand : Term) extends Term
     case class EBinary(at : Location, operator : String, left : Term, right : Term) extends Term
+
+    sealed abstract class Type {
+        override def toString = this match {
+            case TVariable(id) => "_" + id
+            case TParameter(name) => name
+            case TConstructor(name) => name
+            case TRecord(fields) => "{" + fields.map(b => b.name + ": " + b.scheme).mkString(", ") + "}"
+            case TApply(TApply(TConstructor("->"), a@TApply(TApply(TConstructor("->"), _), _)), b) => "(" + a + ") -> " + b
+            case TApply(TApply(TConstructor("->"), a), b) => a + " -> " + b
+            case TApply(constructor, argument : TApply) => constructor + " (" + argument + ")"
+            case TApply(constructor, argument) => constructor + " " + argument
+        }
+    }
+    case class TVariable(id : Int) extends Type
+    case class TParameter(name : String) extends Type
+    case class TConstructor(name : String) extends Type
+    case class TApply(constructor : Type, argument : Type) extends Type
+    case class TRecord(fields : List[TypeBinding]) extends Type
+
+    sealed abstract class Kind
+    case class KStar() extends Kind
+    case class KArrow(left : Kind, right : Kind) extends Kind
+
+    case class TypeParameter(name : String, kind : Kind)
+
+    case class Scheme(parameters : List[TypeParameter], constraints : List[Type], generalized : Type) {
+        override def toString = {
+            generalized + constraints.map(" | " + _).mkString
+        }
+    }
+
+    case class TypeBinding(name : String, scheme : Scheme)
 
 }

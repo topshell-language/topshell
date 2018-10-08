@@ -115,15 +115,15 @@ class Parser(file : String, tokens : Array[Token]) {
         val at = if(isDefinition) ahead.at else current.at
         try {
             if(!isDefinition) {
-                TopSymbol(bind, Binding(at, variable, parseTerm()), List(), None)
+                TopSymbol(bind, Binding(at, variable, None, parseTerm()), List(), None)
             } else {
                 skip("definition").raw
                 if(bind) skip("separator", Some("<-")).at else skip("separator", Some("=")).at
-                val binding = Binding(at, variable, parseTerm())
+                val binding = Binding(at, variable, None, parseTerm())
                 TopSymbol(bind, binding, List(), None)
             }
         } catch { case e : ParseException =>
-            val binding = Binding(at, variable, ERecord(at, List(), None))
+            val binding = Binding(at, variable, None, ERecord(at, List(), None))
             TopSymbol(bind, binding, List(), Some(e))
         }
     }
@@ -252,7 +252,7 @@ class Parser(file : String, tokens : Array[Token]) {
                     skip("separator", Some(":")).at
                     parseTerm()
                 }
-                bindings ::= Binding(at, name, value)
+                bindings ::= Binding(at, name, None, value)
                 if(current.raw != "}") skip("separator", Some(","))
                 if(current.raw == "..") {
                     skip("separator", Some(".."))
@@ -288,7 +288,7 @@ class Parser(file : String, tokens : Array[Token]) {
             case "<-" =>
                 val variable = skip("definition").raw
                 val at = skip("separator", Some("<-")).at
-                val binding = Binding(at, variable, parseTerm())
+                val binding = Binding(at, variable, None, parseTerm())
                 skip("separator", Some(","))
                 EBind(at, binding, parseTerm())
             case "=" =>
@@ -296,7 +296,7 @@ class Parser(file : String, tokens : Array[Token]) {
                 while(ahead.raw == "=") {
                     val variable = skip("definition").raw
                     val at = skip("separator", Some("=")).at
-                    bindings ::= Binding(at, variable, parseTerm())
+                    bindings ::= Binding(at, variable, None, parseTerm())
                     skip("separator", Some(","))
                 }
                 ELet(bindings.last.at, bindings.reverse, parseTerm())

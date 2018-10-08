@@ -7,6 +7,7 @@ object Palette {
     val text = "#405060"
     val textError = "#ff0000"
     val textValue = "rgb(50, 100, 250)"
-    val textStringValue = "rgb(20, 167, 14)"
+    val operator = "#d716d4"
+    val typeOrModule = "#268d3d"
 
 }

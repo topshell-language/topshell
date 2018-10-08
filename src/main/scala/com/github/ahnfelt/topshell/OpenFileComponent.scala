@@ -45,7 +45,7 @@ case class OpenFileComponent(codeFiles : P[List[CodeFile]], selectedIndex : P[In
             ),
             E.span(
                 S.fontSize.px(10),
-                S.color(Palette.textStringValue),
+                S.color(Palette.typeOrModule),
                 S.paddingLeft.px(10),
                 Text(codeFile.code.getOrElse(codeFile.path.get).take(100))
             )

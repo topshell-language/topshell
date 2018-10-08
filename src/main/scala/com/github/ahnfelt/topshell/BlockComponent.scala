@@ -5,14 +5,19 @@ import com.github.ahnfelt.react4s._
 
 import scala.scalajs.js
 
-case class BlockComponent(symbol : P[String], status : P[Loaded[js.Any]]) extends Component[NoEmit] {
+case class BlockComponent(symbol : P[String], symbolType : P[Option[String]], status : P[Loaded[js.Any]]) extends Component[NoEmit] {
 
     val maxLength = State(10000)
 
     override def render(get : Get) = {
+        val t = get(symbolType).map(_ + " ").getOrElse("")
         E.div(
             ResultCss,
-            E.div(ResultHeaderCss, Text(get(symbol) + " ")).when(!get(symbol).contains('_')),
+            E.div(ResultHeaderCss,
+                Text(get(symbol) + " "),
+                E.span(ResultTypeColonCss, Text(": ")).when(t.nonEmpty),
+                E.span(ResultTypeCss, Text(t))
+            ).when(!get(symbol).contains('_')),
             E.div(ResultBodyCss,
                 get(status) match {
                     case Loader.Loading() => E.div(E.span(SpinnerCss1), E.span(SpinnerCss2), E.span(SpinnerCss3))

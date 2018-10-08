@@ -6,7 +6,12 @@ import org.scalajs.dom
 import scala.scalajs.js
 import scala.scalajs.js.JSON
 
-case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], implied : P[Set[String]], error : P[Option[String]]) extends Component[NoEmit] {
+case class MainComponent(
+    symbols : P[List[(String, Loader.Loaded[js.Any])]],
+    implied : P[Set[String]],
+    types : P[Map[String, String]],
+    error : P[Option[String]]
+) extends Component[NoEmit] {
 
     val showOpen = State[Option[Int]](None)
     var altKey = false
@@ -171,8 +176,9 @@ case class MainComponent(symbols : P[List[(String, Loader.Loaded[js.Any])]], imp
             ),
             E.div(RightAreaCss, {
                 Tags(for((symbol, status) <- get(symbols) if !get(implied)(symbol) || status.isInstanceOf[Loader.Error[_]]) yield {
-                    Component(BlockComponent, symbol, status).withKey(symbol)
-                }),
+                    val symbolType = get(types).get(symbol)
+                    Component(BlockComponent, symbol, symbolType, status).withKey(symbol)
+                })
             }),
             E.div(BottomRightAreaCss,
                 E.div(ShortcutAreaCss, Text("TopShell 2018.1")),
@@ -290,6 +296,18 @@ object ResultHeaderCss extends CssClass(
     CodeCss,
     S.fontWeight.bold(),
     S.marginBottom.px(5),
+)
+
+object ResultTypeCss extends CssClass(
+    CodeCss,
+    S.fontWeight("normal"),
+    S.color(Palette.typeOrModule)
+)
+
+object ResultTypeColonCss extends CssClass(
+    CodeCss,
+    S.fontWeight("normal"),
+    S.color(Palette.operator)
 )
 
 object ResultBodyCss extends CssClass(

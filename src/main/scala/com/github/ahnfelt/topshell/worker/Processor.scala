@@ -46,8 +46,11 @@ object Processor {
         val topImports = time("topImports") {
             UsedImports.completeImports(newSymbols, newImports)
         }
-        val topSymbols = time("check") {
+        val untypedTopSymbols = time("check") {
             Checker.check(topImports, newSymbols)
+        }
+        val topSymbols = time("type") {
+            new Typer().check(topImports, untypedTopSymbols)
         }
         val emitted = time("emit") {
             Emitter.emit(currentVersion, topImports, topSymbols)
@@ -92,9 +95,11 @@ object Processor {
                 block.cancel.foreach(f => f())
             }
 
+            val typePairs = topSymbols.map(_.binding).map(b => b.name -> b.scheme.map(_.toString).getOrElse(""))
             val message = js.Dictionary(
                 "event" -> "symbols",
                 "symbols" -> js.Array(names : _*),
+                "types" -> js.Dictionary(typePairs.filter(_._2.nonEmpty) : _*),
                 "implied" -> js.Array((topImports.map(_.name).toSet -- newImports.map(_.name)).toSeq : _*),
                 "cached" -> js.Array(usedOldBlocks.map(_.dropRight(1)) : _*),
                 "codeVersion" -> currentVersion

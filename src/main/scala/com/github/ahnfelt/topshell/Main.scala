@@ -16,11 +16,12 @@ object Main {
     def main(arguments : Array[String]) : Unit = {
         if(!js.isUndefined(js.Dynamic.global.window)) {
             var symbols : List[(String, Loader.Loaded[js.Any])] = List()
+            var types : Map[String, String] = Map()
             var implied : Set[String] = Set()
             var error : Option[String] = None
             var resultTimeouts = Map[String, js.timers.SetTimeoutHandle]()
             def update() : Unit = {
-                val component = Component(MainComponent, symbols, implied, error)
+                val component = Component(MainComponent, symbols, implied, types, error)
                 ReactBridge.renderToDomById(component, "main")
             }
             worker = new Worker("worker.js")
@@ -34,6 +35,7 @@ object Main {
                                 if(cached.contains(s)) symbols.find(_._1 == s).getOrElse(s -> Loader.Loading())
                                 else s -> Loader.Loading()
                             ).toList
+                            types = data.types.asInstanceOf[js.Dictionary[String]].toMap
                             implied = data.implied.asInstanceOf[js.Array[String]].toSet
                             update()
                         case "error" =>
