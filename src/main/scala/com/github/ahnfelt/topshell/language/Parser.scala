@@ -321,7 +321,8 @@ class Parser(file : String, tokens : Array[Token]) {
     def parseTypeApplication() : Type = {
         val left = parseTypeAtom()
         var applies = List.empty[Type]
-        while(List("bracket", "definition", "lower", "upper", "string").contains(current.kind) && current.raw != ")") {
+        val kinds = List("definition", "lower", "upper", "string")
+        while(kinds.contains(current.kind) || current.raw == "(" || current.raw == "{") {
             applies ::= parseTypeAtom()
         }
         applies.reverse.foldLeft(left)(TApply)
@@ -354,21 +355,31 @@ class Parser(file : String, tokens : Array[Token]) {
 
     def parseRecordType() : Type = {
         skip("bracket", Some("{"))
+        var bindings : List[TypeBinding] = List.empty
+        while(current.raw != "}") {
+            val name =
+                if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
+                else skip("lower").raw
+            skip("separator", Some(":"))
+            val t = parseType()
+            bindings ::= TypeBinding(name, Scheme(List(), List(), t)) // Scheme
+            if(current.raw != "}") skip("separator", Some(","))
+        }
         skip("bracket", Some("}"))
-        TRecord(List()) // Implement
+        TRecord(bindings.reverse)
     }
 
     def parseConstraint() : Type = {
         skip("operator", Some("|"))
-        if(ahead.raw == ".") {
+        if(ahead.raw == "." || ahead.raw == ".?") {
             val record = skip("lower").raw
-            skip("separator", Some("."))
+            val o = skip("separator").raw
             val label =
                 if(ahead.kind == "lower") skip("lower").raw
                 else JSON.parse(skip("string").raw).asInstanceOf[String]
             skip("separator", Some(":"))
             val t = parseType()
-            TApply(TApply(TApply(TConstructor("."), TSymbol(label)), t), TParameter(record))
+            TApply(TApply(TApply(TConstructor(o), TSymbol(label)), t), TParameter(record))
         } else {
             parseType()
         }

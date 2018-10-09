@@ -62,7 +62,7 @@ object Syntax {
 
     val binaryOperators = Seq(
         Seq("|")                    -> "a -> (a -> b) -> b",
-        Seq("~>")                   -> "a -> b -> Pair a b",
+        Seq("~>")                   -> "a -> b -> {key: a, value: b}",
         Seq("&&", "||")             -> "Bool -> Bool -> Bool",
         Seq(">", "<", ">=", "<=")   -> "a -> a -> Bool | Order a",
         Seq("==", "!=")             -> "a -> a -> Bool | Equal a",

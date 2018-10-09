@@ -139,7 +139,6 @@ class Typer {
                 withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
                     val v = checkTerm(s.binding.value, expected)
                     val scheme = generalize(expected) // Check existing scheme, if present
-                    println("Generalized: " + scheme)
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
                 }
