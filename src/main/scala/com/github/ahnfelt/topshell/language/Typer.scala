@@ -35,14 +35,17 @@ class Typer {
     }
 
     def simplifyConstraint(constraint : Type) : Option[Type] = constraint match {
-        case TApply(TApply(TApply(TConstructor("."), TSymbol(label)), t), record) =>
+        case TApply(TApply(TApply(TConstructor(o), TSymbol(label)), t), record) if o == "." || o == ".?" =>
+            val optional = o == ".?"
             record match {
                 case TRecord(fields) =>
-                    val field = fields.find(_.name == label).getOrElse {
-                        throw new RuntimeException("No such field " + label + " in: " + record)
+                    fields.find(_.name == label).map { field =>
+                        unification.unify(t, instantiate(Some(field.scheme)))
+                        None
+                    }.getOrElse {
+                        if(optional) None
+                        else throw new RuntimeException("No such field " + label + " in: " + record)
                     }
-                    unification.unify(t, instantiate(Some(field.scheme)))
-                    None
                 case TParameter(_) =>
                     Some(constraint)
                 case TVariable(_) =>
@@ -273,10 +276,12 @@ class Typer {
                     }
                 case other =>
                     val t2 = freshTypeVariable()
-                    constraints ::= TApply(TApply(TApply(TConstructor("."), TSymbol(field)), t2), other)
+                    val o = if(optional) ".?" else "."
+                    constraints ::= TApply(TApply(TApply(TConstructor(o), TSymbol(field)), t2), other)
                     t2
             }
-            unification.unify(expected, t3)
+            val t4 = if(optional) TApply(TConstructor("Maybe"), t3) else t3
+            unification.unify(expected, t4)
             EField(at, r, field, optional)
 
         case EIf(at, condition, thenBody, elseBody) =>
