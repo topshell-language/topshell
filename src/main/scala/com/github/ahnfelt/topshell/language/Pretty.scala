@@ -2,13 +2,17 @@ package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
 
+import scala.scalajs.js.JSON
+
 object Pretty {
 
     def showType(t : Type) = t match {
         case TVariable(id) => "_" + id
         case TParameter(name) => name
         case TConstructor(name) => name
+        case TSymbol(name) => JSON.stringify(name)
         case TRecord(fields) => "{" + fields.map(b => b.name + ": " + b.scheme).mkString(", ") + "}"
+        case TApply(TApply(TApply(TConstructor("."), TSymbol(l)), t1), t2) => t2 + "." + l + ": " + t1 // Escape label
         case TApply(TApply(TConstructor("->"), a@TApply(TApply(TConstructor("->"), _), _)), b) => "(" + a + ") -> " + b
         case TApply(TApply(TConstructor("->"), a), b) => a + " -> " + b
         case TApply(constructor, argument : TApply) => constructor + " (" + argument + ")"
@@ -35,6 +39,7 @@ object Pretty {
         case TVariable(id) => expand(id).map(usedParameterNames(_, expand)).getOrElse(Set.empty)
         case TParameter(name) => Set(name)
         case TConstructor(name) => Set.empty
+        case TSymbol(name) => Set.empty
         case TApply(constructor, argument) =>
             usedParameterNames(constructor, expand) ++ usedParameterNames(argument, expand)
         case TRecord(fields) =>
@@ -50,6 +55,8 @@ object Pretty {
         case TParameter(name) =>
             search
         case TConstructor(name) =>
+            search
+        case TSymbol(name) =>
             search
         case TApply(constructor, argument) =>
             TApply(replace(constructor, replacement, expand), replace(argument, replacement, expand))
@@ -67,6 +74,7 @@ object Pretty {
         case TVariable(id) => List(id)
         case TParameter(name) => List()
         case TConstructor(name) => List()
+        case TSymbol(name) => List()
         case TApply(constructor, argument) => freeInType(constructor) ++ freeInType(argument)
         case TRecord(fields) => fields.flatMap(f => freeInScheme(f.scheme))
     }).distinct

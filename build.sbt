@@ -11,4 +11,8 @@ libraryDependencies += "com.github.werk" %%% "router4s" % "0.1.0-SNAPSHOT"
 
 scalaVersion := "2.12.4"
 
+scalacOptions += "-Xfatal-warnings"
+scalacOptions += "-deprecation"
+scalacOptions += "-feature"
+
 scalaJSUseMainModuleInitializer := true

@@ -42,6 +42,7 @@ object Syntax {
     case class TParameter(name : String) extends Type
     case class TConstructor(name : String) extends Type
     case class TApply(constructor : Type, argument : Type) extends Type
+    case class TSymbol(name : String) extends Type
     case class TRecord(fields : List[TypeBinding]) extends Type
 
     sealed abstract class Kind

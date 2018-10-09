@@ -19,7 +19,7 @@ object Processor {
             val message = if(!js.isUndefined(error) && error != null) {
                 js.Dictionary("event" -> "error", "name" -> name, "error" -> ("" + error), "codeVersion" -> currentVersion)
             } else {
-                val html = js.Dynamic.global.asInstanceOf[js.Dynamic].tsh.toHtml(value)
+                val html = js.Dynamic.global.tsh.toHtml(value)
                 js.Dictionary("event" -> "result", "name" -> name, "html" -> html, "codeVersion" -> currentVersion)
             }
             DedicatedWorkerGlobalScope.self.postMessage(message)
@@ -96,7 +96,7 @@ object Processor {
             }
 
             val typePairs = topSymbols.map(_.binding).map(b =>
-                b.name -> b.scheme.map(Pretty.renameParameterNames(_, _ => None)).map(_.toString).getOrElse("")
+                b.name -> b.scheme.map(_.toString).getOrElse("")
             )
             val message = js.Dictionary(
                 "event" -> "symbols",

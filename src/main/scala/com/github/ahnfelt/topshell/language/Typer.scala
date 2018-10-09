@@ -2,6 +2,8 @@ package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
 
+import scala.collection.mutable
+
 class Typer {
 
     var environment = Map[String, Scheme]()
@@ -32,7 +34,28 @@ class Typer {
         }
     }
 
+    def simplifyConstraint(constraint : Type) : Option[Type] = constraint match {
+        case TApply(TApply(TApply(TConstructor("."), TSymbol(label)), t), record) =>
+            record match {
+                case TRecord(fields) =>
+                    val field = fields.find(_.name == label).getOrElse {
+                        throw new RuntimeException("No such field " + label + " in: " + record)
+                    }
+                    unification.unify(t, instantiate(Some(field.scheme)))
+                    None
+                case TParameter(_) =>
+                    Some(constraint)
+                case TVariable(_) =>
+                    Some(constraint)
+                case _ =>
+                    throw new RuntimeException("No such field " + label + " in non-record: " + record)
+            }
+        case _ =>
+            throw new RuntimeException("Invalid constraint: " + constraint)
+    }
+
     def generalize(theType : Type) : Scheme = {
+        constraints = constraints.map(unification.expand).distinct.flatMap(simplifyConstraint)
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
         val free = Pretty.freeInType(t).filterNot(nonFree)
@@ -41,16 +64,16 @@ class Typer {
         val cs1 = constraints.map(unification.replace(_, replacement))
         val (cs2, cs3) = constraints.zip(cs1).partition { case (c1, c2) => c1 != c2 }
         constraints = cs3.map(_._2)
-        val simplified = cs2.map(_._2) // Simplify constraints
+        val simplified = cs2.map(_._2)
         val generalized = unification.replace(t, replacement)
         val parameters = replacementList.map { case (_, p) => TypeParameter(p.name, KStar()) } // Kind
-        Scheme(parameters, simplified, generalized)
+        Pretty.renameParameterNames(Scheme(parameters, simplified, generalized), unification.sub.get)
     }
 
     def instantiate(scheme : Option[Scheme]) : Type = scheme.map { s =>
-        val replacement = s.parameters.map(p => TParameter(p.name) -> freshTypeVariable())
-        constraints = s.constraints.map(unification.replace(_, replacement.toMap)) ++ constraints
-        unification.replace(s.generalized, replacement.toMap) // Kind
+        val replacement = s.parameters.map(p => TParameter(p.name) -> freshTypeVariable()).toMap[Type, Type]
+        constraints = s.constraints.map(unification.replace(_, replacement)) ++ constraints
+        unification.replace(s.generalized, replacement) // Kind
     }.getOrElse(freshTypeVariable())
 
     def check(imports : List[TopImport], symbols : List[TopSymbol]) : List[TopSymbol] = {
@@ -163,7 +186,11 @@ class Typer {
             EList(at, es, r)
 
         case ERecord(at, fields, rest) =>
+            val seen = mutable.HashSet[String]()
             val (fs, ss) = fields.map { f =>
+                if(!seen.add(f.name)) {
+                    throw new RuntimeException("Duplicate field " + f.name + " in: " + term)
+                }
                 val t1 = freshTypeVariable()
                 val v = checkTerm(f.value, t1)
                 // Also use the explicit scheme, if present
@@ -178,26 +205,29 @@ class Typer {
                 case other =>
                     throw new RuntimeException("Not a record: " + other)
             }).getOrElse(List())
-            val t4 = TRecord(ss ++ ss2)
+            val ss3 = ss.map(_.name).toSet
+            val t4 = TRecord(ss ++ ss2.filterNot(s => ss3(s.name)))
             unification.unify(expected, t4)
             ERecord(at, fs, r)
 
         case EField(at, record, field, optional) =>
             val t1 = freshTypeVariable()
             val r = checkTerm(record, t1)
-            val ss2 = unification.expand(t1) match {
+            val t3 = unification.expand(t1) match {
                 case TRecord(fields2) =>
-                    fields2
+                    val ss2 = fields2
+                    ss2.find(_.name == field) match {
+                        case Some(b) =>
+                            instantiate(Some(b.scheme))
+                        case None =>
+                            throw new RuntimeException("No such field: " + field + " in: " + ss2)
+                    }
                 case other =>
-                    throw new RuntimeException("No such field: " + field + " in non-record: " + other)
+                    val t2 = freshTypeVariable()
+                    constraints ::= TApply(TApply(TApply(TConstructor("."), TSymbol(field)), t2), other)
+                    t2
             }
-            val t2 = ss2.find(_.name == field) match {
-                case Some(b) =>
-                    instantiate(Some(b.scheme))
-                case None =>
-                    throw new RuntimeException("No such field: " + field + " in: " + ss2)
-            }
-            unification.unify(expected, t2)
+            unification.unify(expected, t3)
             EField(at, r, field, optional)
 
         case EIf(at, condition, thenBody, elseBody) =>

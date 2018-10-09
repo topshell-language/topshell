@@ -51,6 +51,11 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                 throw new RuntimeException("Got: " + name2 + ", expected: " + name1)
             }
 
+        case (TSymbol(name1), TSymbol(name2)) =>
+            if(name1 != name2) {
+                throw new RuntimeException("Got: " + name2 + ", expected: " + name1)
+            }
+
         case (TApply(constructor1, argument1), TApply(constructor2, argument2)) =>
             unify(constructor1, constructor2)
             unify(argument1, argument2)
@@ -100,7 +105,7 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                     // Assumes that constraints are sorted
                     val c1 = b1.scheme.constraints.map(Pretty.replace(_, replacement1, sub.get)).map(expand)
                     val c2 = b2.scheme.constraints.map(Pretty.replace(_, replacement2, sub.get)).map(expand)
-                    // Don't use unification to check: forall a. a -> _1 != forall a. _2 -> a, but they unify.
+                    // Don't use unification to check: forall a. a -> _1 != forall a. _2 -> a, but they unifyInternal.
                     c1.zip(c2).foreach { case (a, b) => if(a != b) {
                         throw new RuntimeException(
                             "Incompatible constraints: " + a + " vs. " + b + "."
@@ -133,6 +138,8 @@ class Unification(initialEnvironment : Map[Int, Type]) {
         case TParameter(name) =>
             unexpanded
         case TConstructor(name) =>
+            unexpanded
+        case TSymbol(name) =>
             unexpanded
         case TApply(constructor, argument) =>
             TApply(expand(constructor), expand(argument))

@@ -107,7 +107,7 @@ object Block {
                     block.state = Computing()
                     sendBlockStatus(block)
                     try {
-                        val result = block.compute.get.apply()
+                        val result = block.compute.get.apply(())
                         if(block.effect) {
                             if(js.isUndefined(result._run)) {
                                 block.state = Error("Not a task")
