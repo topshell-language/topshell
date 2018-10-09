@@ -239,7 +239,10 @@ class Typer {
             EIf(at, c, t, e)
 
         case EUnary(at, operator, operand) =>
-            val t1 = freshTypeVariable() // Use operator type
+            val t1 =
+                if(operator == "-") TConstructor("Number")
+                else if(operator == "!") TConstructor("Bool")
+                else throw new RuntimeException("Unknown operator: " + operator)
             val o = checkTerm(operand, t1)
             unification.unify(expected, t1)
             EUnary(at, operator, o)
