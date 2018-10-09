@@ -95,7 +95,9 @@ object Processor {
                 block.cancel.foreach(f => f())
             }
 
-            val typePairs = topSymbols.map(_.binding).map(b => b.name -> b.scheme.map(_.toString).getOrElse(""))
+            val typePairs = topSymbols.map(_.binding).map(b =>
+                b.name -> b.scheme.map(Pretty.renameParameterNames(_, _ => None)).map(_.toString).getOrElse("")
+            )
             val message = js.Dictionary(
                 "event" -> "symbols",
                 "symbols" -> js.Array(names : _*),

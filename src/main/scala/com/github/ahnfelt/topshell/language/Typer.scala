@@ -19,7 +19,7 @@ class Typer {
             constraints = v.constraints.map(unification.expand),
             generalized = unification.expand(v.generalized)
         ))
-        environment.values.toList.flatMap(unification.freeInScheme)
+        environment.values.toList.flatMap(Pretty.freeInScheme)
     }.distinct
 
     def withVariables[T](variables : Seq[(String, Scheme)])(body : => T) = {
@@ -35,7 +35,7 @@ class Typer {
     def generalize(theType : Type) : Scheme = {
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
-        val free = unification.freeInType(t).filterNot(nonFree)
+        val free = Pretty.freeInType(t).filterNot(nonFree)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
         val cs1 = constraints.map(unification.replace(_, replacement))

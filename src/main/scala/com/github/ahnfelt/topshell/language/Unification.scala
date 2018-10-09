@@ -9,7 +9,7 @@ class Unification(initialEnvironment : Map[Int, Type]) {
     def copy() = new Unification(sub)
 
     def bind(id : Int, theType : Type) : Unit = {
-        if(freeInType(theType).contains(id)) {
+        if(Pretty.freeInType(theType).contains(id)) {
             throw new RuntimeException("Infinite type: " + expand(TVariable(id)) + " = " + expand(theType))
         }
         sub = sub + (id -> theType)
@@ -98,16 +98,16 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                         case (p, i) => TParameter(p.name) -> TParameter("#" + i)
                     }.toMap[Type, Type]
                     // Assumes that constraints are sorted
-                    val c1 = b1.scheme.constraints.map(replace(_, replacement1)).map(expand)
-                    val c2 = b2.scheme.constraints.map(replace(_, replacement2)).map(expand)
+                    val c1 = b1.scheme.constraints.map(Pretty.replace(_, replacement1, sub.get)).map(expand)
+                    val c2 = b2.scheme.constraints.map(Pretty.replace(_, replacement2, sub.get)).map(expand)
                     // Don't use unification to check: forall a. a -> _1 != forall a. _2 -> a, but they unify.
                     c1.zip(c2).foreach { case (a, b) => if(a != b) {
                         throw new RuntimeException(
                             "Incompatible constraints: " + a + " vs. " + b + "."
                         )
                     }}
-                    val t1 = expand(replace(b1.scheme.generalized, replacement1))
-                    val t2 = expand(replace(b2.scheme.generalized, replacement2))
+                    val t1 = expand(Pretty.replace(b1.scheme.generalized, replacement1, sub.get))
+                    val t2 = expand(Pretty.replace(b2.scheme.generalized, replacement2, sub.get))
                     if(t1 != t2) {
                         throw new RuntimeException(
                             "Incompatible field types: " + t1 + " vs. " + t2 + "."
@@ -143,33 +143,6 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             ))))
     }
 
-    def replace(search : Type, replacement : Map[Type, Type]) : Type = search match {
-        case t if replacement.contains(t) =>
-            replacement(t)
-        case TVariable(id) =>
-            sub.get(id).map(replace(_, replacement)).getOrElse(search)
-        case TParameter(name) =>
-            search
-        case TConstructor(name) =>
-            search
-        case TApply(constructor, argument) =>
-            TApply(replace(constructor, replacement), replace(argument, replacement))
-        case TRecord(fields) =>
-            TRecord(fields.map(f => f.copy(scheme = f.scheme.copy(
-                generalized = replace(f.scheme.generalized, replacement) // Shadow parameters
-            ))))
-    }
-
-    def freeInScheme(theScheme : Scheme) : List[Int] = {
-        theScheme.constraints.flatMap(freeInType) ++ freeInType(theScheme.generalized)
-    }
-
-    def freeInType(theType : Type) : List[Int] = (theType match {
-        case TVariable(id) => List(id)
-        case TParameter(name) => List()
-        case TConstructor(name) => List()
-        case TApply(constructor, argument) => freeInType(constructor) ++ freeInType(argument)
-        case TRecord(fields) => fields.flatMap(f => freeInScheme(f.scheme))
-    }).distinct
+    def replace(search : Type, replacement : Map[Type, Type]) = Pretty.replace(search, replacement, sub.get)
 
 }
