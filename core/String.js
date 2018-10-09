@@ -17,6 +17,8 @@ exports.drop = i => s => s.slice(i);
 exports.trim = s => s.trim();
 exports.toUpper = s => s.toUpperCase();
 exports.toLower = s => s.toLowerCase();
+exports.toNumber = i => parseFloat(i);
+exports.fromNumber = i => "" + i;
 exports.toInt = i => parseInt(i, 10);
 exports.fromInt = i => "" + i;
 exports.toIntBase = b => i => parseInt(i, b);
