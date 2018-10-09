@@ -50,12 +50,61 @@ class Typer {
                 case _ =>
                     throw new RuntimeException("No such field " + label + " in non-record: " + record)
             }
+        case TApply(TConstructor("Add"), target) =>
+            target match {
+                case TConstructor("Number") =>
+                    None
+                case TConstructor("String") =>
+                    None
+                case TParameter(_) =>
+                    Some(constraint)
+                case TVariable(_) =>
+                    Some(constraint)
+                case _ =>
+                    throw new RuntimeException("Not true: " + constraint)
+            }
+        case TApply(TConstructor("Equal"), target) =>
+            target match {
+                case TConstructor("Number") =>
+                    None
+                case TConstructor("String") =>
+                    None
+                case TParameter(_) =>
+                    Some(constraint)
+                case TVariable(_) =>
+                    Some(constraint)
+                case _ =>
+                    throw new RuntimeException("Not true: " + constraint)
+            }
+        case TApply(TConstructor("Order"), target) =>
+            target match {
+                case TConstructor("Number") =>
+                    None
+                case TConstructor("String") =>
+                    None
+                case TParameter(_) =>
+                    Some(constraint)
+                case TVariable(_) =>
+                    Some(constraint)
+                case _ =>
+                    throw new RuntimeException("Not true: " + constraint)
+            }
         case _ =>
             throw new RuntimeException("Invalid constraint: " + constraint)
     }
 
     def generalize(theType : Type) : Scheme = {
-        constraints = constraints.map(unification.expand).distinct.flatMap(simplifyConstraint)
+        var error : Option[RuntimeException] = None
+        constraints = constraints.map(unification.expand).distinct.flatMap { c =>
+            try {
+                simplifyConstraint(c)
+            } catch {
+                case e : RuntimeException =>
+                    error = Some(e)
+                    None
+            }
+        }
+        error.foreach(throw _)
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
         val free = Pretty.freeInType(t).filterNot(nonFree)
@@ -242,17 +291,22 @@ class Typer {
             val t1 =
                 if(operator == "-") TConstructor("Number")
                 else if(operator == "!") TConstructor("Bool")
-                else throw new RuntimeException("Unknown operator: " + operator)
+                else throw ParseException(at, "Unknown operator: " + operator)
             val o = checkTerm(operand, t1)
             unification.unify(expected, t1)
             EUnary(at, operator, o)
 
         case EBinary(at, operator, left, right) =>
-            val t1 = freshTypeVariable() // Use operator type
-            val l = checkTerm(left, t1)
-            val r = checkTerm(right, t1)
-            unification.unify(expected, t1)
-            EBinary(at, operator, l, r)
+            val s = Syntax.binaryOperatorSchemes(operator)
+            instantiate(Some(s)) match {
+                case TApply(TApply(TConstructor("->"), t1), TApply(TApply(TConstructor("->"), t2), t3)) =>
+                    val l = checkTerm(left, t1)
+                    val r = checkTerm(right, t2)
+                    unification.unify(expected, t3)
+                    EBinary(at, operator, l, r)
+                case _ =>
+                    throw ParseException(at, "Bad type for binary operator: " + s)
+            }
 
     }
 

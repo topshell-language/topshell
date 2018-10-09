@@ -1,5 +1,7 @@
 package com.github.ahnfelt.topshell.language
 
+import scala.scalajs.js
+
 object Syntax {
 
     case class Location(file : String, line : Int, column : Int) {
@@ -71,6 +73,11 @@ object Syntax {
     )
 
     val binaryOperatorSymbols = binaryOperators.flatMap(_._1)
-    val binaryOperatorSchemes = binaryOperators.flatMap(p => p._1.map(_ -> p._2)).toMap
+
+    lazy val binaryOperatorSchemes = binaryOperators.flatMap { case (o, t) =>
+        val tokens = js.Dynamic.global.tsh.tokenize("Syntax.scala", t).asInstanceOf[js.Array[Token]]
+        val s = new Parser("Syntax.scala", tokens.toArray[Token].drop(1)).parseScheme()
+        o.map(_ -> s)
+    }.toMap
 
 }

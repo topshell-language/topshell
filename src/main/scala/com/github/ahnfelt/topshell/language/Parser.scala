@@ -296,4 +296,82 @@ class Parser(file : String, tokens : Array[Token]) {
         }
     }
 
+    def parseScheme() : Scheme = {
+        val generalized = parseType()
+        var constraints = List.empty[Type]
+        while(current.raw == "|") constraints ::= parseConstraint()
+        constraints = constraints.reverse
+        val parameters = Pretty.usedParameterNames(generalized, _ => None).toList.sorted.map(TypeParameter(_, KStar()))
+        Scheme(parameters, constraints, generalized)
+    }
+
+    def parseType() : Type = parseFunctionType()
+
+    def parseFunctionType() : Type = {
+        val left = parseTypeApplication()
+        if(current.raw == "->") {
+            skip("separator", Some("->"))
+            val right = parseFunctionType()
+            TApply(TApply(TConstructor("->"), left), right)
+        } else {
+            left
+        }
+    }
+
+    def parseTypeApplication() : Type = {
+        val left = parseTypeAtom()
+        var applies = List.empty[Type]
+        while(List("bracket", "definition", "lower", "upper", "string").contains(current.kind) && current.raw != ")") {
+            applies ::= parseTypeAtom()
+        }
+        applies.reverse.foldLeft(left)(TApply)
+    }
+
+    def parseTypeAtom() : Type = {
+        if(current.raw == "(") {
+            skip("bracket", Some("("))
+            val result = parseType()
+            skip("bracket", Some(")"))
+            result
+        } else if(current.raw == "{") {
+            parseRecordType()
+        } else if(current.kind == "upper") {
+            val c = skip("upper")
+            TConstructor(c.raw)
+        } else if(current.kind == "lower") {
+            val c = skip("lower")
+            TParameter(c.raw)
+        } else if(current.kind == "definition") {
+            val c = skip("definition")
+            TParameter(c.raw)
+        } else if(current.kind == "string") {
+            val c = JSON.parse(skip("string").raw).asInstanceOf[String]
+            TSymbol(c)
+        } else {
+            throw ParseException(current.at, "Expected type, got: " + current.raw)
+        }
+    }
+
+    def parseRecordType() : Type = {
+        skip("bracket", Some("{"))
+        skip("bracket", Some("}"))
+        TRecord(List()) // Implement
+    }
+
+    def parseConstraint() : Type = {
+        skip("operator", Some("|"))
+        if(ahead.raw == ".") {
+            val record = skip("lower").raw
+            skip("separator", Some("."))
+            val label =
+                if(ahead.kind == "lower") skip("lower").raw
+                else JSON.parse(skip("string").raw).asInstanceOf[String]
+            skip("separator", Some(":"))
+            val t = parseType()
+            TApply(TApply(TApply(TConstructor("."), TSymbol(label)), t), TParameter(record))
+        } else {
+            parseType()
+        }
+    }
+
 }
