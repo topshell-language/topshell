@@ -57,4 +57,20 @@ object Syntax {
 
     case class TypeBinding(name : String, scheme : Scheme)
 
+
+    val binaryOperators = Seq(
+        Seq("|")                    -> "a -> (a -> b) -> b",
+        Seq("~>")                   -> "a -> b -> Pair a b",
+        Seq("&&", "||")             -> "Bool -> Bool -> Bool",
+        Seq(">", "<", ">=", "<=")   -> "a -> a -> Bool | Order a",
+        Seq("==", "!=")             -> "a -> a -> Bool | Equal a",
+        Seq("+")                    -> "a -> a -> a | Add a",
+        Seq("-")                    -> "Number -> Number -> Number",
+        Seq("*", "/")               -> "Number -> Number -> Number",
+        Seq("^")                    -> "Number -> Number -> Number",
+    )
+
+    val binaryOperatorSymbols = binaryOperators.flatMap(_._1)
+    val binaryOperatorSchemes = binaryOperators.flatMap(p => p._1.map(_ -> p._2)).toMap
+
 }

@@ -152,16 +152,6 @@ class Parser(file : String, tokens : Array[Token]) {
         result
     }
 
-    private val allBinary = Seq(
-        Seq("|"),
-        Seq("~>"),
-        Seq("&&", "||"),
-        Seq(">", "<", ">=", "<=", "==", "!="),
-        Seq("+", "-"),
-        Seq("*", "/"),
-        Seq("^"),
-    ).flatten
-
     private def parsePipe() : Term = parseBinary(Seq("|"), () => parsePair())
     private def parsePair() : Term = parseBinary(Seq("~>"), () => parseAndOr())
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), () => parseCompare())
@@ -205,22 +195,23 @@ class Parser(file : String, tokens : Array[Token]) {
     private def parseAtom() : Term = (current.kind, current.raw) match {
         case (_, "(") =>
             skip("bracket", Some("("))
-            val result = if(current.kind == "operator" && allBinary.contains(current.raw) && ahead.raw == ")") {
-                val c = skip("operator")
-                val at = c.at
-                EFunction(at, "_1", EFunction(at, "_2",
-                    EBinary(at, c.raw, EVariable(at, "_1"), EVariable(at, "_2"))
-                ))
-            } else if(current.raw == "." || current.raw == ".?") {
-                val optional = current.raw == ".?"
-                val at = skip("separator").at
-                val field =
-                    if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
-                    else skip("lower").raw
-                EFunction(at, "_1", EField(at, EVariable(at, "_1"), field, optional))
-            } else {
-                parseTerm()
-            }
+            val result =
+                if(current.kind == "operator" && binaryOperatorSymbols.contains(current.raw) && ahead.raw == ")") {
+                    val c = skip("operator")
+                    val at = c.at
+                    EFunction(at, "_1", EFunction(at, "_2",
+                        EBinary(at, c.raw, EVariable(at, "_1"), EVariable(at, "_2"))
+                    ))
+                } else if(current.raw == "." || current.raw == ".?") {
+                    val optional = current.raw == ".?"
+                    val at = skip("separator").at
+                    val field =
+                        if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
+                        else skip("lower").raw
+                    EFunction(at, "_1", EField(at, EVariable(at, "_1"), field, optional))
+                } else {
+                    parseTerm()
+                }
             skip("bracket", Some(")"))
             result
         case (_, "[") =>
