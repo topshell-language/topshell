@@ -54,7 +54,7 @@ object Syntax {
     case class TypeParameter(name : String, kind : Kind)
 
     case class Scheme(parameters : List[TypeParameter], constraints : List[Type], generalized : Type) {
-        override def toString = Pretty.showScheme(this)
+        override def toString = Pretty.showScheme(this, false)
     }
 
     case class TypeBinding(name : String, scheme : Scheme)

@@ -11,7 +11,8 @@ object Pretty {
         case TParameter(name) => name
         case TConstructor(name) => name
         case TSymbol(name) => JSON.stringify(name)
-        case TRecord(fields) => "{" + fields.map(b => b.name + ": " + b.scheme).mkString(", ") + "}"
+        case TRecord(fields) =>
+            "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
             t2 + o + l + ": " + t1 // Escape label
         case TApply(TApply(TConstructor("->"), a@TApply(TApply(TConstructor("->"), _), _)), b) => "(" + a + ") -> " + b
@@ -20,7 +21,8 @@ object Pretty {
         case TApply(constructor, argument) => constructor + " " + argument
     }
 
-    def showScheme(scheme : Scheme) = {
+    def showScheme(scheme : Scheme, explicit : Boolean) = {
+        (if(explicit) scheme.parameters.map(_.name + " => ").mkString else "") +
         scheme.generalized + scheme.constraints.map(" | " + _).mkString
     }
 
