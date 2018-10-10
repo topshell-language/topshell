@@ -1,3 +1,4 @@
+//: a -> Task a
 exports.of = value => new self.tsh.Task((w, t, c) => {
     try {
         t(value)
@@ -6,6 +7,7 @@ exports.of = value => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: String -> Task a
 exports.throw = error => new self.tsh.Task((w, t, c) => {
     try {
         c(error)
@@ -14,6 +16,7 @@ exports.throw = error => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: (String -> Task a) -> Task a -> Task a
 exports.catch = f => task => new self.tsh.Task((w, t, c) => {
     var cancel1 = null;
     try {
@@ -34,8 +37,10 @@ exports.catch = f => task => new self.tsh.Task((w, t, c) => {
     };
 });
 
+//: (a -> Task b) -> Task a -> Task b
 exports.then = self.tsh.taskThen;
 
+//: (a -> Bool) -> Task a -> Task a
 exports.filter = f => task => new self.tsh.Task((w, t, c) => {
     try {
         return task._run(w, v => {
@@ -50,6 +55,7 @@ exports.filter = f => task => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: (a -> b -> a) -> a -> Task b -> Task a
 exports.scan = f => z => task => new self.tsh.Task((w, t, c) => {
     var state = z;
     return task._run(w, v => {
@@ -62,6 +68,7 @@ exports.scan = f => z => task => new self.tsh.Task((w, t, c) => {
     }, c)
 });
 
+//: Task a -> Task a -> Task a
 exports.merge = task1 => task2 => new self.tsh.Task((w, t, c) => {
     try {
         var cancel1 = task1._run(w, t, c);
@@ -75,6 +82,7 @@ exports.merge = task1 => task2 => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: Task a -> Task a -> Task a
 exports.race = task1 => task2 => new self.tsh.Task((w, t, c) => {
     try {
         var cancel1 = task1._run(w, v => {
@@ -94,6 +102,7 @@ exports.race = task1 => task2 => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: (a -> b -> c) -> Task a -> Task b -> Task c
 exports.zipWith = f => task1 => task2 => new self.tsh.Task((w, t, c) => {
     var result1, result2;
     var ok1, ok2;
@@ -133,6 +142,7 @@ exports.zipWith = f => task1 => task2 => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: List (Task a) -> Task (List a)
 exports.all = tasks => new self.tsh.Task((w, t, c) => {
     var results = new Array(tasks.length);
     var status = new Array(tasks.length);
@@ -167,6 +177,7 @@ exports.all = tasks => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: (a -> b) -> Task a -> Task b
 exports.map = f => task => new self.tsh.Task((w, t, c) => {
     return task._run(w, v => {
         try {
@@ -177,6 +188,7 @@ exports.map = f => task => new self.tsh.Task((w, t, c) => {
     }, c);
 });
 
+//: Number -> Task {}
 exports.sleep = s => new self.tsh.Task((w, t, c) => {
     var handle = setTimeout(_ => {
         try {
@@ -188,6 +200,7 @@ exports.sleep = s => new self.tsh.Task((w, t, c) => {
     return () => clearTimeout(handle);
 });
 
+//: Number -> Task {}
 exports.interval = s => new self.tsh.Task((w, t, c) => {
     try {
         t(void 0)
@@ -204,19 +217,24 @@ exports.interval = s => new self.tsh.Task((w, t, c) => {
     return () => clearInterval(handle);
 });
 
+//: Task Number
 exports.now = new self.tsh.Task((w, t, c) => {
     try { t(Date.now() * 0.001) } catch(e) { c(e) }
 });
 
+//: Task Number
 exports.random = new self.tsh.Task((w, t, c) => {
     try { t(Math.random()) } catch(e) { c(e) }
 });
 
+//: a -> Task {}
 exports.log = message => new self.tsh.Task((w, t, c) => {
     try { t(void console.dir(message)) } catch(e) { c(e) }
 });
 
+//: (a -> Task b) -> Task a -> Task b
 exports.flatMap = exports.then;
+//: Task (Task a) -> Task a
 exports.flatten = exports.flatMap(v => v);
 
 // Proposal:

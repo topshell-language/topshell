@@ -1,5 +1,7 @@
+//: (a -> Html) -> a -> View
 exports.by = render => value => new self.tsh.View(render, value);
 
+//: List String -> List a -> View
 exports.tableBy = columns => exports.by(rows => {
     let header = c => ({_tag: "th", children: {_tag: ">text", text: "" + c.key}});
     let cell = r => c => ({_tag: "td", children: [self.tsh.toHtml(c.value(r))]});
@@ -11,6 +13,7 @@ exports.tableBy = columns => exports.by(rows => {
     ]});
 });
 
+//: List a -> View
 exports.table = exports.by(rows => {
     let seen = {};
     for(let i = 0; i < rows.length; i++) {
@@ -31,6 +34,7 @@ exports.table = exports.by(rows => {
     ]});
 });
 
+//: List Number -> View
 exports.bars = exports.by(data => {
     let attribute = (k, v) => ({_tag: ">attribute", key: k, value: v});
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
@@ -47,6 +51,7 @@ exports.bars = exports.by(data => {
     }))});
 });
 
+//: String -> View
 exports.text = exports.by(data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
     return new self.tsh.Tag({_tag: "div", children: [
@@ -55,6 +60,7 @@ exports.text = exports.by(data => {
     ]});
 });
 
+//: a -> View
 exports.tree = exports.by(data => {
     let style = (k, v) => ({_tag: ">style", key: k, value: v});
     if(Array.isArray(data) && data.length > 0) {
