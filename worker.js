@@ -301,7 +301,7 @@ self.tsh.tokenize = (file, code) => {
                 op === "=" || op === "<-" || op === "->" ||
                 op === "," || op === ";" ||
                 op === "." || op === ".?" ||
-                op === ".." || op === ":" || op === "::" || op === "?" ?
+                op === ".." || op === ":" || op === "::" || op === "=>" || op === "?" ?
                 "separator" : "operator";
             tokens.push(token(operatorKind, start, i));
 
@@ -323,9 +323,13 @@ self.tsh.tokenize = (file, code) => {
     }
 
     for(var k = 0; k + 1 < tokens.length; k++) {
+        var previous = k === 0 ? "" : code.slice(tokens[k - 1].startOffset, tokens[k - 1].stopOffset);
         var next = code.slice(tokens[k + 1].startOffset, tokens[k + 1].stopOffset);
-        if(tokens[k].kind === "lower" && (next === "=" || next === "<-" || next === "->" || next === "::")) {
+        var isField = previous === "{" || previous === "." || previous === ".?" || previous === ",";
+        if(tokens[k].kind === "lower" && (next === "=" || next === "<-" || next === "->")) {
             tokens[k].kind = "definition";
+        } else if(tokens[k].kind === "lower" && !isField && next === ":") {
+            tokens[k].kind = "definition"
         } else if(tokens[k].kind === "upper" && next === "@") {
             tokens[k].kind = "definition"
         }

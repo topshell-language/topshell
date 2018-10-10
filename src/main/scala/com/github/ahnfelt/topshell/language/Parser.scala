@@ -111,15 +111,21 @@ class Parser(file : String, tokens : Array[Token]) {
         val isDefinition = current.kind == "definition"
         val name = if(isDefinition) current.raw else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
         val variable = if(name != "_") name else { nextAnonymousOutput += 1; "out_" + nextAnonymousOutput }
-        val bind = ahead.raw == "<-"
         val at = if(isDefinition) ahead.at else current.at
+        var bind = ahead.raw == "<-"
         try {
             if(!isDefinition) {
+                bind = false
                 TopSymbol(bind, Binding(at, variable, None, parseTerm()), List(), None)
             } else {
                 skip("definition").raw
+                val scheme = if(current.raw != ":") None else Some {
+                    skip("separator", Some(":"))
+                    parseScheme(false)
+                }
+                bind = current.raw == "<-"
                 if(bind) skip("separator", Some("<-")).at else skip("separator", Some("=")).at
-                val binding = Binding(at, variable, None, parseTerm())
+                val binding = Binding(at, variable, scheme, parseTerm())
                 TopSymbol(bind, binding, List(), None)
             }
         } catch { case e : ParseException =>
@@ -296,13 +302,23 @@ class Parser(file : String, tokens : Array[Token]) {
         }
     }
 
-    def parseScheme() : Scheme = {
+    def parseScheme(explicit : Boolean) : Scheme = {
+        var explicitParameters = List.empty[TypeParameter]
+        while(explicit && ahead.raw == "=>") explicitParameters ::= parseTypeParameter()
         val generalized = parseType()
         var constraints = List.empty[Type]
         while(current.raw == "|") constraints ::= parseConstraint()
         constraints = constraints.reverse
-        val parameters = Pretty.usedParameterNames(generalized, _ => None).toList.sorted.map(TypeParameter(_, KStar()))
+        val parameters =
+            if(explicit) explicitParameters.reverse
+            else Pretty.usedParameterNames(generalized, _ => None).toList.sorted.map(TypeParameter(_, KStar()))
         Scheme(parameters, constraints, generalized)
+    }
+
+    def parseTypeParameter() : TypeParameter = {
+        val name = skip("lower").raw
+        skip("separator", Some("=>"))
+        TypeParameter(name, KStar())
     }
 
     def parseType() : Type = parseFunctionType()
@@ -361,8 +377,8 @@ class Parser(file : String, tokens : Array[Token]) {
                 if(current.kind == "string") JSON.parse(skip("string").raw).asInstanceOf[String]
                 else skip("lower").raw
             skip("separator", Some(":"))
-            val t = parseType()
-            bindings ::= TypeBinding(name, Scheme(List(), List(), t)) // Scheme
+            val s = parseScheme(true)
+            bindings ::= TypeBinding(name, s)
             if(current.raw != "}") skip("separator", Some(","))
         }
         skip("bracket", Some("}"))

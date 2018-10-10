@@ -108,17 +108,16 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                     // Don't use unification to check: forall a. a -> _1 != forall a. _2 -> a, but they unifyInternal.
                     c1.zip(c2).foreach { case (a, b) => if(a != b) {
                         throw new RuntimeException(
-                            "Incompatible constraints: " + a + " vs. " + b + "."
+                            "Incompatible constraints for " + b1.name + ": " + a + " vs. " + b + "."
                         )
-                    }}
+                    } else unify(a, b)}
                     val t1 = expand(Pretty.replace(b1.scheme.generalized, replacement1, sub.get))
                     val t2 = expand(Pretty.replace(b2.scheme.generalized, replacement2, sub.get))
                     if(t1 != t2) {
                         throw new RuntimeException(
-                            "Incompatible field types: " + t1 + " vs. " + t2 + "."
+                            "Incompatible field types for " + b1.name + ": " + t1 + " vs. " + t2 + "."
                         )
                     }
-                    c1.zip(c2).foreach { case (a, b) => unify(a, b) }
                     unify(t1, t2)
                 }
             }

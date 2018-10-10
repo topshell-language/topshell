@@ -153,7 +153,7 @@ class Typer {
     def check(coreModules : Map[String, List[ModuleSymbol]], imports : List[TopImport], symbols : List[TopSymbol]) : List[TopSymbol] = {
         for(i <- imports; symbols <- coreModules.get(i.name)) {
             val fields = symbols.map { field =>
-                val s = Parser.easy(i.url, field.`type`, _.parseScheme())
+                val s = Parser.easy(i.url, field.`type`, _.parseScheme(false))
                 TypeBinding(field.name, s)
             }
             environment += i.name -> Scheme(List(), List(), TRecord(fields))

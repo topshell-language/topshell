@@ -75,7 +75,7 @@ object Syntax {
     val binaryOperatorSymbols = binaryOperators.flatMap(_._1)
 
     lazy val binaryOperatorSchemes = binaryOperators.flatMap { case (o, t) =>
-        val s = Parser.easy("Syntax.scala", t, _.parseScheme())
+        val s = Parser.easy("Syntax.scala", t, _.parseScheme(false))
         o.map(_ -> s)
     }.toMap
 
