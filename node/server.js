@@ -4,6 +4,7 @@ var fs = require('fs');
 var utils = require('./utilities');
 var actions = require('./actions');
 var ssh_actions = require('./ssh_actions');
+var core_modules = require('./core_modules');
 
 var httpProxy;
 try {
@@ -63,6 +64,13 @@ var server = http.createServer((request, response) => {
                 if(err) utils.sendResponse(response, problem, 500, {'Content-Type': 'text/plain'});
                 else utils.sendResponse(response, result, 200, {'Content-Type': 'application/json'});
             });
+        });
+
+    } else if(parts.pathname === '/modules.js' && request.method === 'GET') {
+
+        core_modules.findCoreModules((e, m) => {
+            var result = core_modules.toJs(m);
+            utils.sendResponse(response, result, 200, {'Content-Type': 'application/javascript'});
         });
 
     } else if(parts.pathname.startsWith(base) && request.method === 'GET') {

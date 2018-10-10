@@ -1,5 +1,7 @@
 self.tsh = {};
 
+importScripts("../modules.js");
+
 self.tsh.symbols = {};
 
 

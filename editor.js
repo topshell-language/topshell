@@ -202,8 +202,14 @@
 
 
 CodeMirror.hint.topshell = function (editor) {
-    var list = ["Base64.encode", "Base64.decode", "Bool.true", "Bool.false", "Bool.xor", "Bool.implies", "Bytes.fromList", "Bytes.toList", "Bytes.size", "Bytes.slice", "Debug.log", "Debug.logBy", "Debug.throw", "Debug.null", "Debug.undefined", "File.readText", "File.writeText", "File.list", "File.listStatus", "File.status", "Html.of", "Html.tag", "Html.text", "Html.attribute", "Html.style", "Http.fetch", "Http.fetchText", "Http.fetchJson", "Http.fetchBytes", "Http.text", "Http.json", "Http.bytes", "Http.header", "Http.ok", "Http.redirected", "Http.status", "Http.statusText", "Http.type", "Http.url", "Json.read", "Json.write", "Json.pretty", "List.map", "List.then", "List.range", "List.size", "List.isEmpty", "List.at", "List.take", "List.drop", "List.takeLast", "List.dropLast", "List.filter", "List.reverse", "List.find", "List.all", "List.any", "List.head", "List.tail", "List.append", "List.foldLeft", "List.foldRight", "List.sort", "List.repeat", "List.flatten", "List.zip", "List.zipWith", "List.takeWhile", "List.dropWhile", "List.unzip", "List.withKeys", "List.keys", "List.scanLeft", "List.scanRight", "Math.pi", "Math.e", "Math.remainder", "Math.isFinite", "Math.isNaN", "Math.abs", "Math.acos", "Math.acosh", "Math.asin", "Math.asinh", "Math.atan", "Math.atan2", "Math.atanh", "Math.cbrt", "Math.ceil", "Math.clz32", "Math.cos", "Math.cosh", "Math.exp", "Math.expm1", "Math.floor", "Math.fround", "Math.hypot", "Math.imul", "Math.log", "Math.log10", "Math.log1p", "Math.log2", "Math.max", "Math.min", "Math.round", "Math.sign", "Math.sin", "Math.sinh", "Math.sqrt", "Math.tan", "Math.tanh", "Math.trunc", "Memo.dictionaryBy", "Memo.dictionary", "Pair.of", "Pair.duplicate", "Pair.swap", "Pair.mapKey", "Pair.mapValue", "Process.run", "Process.shell", "Ssh.do", "String.fromCodePoints", "String.toCodePoints", "String.join", "String.padStart", "String.padEnd", "String.repeat", "String.replace", "String.startsWith", "String.endsWith", "String.split", "String.at", "String.size", "String.includes", "String.slice", "String.take", "String.drop", "String.trim", "String.toUpper", "String.toLower", "String.toInt", "String.fromInt", "String.toIntBase", "String.fromIntBase", "String.split", "String.lines", "Task.of", "Task.throw", "Task.catch", "Task.then", "Task.filter", "Task.scan", "Task.merge", "Task.race", "Task.zipWith", "Task.all", "Task.map", "Task.sleep", "Task.interval", "Task.now", "Task.random", "Task.log", "View.by", "View.tableBy", "View.table", "View.bars", "View.text", "View.tree"];
-    list = list.map(c => c + " ");
+    var list = Array.prototype.concat.apply([],
+        Object.entries(tsh.coreModules)
+            .sort((a, b) => a[0].localeCompare(b[1]))
+            .map((e) => e[1].map(s => {
+                var text = e[0] + "." + s.name + " ";
+                return {text: text, displayText: text + ": " + s.type, render: CodeMirror.renderTopshellHint};
+            }))
+    );
     var cursor = editor.getCursor();
     var currentLine = editor.getLine(cursor.line);
     var start = cursor.ch;
@@ -213,12 +219,10 @@ CodeMirror.hint.topshell = function (editor) {
     var curWord = start != end && currentLine.slice(start, end);
     var regex = new RegExp('^' + curWord, 'i');
 
-    var items = (!curWord ? list : list.filter(function (item) {
-        return item.match(regex);
-    })).sort();
+    var items = !curWord ? list : list.filter(item => item.text.match(regex)).sort();
 
     var result = {
-        list: items.map(i => ({text: i, render: CodeMirror.renderTopshellHint})),
+        list: items,
         from: CodeMirror.Pos(cursor.line, start),
         to: CodeMirror.Pos(cursor.line, end)
     };
@@ -227,14 +231,20 @@ CodeMirror.hint.topshell = function (editor) {
 };
 
 CodeMirror.renderTopshellHint = (element, self, data) => {
-    let parts = data.text.split(".", 2);
+    let parts = data.displayText.split(".", 2);
     let module = parts[0];
-    let field = parts[1];
+    let fieldParts = parts[1].split(":", 2);
+    let field = fieldParts[0];
+    let t = fieldParts[1];
     let moduleNode = document.createElement("span");
     moduleNode.setAttribute("class", "topshell-hint-module");
     moduleNode.appendChild(document.createTextNode(module));
     let fieldNode = document.createTextNode(field);
+    let typeNode = document.createElement("span");
+    typeNode.setAttribute("class", "topshell-hint-type");
+    typeNode.appendChild(document.createTextNode(":" + t));
     element.appendChild(moduleNode);
     element.appendChild(document.createTextNode("."));
     element.appendChild(fieldNode);
+    element.appendChild(typeNode);
 };
