@@ -50,7 +50,9 @@ object Processor {
             Checker.check(topImports, newSymbols)
         }
         val topSymbols = time("type") {
-            new Typer().check(topImports, untypedTopSymbols)
+            val coreModules =
+                js.Dynamic.global.tsh.coreModules.asInstanceOf[js.Dictionary[js.Array[ModuleSymbol]]].toMap
+            new Typer().check(coreModules.mapValues(_.toList), topImports, untypedTopSymbols)
         }
         val emitted = time("emit") {
             Emitter.emit(currentVersion, topImports, topSymbols)

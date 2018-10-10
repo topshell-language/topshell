@@ -386,3 +386,13 @@ class Parser(file : String, tokens : Array[Token]) {
     }
 
 }
+
+object Parser {
+
+    def easy[T](file : String, code : String, parse : Parser => T) : T = {
+        val tokens = js.Dynamic.global.tsh.tokenize(file, code).asInstanceOf[js.Array[Token]]
+        val parser = new Parser(file, tokens.toArray[Token].drop(1))
+        parse(parser)
+    }
+
+}

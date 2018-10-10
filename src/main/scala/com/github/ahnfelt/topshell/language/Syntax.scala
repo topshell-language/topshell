@@ -75,8 +75,7 @@ object Syntax {
     val binaryOperatorSymbols = binaryOperators.flatMap(_._1)
 
     lazy val binaryOperatorSchemes = binaryOperators.flatMap { case (o, t) =>
-        val tokens = js.Dynamic.global.tsh.tokenize("Syntax.scala", t).asInstanceOf[js.Array[Token]]
-        val s = new Parser("Syntax.scala", tokens.toArray[Token].drop(1)).parseScheme()
+        val s = Parser.easy("Syntax.scala", t, _.parseScheme())
         o.map(_ -> s)
     }.toMap
 

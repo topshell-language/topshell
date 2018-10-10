@@ -3,6 +3,14 @@ package com.github.ahnfelt.topshell.language
 import com.github.ahnfelt.topshell.language.Syntax._
 
 import scala.collection.mutable
+import scala.scalajs.js
+import scala.scalajs.js.annotation.JSGlobal
+
+@js.native
+trait ModuleSymbol extends js.Any {
+    val name : String = js.native
+    val `type` : String = js.native
+}
 
 class Typer {
 
@@ -128,8 +136,14 @@ class Typer {
         unification.replace(s.generalized, replacement) // Kind
     }.getOrElse(freshTypeVariable())
 
-    def check(imports : List[TopImport], symbols : List[TopSymbol]) : List[TopSymbol] = {
-        // Imports
+    def check(coreModules : Map[String, List[ModuleSymbol]], imports : List[TopImport], symbols : List[TopSymbol]) : List[TopSymbol] = {
+        for(i <- imports; symbols <- coreModules.get(i.name)) {
+            val fields = symbols.map { field =>
+                val s = Parser.easy(i.url, field.`type`, _.parseScheme())
+                TypeBinding(field.name, s)
+            }
+            environment += i.name -> Scheme(List(), List(), TRecord(fields))
+        }
         var schemes = symbols.map(s =>
             s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), freshTypeVariable()))
         ).toMap
