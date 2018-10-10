@@ -229,20 +229,20 @@ CodeMirror.hint.topshell = function (editor) {
 };
 
 CodeMirror.renderTopshellHint = (element, self, data) => {
-    let parts = data.displayText.split(".", 2);
-    let module = parts[0];
-    let fieldParts = parts[1].split(":", 2);
-    let field = fieldParts[0];
-    let t = fieldParts[1];
+    let dot = data.displayText.indexOf(".");
+    let colon = data.displayText.indexOf(":");
+    let module = data.displayText.slice(0, dot);
+    let field = data.displayText.slice(dot, colon);
+    let t = data.displayText.slice(colon);
     let moduleNode = document.createElement("span");
     moduleNode.setAttribute("class", "topshell-hint-module");
     moduleNode.appendChild(document.createTextNode(module));
     let fieldNode = document.createTextNode(field);
     let typeNode = document.createElement("span");
     typeNode.setAttribute("class", "topshell-hint-type");
-    typeNode.appendChild(document.createTextNode(":" + t));
+    typeNode.appendChild(document.createTextNode(t));
     element.appendChild(moduleNode);
-    element.appendChild(document.createTextNode("."));
     element.appendChild(fieldNode);
     element.appendChild(typeNode);
+    element.style.maxWidth = "600px";
 };
