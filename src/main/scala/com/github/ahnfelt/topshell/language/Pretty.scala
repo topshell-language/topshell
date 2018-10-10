@@ -26,10 +26,15 @@ object Pretty {
         scheme.generalized + scheme.constraints.map(" | " + _).mkString
     }
 
+    private val alphabet = Stream.from(0).flatMap(i => Stream.range('a', ('z' + 1).toChar).map(_ -> i)).map {
+        case (c, 0) => c.toString
+        case (c, i) => c + i.toString
+    }
+
     def renameParameterNames(scheme : Scheme, expand : Int => Option[Type]) = {
         val used = usedParameterNames(scheme.generalized, expand)
-        val alphabet = ('a' to 'z').map(_.toString).filterNot(used) // TODO: Should be infinite
-        val pairs = scheme.parameters.map(_.name).zip(alphabet).map { case (k, v) => TParameter(k) -> TParameter(v) }
+        val alpha = alphabet.filterNot(used)
+        val pairs = scheme.parameters.map(_.name).zip(alpha).map { case (k, v) => TParameter(k) -> TParameter(v) }
         val replacement = pairs.toMap[Type, Type]
         val constraints = scheme.constraints.map(replace(_, replacement, expand))
         val generalized = replace(scheme.generalized, replacement, expand)

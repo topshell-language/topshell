@@ -49,12 +49,15 @@ class Typer {
             record match {
                 case TRecord(fields) =>
                     fields.find(_.name == label).map { field =>
-                        unification.unify(t, instantiate(Some(field.scheme)))
+                        unification.unify(instantiate(Some(field.scheme)), t)
                         None
                     }.getOrElse {
                         if(optional) None
                         else throw new RuntimeException("Missing field " + label + " in: " + record)
                     }
+                case TConstructor("Json") =>
+                    unification.unify(TConstructor("Json"), t)
+                    None
                 case TParameter(_) =>
                     Some(constraint)
                 case TVariable(_) =>
