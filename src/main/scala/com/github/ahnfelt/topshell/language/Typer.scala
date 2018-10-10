@@ -52,14 +52,14 @@ class Typer {
                         None
                     }.getOrElse {
                         if(optional) None
-                        else throw new RuntimeException("No such field " + label + " in: " + record)
+                        else throw new RuntimeException("Missing field " + label + " in: " + record)
                     }
                 case TParameter(_) =>
                     Some(constraint)
                 case TVariable(_) =>
                     Some(constraint)
                 case _ =>
-                    throw new RuntimeException("No such field " + label + " in non-record: " + record)
+                    throw new RuntimeException("Missing field " + label + " in non-record: " + record)
             }
         case TApply(TConstructor("Add"), target) =>
             target match {
@@ -148,11 +148,15 @@ class Typer {
             s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), freshTypeVariable()))
         ).toMap
         symbols.map { s =>
-            val expected = instantiate(s.binding.scheme) // Don't instantiate here?
+            val expected1 = instantiate(s.binding.scheme) // Don't instantiate here?
             try {
                 withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
-                    val v = checkTerm(s.binding.value, expected)
-                    val scheme = generalize(expected) // Check existing scheme, if present
+                    val v = checkTerm(s.binding.value, expected1)
+                    val expected2 = if(!s.bind) expected1 else unification.expand(expected1) match {
+                        case TApply(TConstructor("Task"), argument) => argument
+                        case t => throw ParseException(s.binding.at, "Not a task: " + t)
+                    }
+                    val scheme = generalize(expected2) // Check existing scheme, if present
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
                 }

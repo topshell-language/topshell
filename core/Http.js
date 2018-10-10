@@ -40,14 +40,14 @@ exports._fetchThen = f => configuration => new self.tsh.Task((w, t, c) => {
     }
 });
 
-//: c -> Task Http | c.url : String | c.?method : String | c.?mode : String
+//: c -> Task Http | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetch = exports._fetchThen(r => Promise.resolve(r));
 
-//: c -> Task String | c.url : String | c.?method : String | c.?mode : String
+//: c -> Task String | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetchText = exports._fetchThen(r => r.text());
-//: c -> Task Json | c.url : String | c.?method : String | c.?mode : String
+//: c -> Task Json | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetchJson = exports._fetchThen(r => r.json().then(j => Promise.resolve(j)));
-//: c -> Task Bytes | c.url : String | c.?method : String | c.?mode : String
+//: c -> Task Bytes | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
 exports._processResponse = f => response => new self.tsh.Task((w, t, c) => {

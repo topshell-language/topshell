@@ -375,7 +375,7 @@ class Parser(file : String, tokens : Array[Token]) {
             val record = skip("lower").raw
             val o = skip("separator").raw
             val label =
-                if(ahead.kind == "lower") skip("lower").raw
+                if(current.kind == "lower") skip("lower").raw
                 else JSON.parse(skip("string").raw).asInstanceOf[String]
             skip("separator", Some(":"))
             val t = parseType()
