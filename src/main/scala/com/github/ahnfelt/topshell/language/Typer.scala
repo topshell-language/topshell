@@ -274,10 +274,10 @@ class Typer {
                 if(!seen.add(f.name)) {
                     throw new RuntimeException("Duplicate field " + f.name + " in: " + term)
                 }
+                // Also use the explicit scheme, if present
                 val t1 = freshTypeVariable()
                 val v = checkTerm(f.value, t1)
-                // Also use the explicit scheme, if present
-                val s = Scheme(List(), List(), t1) // Generalize, check constraints.
+                val s = generalize(t1)
                 f.copy(scheme = Some(s), value = v) -> TypeBinding(f.name, s)
             }.unzip
             val t2 = freshTypeVariable()
