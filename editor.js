@@ -209,25 +209,23 @@ CodeMirror.hint.topshell = function (editor) {
                 var text = e[0] + "." + s.name + " ";
                 return {text: text, displayText: text + ": " + s.type, render: CodeMirror.renderTopshellHint};
             }))
-    );
+    ).sort((a, b) => a.text.localeCompare(b.text));
     var cursor = editor.getCursor();
     var currentLine = editor.getLine(cursor.line);
     var start = cursor.ch;
     var end = start;
     while (end < currentLine.length && /[\w$]+/.test(currentLine.charAt(end))) ++end;
     while (start && /[\w$.]+/.test(currentLine.charAt(start - 1))) --start;
-    var curWord = start != end && currentLine.slice(start, end);
+    var curWord = start !== end && currentLine.slice(start, end);
     var regex = new RegExp('^' + curWord, 'i');
 
-    var items = !curWord ? list : list.filter(item => item.text.match(regex)).sort();
+    var items = !curWord ? list : list.filter(item => item.text.match(regex));
 
-    var result = {
+    return {
         list: items,
         from: CodeMirror.Pos(cursor.line, start),
         to: CodeMirror.Pos(cursor.line, end)
     };
-
-    return result;
 };
 
 CodeMirror.renderTopshellHint = (element, self, data) => {
