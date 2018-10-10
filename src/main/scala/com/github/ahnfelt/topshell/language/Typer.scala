@@ -2,6 +2,7 @@ package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
 
+import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.scalajs.js
 import scala.scalajs.js.annotation.JSGlobal
@@ -104,9 +105,11 @@ class Typer {
             throw new RuntimeException("Invalid constraint: " + constraint)
     }
 
-    def generalize(theType : Type) : Scheme = {
+    @tailrec
+    private def simplifyAllConstraints() : Unit = {
         var error : Option[RuntimeException] = None
-        constraints = constraints.map(unification.expand).distinct.flatMap { c =>
+        constraints = constraints.map(unification.expand).distinct
+        val newConstraints = constraints.flatMap { c =>
             try {
                 simplifyConstraint(c)
             } catch {
@@ -116,6 +119,14 @@ class Typer {
             }
         }
         error.foreach(throw _)
+        if(newConstraints != constraints) {
+            constraints = newConstraints
+            simplifyAllConstraints()
+        }
+    }
+
+    def generalize(theType : Type) : Scheme = {
+        simplifyAllConstraints()
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
         val free = Pretty.freeInType(t).filterNot(nonFree)
