@@ -204,12 +204,12 @@
 CodeMirror.hint.topshell = function (editor) {
     var list = Array.prototype.concat.apply([],
         Object.entries(tsh.coreModules)
-            .sort((a, b) => a[0].localeCompare(b[1]))
+            .sort((a, b) => a[0].localeCompare(b[0]))
             .map((e) => e[1].map(s => {
                 var text = e[0] + "." + s.name + " ";
                 return {text: text, displayText: text + ": " + s.type, render: CodeMirror.renderTopshellHint};
             }))
-    ).sort((a, b) => a.text.localeCompare(b.text));
+    );
     var cursor = editor.getCursor();
     var currentLine = editor.getLine(cursor.line);
     var start = cursor.ch;
