@@ -1,3 +1,4 @@
+//: (a -> String) -> (a -> b) -> a -> b
 exports.dictionaryBy = g => f => v => {
     var cache = {};
     function h(x) {
@@ -8,5 +9,5 @@ exports.dictionaryBy = g => f => v => {
     return h(v);
 };
 
-exports.dictionary = exports.dictionaryBy(k => "" + k);
-
+//: (String -> a) -> String -> a
+exports.dictionary = exports.dictionaryBy(k => k);
