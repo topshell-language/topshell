@@ -69,9 +69,13 @@ object Pretty {
         case TApply(constructor, argument) =>
             TApply(replace(constructor, replacement, expand), replace(argument, replacement, expand))
         case TRecord(fields) =>
-            TRecord(fields.map(f => f.copy(scheme = f.scheme.copy(
-                generalized = replace(f.scheme.generalized, replacement, expand) // Shadow parameters
-            ))))
+            TRecord(fields.map { f =>
+                // Shadow parameters
+                f.copy(scheme = f.scheme.copy(
+                    constraints = f.scheme.constraints.map(replace(_, replacement, expand)),
+                    generalized = replace(f.scheme.generalized, replacement, expand)
+                ))
+            })
     }
 
     def freeInScheme(theScheme : Scheme) : List[Int] = {

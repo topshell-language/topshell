@@ -95,10 +95,10 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                         )
                     }
                     val replacement1 = parameters1.zipWithIndex.map {
-                        case (p, i) => TParameter(p.name) -> TParameter("#" + i)
+                        case (p, i) => TParameter(p.name) -> TParameter("_p" + (i + 1))
                     }.toMap[Type, Type]
                     val replacement2 = parameters2.zipWithIndex.map {
-                        case (p, i) => TParameter(p.name) -> TParameter("#" + i)
+                        case (p, i) => TParameter(p.name) -> TParameter("_p" + (i + 1))
                     }.toMap[Type, Type]
                     // Assumes that constraints are sorted
                     val c1 = b1.scheme.constraints.map(Pretty.replace(_, replacement1, sub.get)).map(expand)

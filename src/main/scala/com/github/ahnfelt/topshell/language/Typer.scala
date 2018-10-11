@@ -49,14 +49,14 @@ class Typer {
             record match {
                 case TRecord(fields) =>
                     fields.find(_.name == label).map { field =>
-                        unification.unify(instantiate(Some(field.scheme)), t)
+                        unification.unify(t, instantiate(Some(field.scheme)))
                         None
                     }.getOrElse {
                         if(optional) None
                         else throw new RuntimeException("Missing field " + label + " in: " + record)
                     }
                 case TConstructor("Json") =>
-                    unification.unify(TConstructor("Json"), t)
+                    unification.unify(t, TConstructor("Json"))
                     None
                 case TParameter(_) =>
                     Some(constraint)
@@ -106,6 +106,7 @@ class Typer {
         simplifyAllConstraints()
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
+        println("nonFree = " + nonFree)
         val free = Pretty.freeInType(t).filterNot(nonFree)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
@@ -113,6 +114,7 @@ class Typer {
         val (cs2, cs3) = constraints.zip(cs1).partition { case (c1, c2) => c1 != c2 }
         constraints = cs3.map(_._2)
         val simplified = cs2.map(_._2)
+        println(simplified)
         val generalized = unification.replace(t, replacement)
         val parameters = replacementList.map { case (_, p) => TypeParameter(p.name, KStar()) } // Kind
         Pretty.renameParameterNames(Scheme(parameters, simplified, generalized), unification.sub.get)
@@ -150,13 +152,13 @@ class Typer {
                 }
             } catch {
                 case e : RuntimeException =>
-                    println(unification.sub.toList.sortBy(_._1).map { case (k, v) => "_" + k + " = " + v }.mkString("\n"))
+                    //println(unification.sub.toList.sortBy(_._1).map { case (k, v) => "_" + k + " = " + v }.mkString("\n"))
                     e.printStackTrace()
                     val parseException = ParseException(Location("unknown", 0, 0), e.getMessage)
                     s.copy(error = Some(parseException))
             }
         }
-        println(constraints)
+        constraints.foreach(c => println("Unsatisfied: " + c))
         result
     }
 
