@@ -71,29 +71,27 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                 )
             } else {
                 sorted1.zip(sorted2).foreach { case (b1, b2) =>
-                    val parameters1 = b1.scheme.parameters
-                    val parameters2 = b2.scheme.parameters
+                    val parameters1 = b1.scheme.parameters.sortBy(_.name)
+                    val parameters2 = b2.scheme.parameters.sortBy(_.name)
                     if(parameters1.size != parameters2.size) {
                         throw new RuntimeException(
-                            "Incompatible fields: " + b1.name + " and " + b2.name +
-                            " have different numbers of type parameters: " +
-                            parameters1.map(_.name).mkString(", ") + " vs. " +
-                            parameters2.map(_.name).mkString(", ") + "."
+                            "Incompatible type parameters: " +
+                            Pretty.showScheme(b1.scheme, true) + " vs. " +
+                            Pretty.showScheme(b2.scheme, true)
                         )
                     }
                     parameters1.zip(parameters2).find { case (p1, p2) => p1.kind != p2.kind }.foreach { case (p1, p2) =>
                         throw new RuntimeException(
-                            "Incompatible type parameters: " +
+                            "Incompatible kinds: " +
                             p1.name + " : " + p1.kind + " vs. " +
                             p2.name + " : " + p2.kind + "."
                         )
                     }
                     if(b1.scheme.constraints.size != b2.scheme.constraints.size) {
                         throw new RuntimeException(
-                            "Incompatible fields: " + b1.name + " and " + b2.name +
-                                " have different numbers of constraints: " +
-                                b1.scheme.constraints.map(expand).mkString(", ") + " vs. " +
-                                b2.scheme.constraints.map(expand).mkString(", ") + "."
+                            "Incompatible constraints: " +
+                            Pretty.showScheme(b1.scheme, true) + " vs. " +
+                            Pretty.showScheme(b2.scheme, true)
                         )
                     }
                     val replacement1 = parameters1.zipWithIndex.map {
@@ -105,19 +103,9 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                     // Assumes that constraints are sorted
                     val c1 = b1.scheme.constraints.map(Pretty.replace(_, replacement1, sub.get)).map(expand)
                     val c2 = b2.scheme.constraints.map(Pretty.replace(_, replacement2, sub.get)).map(expand)
-                    // Don't use unification to check: forall a. a -> _1 != forall a. _2 -> a, but they unifyInternal.
-                    c1.zip(c2).foreach { case (a, b) => if(a != b) {
-                        throw new RuntimeException(
-                            "Incompatible constraints for " + b1.name + ": " + a + " vs. " + b + "."
-                        )
-                    } else unify(a, b)}
+                    c1.zip(c2).foreach { case (a, b) => unify(a, b) }
                     val t1 = expand(Pretty.replace(b1.scheme.generalized, replacement1, sub.get))
                     val t2 = expand(Pretty.replace(b2.scheme.generalized, replacement2, sub.get))
-                    if(t1 != t2) {
-                        throw new RuntimeException(
-                            "Incompatible field types for " + b1.name + ": " + t1 + " vs. " + t2 + "."
-                        )
-                    }
                     unify(t1, t2)
                 }
             }

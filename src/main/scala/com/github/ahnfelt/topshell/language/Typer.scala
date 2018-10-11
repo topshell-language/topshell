@@ -65,7 +65,7 @@ class Typer {
                 case _ =>
                     throw new RuntimeException("Missing field " + label + " in non-record: " + record)
             }
-        case TApply(TConstructor("Add"), target) =>
+        case TApply(TConstructor(c), target) if c == "Add" || c == "Equal" || c == "Order" =>
             target match {
                 case TConstructor("Number") =>
                     None
@@ -76,33 +76,7 @@ class Typer {
                 case TVariable(_) =>
                     Some(constraint)
                 case _ =>
-                    throw new RuntimeException("Not true: " + constraint)
-            }
-        case TApply(TConstructor("Equal"), target) =>
-            target match {
-                case TConstructor("Number") =>
-                    None
-                case TConstructor("String") =>
-                    None
-                case TParameter(_) =>
-                    Some(constraint)
-                case TVariable(_) =>
-                    Some(constraint)
-                case _ =>
-                    throw new RuntimeException("Not true: " + constraint)
-            }
-        case TApply(TConstructor("Order"), target) =>
-            target match {
-                case TConstructor("Number") =>
-                    None
-                case TConstructor("String") =>
-                    None
-                case TParameter(_) =>
-                    Some(constraint)
-                case TVariable(_) =>
-                    Some(constraint)
-                case _ =>
-                    throw new RuntimeException("Not true: " + constraint)
+                    throw new RuntimeException("Not satisfiable: " + constraint)
             }
         case _ =>
             throw new RuntimeException("Invalid constraint: " + constraint)
@@ -161,7 +135,7 @@ class Typer {
         var schemes = symbols.map(s =>
             s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), freshTypeVariable()))
         ).toMap
-        symbols.map { s =>
+        val result = symbols.map { s =>
             val expected1 = instantiate(s.binding.scheme) // Don't instantiate here?
             try {
                 withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
@@ -182,6 +156,8 @@ class Typer {
                     s.copy(error = Some(parseException))
             }
         }
+        println(constraints)
+        result
     }
 
     def checkTerm(term : Term, expected : Type) : Term = term match {
