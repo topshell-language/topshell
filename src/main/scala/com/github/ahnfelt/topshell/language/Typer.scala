@@ -170,7 +170,7 @@ class Typer {
                         case TApply(TConstructor("Task"), argument) => argument
                         case t => throw ParseException(s.binding.at, "Not a task: " + t)
                     }
-                    val scheme = generalize(expected2) // Check existing scheme, if present
+                    val scheme = s.binding.scheme.getOrElse(generalize(expected2)) // Check existing scheme, if present
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
                 }
