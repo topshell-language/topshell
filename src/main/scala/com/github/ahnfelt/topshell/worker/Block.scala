@@ -183,10 +183,10 @@ object Block {
     }
 
     def time[T](label : String)(body : => T) : T = {
-        println("Begun " + label + "...")
+        //println("Begun " + label + "...")
         val started = System.currentTimeMillis()
         val result = body
-        println("Finished " + label + ": " + (System.currentTimeMillis() - started) + " ms")
+        //println("Finished " + label + ": " + (System.currentTimeMillis() - started) + " ms")
         result
     }
 

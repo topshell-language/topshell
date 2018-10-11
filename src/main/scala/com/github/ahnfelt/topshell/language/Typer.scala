@@ -63,7 +63,7 @@ class Typer {
                 case TVariable(_) =>
                     Some(constraint)
                 case _ =>
-                    throw new RuntimeException("Missing field " + label + " in non-record: " + record)
+                    throw new RuntimeException("Non-record field access: " + record + "." + label)
             }
         case TApply(TConstructor(c), target) if c == "Add" || c == "Equal" || c == "Order" =>
             target match {
@@ -106,7 +106,6 @@ class Typer {
         simplifyAllConstraints()
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
-        println("nonFree = " + nonFree)
         val free = Pretty.freeInType(t).filterNot(nonFree)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
@@ -114,10 +113,10 @@ class Typer {
         val (cs2, cs3) = constraints.zip(cs1).partition { case (c1, c2) => c1 != c2 }
         constraints = cs3.map(_._2)
         val simplified = cs2.map(_._2)
-        println(simplified)
         val generalized = unification.replace(t, replacement)
         val parameters = replacementList.map { case (_, p) => TypeParameter(p.name, KStar()) } // Kind
-        Pretty.renameParameterNames(Scheme(parameters, simplified, generalized), unification.sub.get)
+        val scheme = Scheme(parameters, simplified, generalized)
+        Pretty.renameParameterNames(scheme, unification.sub.get)
     }
 
     def instantiate(scheme : Option[Scheme]) : Type = scheme.map { s =>
