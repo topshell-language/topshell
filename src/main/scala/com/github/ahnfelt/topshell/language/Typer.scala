@@ -107,18 +107,26 @@ class Typer {
         constraints = simplifyConstraints(constraints)
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
-        val free1 = Pretty.freeInType(t)
-        val free2 = constraints.filter(Pretty.freeInType(_).exists(free1.contains)).flatMap(Pretty.freeInType)
-        val free = (free1 ++ free2).distinct.filterNot(nonFree)
+        var free = Pretty.freeInType(t).filterNot(nonFree)
+        @tailrec
+        def findConstraints(found : List[Type]) : List[Type] = {
+            val c1 = constraints.filter(Pretty.freeInType(_).exists(free.contains))
+            val c2 = (found ++ c1).distinct
+            if(c2 != found) {
+                free = (free ++ c2.flatMap(Pretty.freeInType).filterNot(nonFree)).distinct
+                findConstraints(c2)
+            } else {
+                found
+            }
+        }
+        val cs1 = findConstraints(List())
+        constraints = constraints.filterNot(cs1.contains)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
-        val cs1 = constraints.map(unification.replace(_, replacement))
-        val (cs2, cs3) = constraints.zip(cs1).partition { case (c1, c2) => c1 != c2 }
-        constraints = cs3.map(_._2)
-        val simplified = cs2.map(_._2)
+        val cs2 = cs1.map(unification.replace(_, replacement))
         val generalized = unification.replace(t, replacement)
         val parameters = replacementList.map { case (_, p) => TypeParameter(p.name, KStar()) } // Kind
-        val scheme = Scheme(parameters, simplified, generalized)
+        val scheme = Scheme(parameters, cs2, generalized)
         Pretty.renameParameterNames(scheme, unification.sub.get)
     }
 
