@@ -83,10 +83,10 @@ class Typer {
     }
 
     @tailrec
-    private def simplifyAllConstraints() : Unit = {
+    private def simplifyConstraints(constraints : List[Type]) : List[Type] = {
         var error : Option[RuntimeException] = None
-        constraints = constraints.map(unification.expand).distinct
-        val newConstraints = constraints.flatMap { c =>
+        val expandedConstraints = constraints.map(unification.expand).distinct
+        val newConstraints = expandedConstraints.flatMap { c =>
             try {
                 simplifyConstraint(c)
             } catch {
@@ -97,13 +97,14 @@ class Typer {
         }
         error.foreach(throw _)
         if(newConstraints != constraints) {
-            constraints = newConstraints
-            simplifyAllConstraints()
+            simplifyConstraints(newConstraints)
+        } else {
+            newConstraints
         }
     }
 
     def generalize(theType : Type) : Scheme = {
-        simplifyAllConstraints()
+        constraints = simplifyConstraints(constraints)
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
         val free = Pretty.freeInType(t).filterNot(nonFree)
@@ -137,21 +138,23 @@ class Typer {
             s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), freshTypeVariable()))
         ).toMap
         val result = symbols.map { s =>
-            val expected1 = instantiate(s.binding.scheme) // Don't instantiate here?
+            val expected1 = s.binding.scheme.map(_.generalized).getOrElse(freshTypeVariable())
             try {
                 withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
                     val v = checkTerm(s.binding.value, expected1)
+                    // Find out how to eliminate constraints that are declared and check if it's empty
+                    //val unsatisfied = s.binding.scheme.map(_.constraints).toList.flatMap(simplifyConstraints)
+                    //unsatisfied.headOption.foreach(c => throw ParseException(s.binding.at, "Not satisfied: " + c))
                     val expected2 = if(!s.bind) expected1 else unification.expand(expected1) match {
                         case TApply(TConstructor("Task"), argument) => argument
                         case t => throw ParseException(s.binding.at, "Not a task: " + t)
                     }
-                    val scheme = s.binding.scheme.getOrElse(generalize(expected2)) // Check existing scheme, if present
+                    val scheme = s.binding.scheme.getOrElse(generalize(expected2))
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
                 }
             } catch {
                 case e : RuntimeException =>
-                    //println(unification.sub.toList.sortBy(_._1).map { case (k, v) => "_" + k + " = " + v }.mkString("\n"))
                     e.printStackTrace()
                     val parseException = ParseException(Location("unknown", 0, 0), e.getMessage)
                     s.copy(error = Some(parseException))
@@ -254,8 +257,14 @@ class Typer {
                 // Also use the explicit scheme, if present
                 val t1 = freshTypeVariable()
                 val v = checkTerm(f.value, t1)
-                val s = generalize(t1)
-                f.copy(scheme = Some(s), value = v) -> TypeBinding(f.name, s)
+                val s1 = generalize(t1)
+                // A kind of value restriction for record fields, since the following is wrong in a non-lazy language:
+                // a -> {x: a.y}  :  a -> {x: b => b | a.y : b}
+                val s2 = f.value match {
+                    case _ : EFunction | _ : EVariable => s1
+                    case _ => Scheme(List(), List(), instantiate(Some(s1)))
+                }
+                f.copy(scheme = Some(s2), value = v) -> TypeBinding(f.name, s2)
             }.unzip
             val t2 = freshTypeVariable()
             val r = rest.map(checkTerm(_, t2))
