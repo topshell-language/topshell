@@ -107,7 +107,9 @@ class Typer {
         constraints = simplifyConstraints(constraints)
         val t = unification.expand(theType)
         val nonFree = freeInEnvironment().toSet
-        val free = Pretty.freeInType(t).filterNot(nonFree)
+        val free1 = Pretty.freeInType(t)
+        val free2 = constraints.filter(Pretty.freeInType(_).exists(free1.contains)).flatMap(Pretty.freeInType)
+        val free = (free1 ++ free2).distinct.filterNot(nonFree)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
         val cs1 = constraints.map(unification.replace(_, replacement))
