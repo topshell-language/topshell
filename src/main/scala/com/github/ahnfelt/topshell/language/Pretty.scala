@@ -15,6 +15,7 @@ object Pretty {
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
             t2 + o + l + ": " + t1 // Escape label
+        case TApply(TApply(TConstructor("=="), a), b) => a + " == " + b
         case TApply(TApply(TConstructor("->"), a@TApply(TApply(TConstructor("->"), _), _)), b) => "(" + a + ") -> " + b
         case TApply(TApply(TConstructor("->"), a), b) => a + " -> " + b
         case TApply(constructor, argument : TApply) => constructor + " (" + argument + ")"

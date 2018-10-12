@@ -396,6 +396,11 @@ class Parser(file : String, tokens : Array[Token]) {
             skip("separator", Some(":"))
             val t = parseType()
             TApply(TApply(TApply(TConstructor(o), TSymbol(label)), t), TParameter(record))
+        } else if(ahead.raw == "==") {
+            val left = TParameter(skip("lower").raw)
+            val o = skip("operator", Some("==")).raw
+            val right = parseType()
+            TApply(TApply(TConstructor(o), left), right)
         } else {
             parseType()
         }

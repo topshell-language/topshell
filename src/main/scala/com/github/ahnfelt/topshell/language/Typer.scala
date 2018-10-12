@@ -65,6 +65,9 @@ class Typer {
                 case _ =>
                     throw new RuntimeException("Non-record field access: " + record + "." + label)
             }
+        case TApply(TApply(TConstructor("=="), a), b) =>
+            unification.unify(a, b)
+            None
         case TApply(TConstructor(c), target) if c == "Add" || c == "Equal" || c == "Order" =>
             target match {
                 case TConstructor("Number") =>
