@@ -8,11 +8,17 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
     def copy() = new Unification(sub)
 
-    def bind(id : Int, theType : Type) : Unit = {
+    def occursCheck(id : Int, theType : Type) : Unit = {
         if(Pretty.freeInType(theType).contains(id)) {
-            throw new RuntimeException("Infinite type: " + expand(TVariable(id)) + " = " + expand(theType))
+            throw new RuntimeException("Infinite type: " + TVariable(id) + " == " + theType)
         }
-        sub = sub + (id -> theType)
+    }
+
+    def bind(id : Int, theType : Type) : Unit = if(TVariable(id) != theType) {
+        occursCheck(id, theType)
+        val replacement = Map[Type, Type](TVariable(id) -> theType)
+        sub = sub.mapValues(replace(_, replacement))
+        sub += (id -> theType)
     }
 
     def unify(type1 : Type, type2 : Type) : Unit = (type1, type2) match {
@@ -121,7 +127,12 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
     def expand(unexpanded : Type) : Type = unexpanded match {
         case TVariable(id) =>
-            sub.get(id).map(expand).getOrElse(unexpanded)
+            sub.get(id).map { t1 =>
+                occursCheck(id, t1)
+                val t2 = expand(t1)
+                bind(id, t2)
+                t2
+            }.getOrElse(unexpanded)
         case TParameter(name) =>
             unexpanded
         case TConstructor(name) =>
