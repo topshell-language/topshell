@@ -44,8 +44,7 @@ class Typer {
     }
 
     def simplifyConstraint(constraint : Type) : Option[Type] = constraint match {
-        case TApply(TApply(TApply(TConstructor(o), TSymbol(label)), t), record) if o == "." || o == ".?" =>
-            val optional = o == ".?"
+        case FieldConstraint(record, label, t, optional) =>
             record match {
                 case TRecord(fields) =>
                     fields.find(_.name == label).map { field =>
@@ -87,18 +86,20 @@ class Typer {
 
     @tailrec
     private def simplifyConstraints(constraints : List[Type]) : List[Type] = {
-        var error : Option[RuntimeException] = None
         val expandedConstraints = constraints.map(unification.expand).distinct
-        val newConstraints = expandedConstraints.flatMap { c =>
-            try {
-                simplifyConstraint(c)
-            } catch {
-                case e : RuntimeException =>
-                    error = Some(e)
-                    None
-            }
+        val seen = mutable.Map[(Type, String), Type]()
+        val newConstraints = expandedConstraints.flatMap(simplifyConstraint).flatMap {
+            case c@FieldConstraint(record, label, t, _) =>
+                seen.get((record, label)).map { t0 =>
+                    unification.unify(t0, t)
+                    List()
+                }.getOrElse {
+                    seen.put((record, label), t)
+                    List(c)
+                }
+            case c =>
+                List(c)
         }
-        error.foreach(throw _)
         if(newConstraints != constraints) {
             simplifyConstraints(newConstraints)
         } else {

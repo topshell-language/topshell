@@ -59,6 +59,20 @@ object Syntax {
 
     case class TypeBinding(name : String, scheme : Scheme)
 
+    object FieldConstraint {
+
+        def apply(recordType : Type, label: String, fieldType : Type, optional : Boolean) =
+            TApply(TApply(TApply(TConstructor(if(optional) ".?" else "."), TSymbol(label)), fieldType), recordType)
+
+        def unapply(constraint : Type) = constraint match {
+            case TApply(TApply(TApply(TConstructor(o), TSymbol(label)), fieldType), recordType) if o == "." || o == ".?" =>
+                Some((recordType, label, fieldType, o == ".?"))
+            case _ =>
+                None
+        }
+
+    }
+
 
     val binaryOperators = Seq(
         Seq("|")                    -> "a -> (a -> b) -> b",
