@@ -314,7 +314,9 @@ class Typer {
                         case Some(b) =>
                             instantiate(Some(b.scheme))
                         case None =>
-                            throw new RuntimeException("No such field: " + field + " in: " + ss2)
+                            throw new RuntimeException(
+                                "Field not found: {" + ss2.map(_.name).mkString(", ") + "}." + field
+                            )
                     }
                 case other =>
                     val t2 = freshTypeVariable()
