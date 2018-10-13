@@ -48,11 +48,17 @@ class Typer {
             record match {
                 case TRecord(fields) =>
                     fields.find(_.name == label).map { field =>
-                        unification.unify(t, instantiate(Some(field.scheme)))
+                        try {
+                            unification.unify(t, instantiate(Some(field.scheme)))
+                        } catch {
+                            case e : RuntimeException =>
+                                throw new RuntimeException(e.getMessage + " (when checking ." + label + ")")
+                        }
                         None
                     }.getOrElse {
-                        if(optional) None
-                        else throw new RuntimeException("Missing field " + label + " in: " + record)
+                        if(optional) None else throw new RuntimeException(
+                            "Field not found: {" + fields.map(_.name).mkString(", ") + "}." + label
+                        )
                     }
                 case TConstructor("Json") =>
                     unification.unify(t, TConstructor("Json"))
@@ -91,7 +97,15 @@ class Typer {
         val newConstraints = expandedConstraints.flatMap(simplifyConstraint).flatMap {
             case c@FieldConstraint(record, label, t, _) =>
                 seen.get((record, label)).map { t0 =>
-                    unification.unify(t0, t)
+                    try {
+                        unification.unify(t0, t)
+                    } catch {
+                        case e : RuntimeException =>
+                            throw new RuntimeException(
+                                e.getMessage +
+                                " (if ." + label + " should be polymorphic, please add a type annotation)"
+                            )
+                    }
                     List()
                 }.getOrElse {
                     seen.put((record, label), t)
@@ -159,11 +173,8 @@ class Typer {
                     // Find out how to eliminate constraints that are declared and check if it's empty
                     //val unsatisfied = s.binding.scheme.map(_.constraints).toList.flatMap(simplifyConstraints)
                     //unsatisfied.headOption.foreach(c => throw ParseException(s.binding.at, "Not satisfied: " + c))
-                    val expected2 = if(!s.bind) expected1 else unification.expand(expected1) match {
-                        case TApply(TConstructor("Task"), argument) => argument
-                        case t => throw ParseException(s.binding.at, "Not a task: " + t)
-                    }
-                    val scheme = s.binding.scheme.getOrElse(generalize(expected2))
+                    if(s.bind) unification.unify(TApply(TConstructor("Task"), freshTypeVariable()), expected1)
+                    val scheme = s.binding.scheme.getOrElse(generalize(expected1))
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
                 }
@@ -195,10 +206,10 @@ class Typer {
         case EFunction(at, variable, body) =>
             val t1 = freshTypeVariable()
             val t2 = freshTypeVariable()
+            unification.unify(expected, TApply(TApply(TConstructor("->"), t1), t2))
             val b = withVariables(Seq(variable -> Scheme(List(), List(), t1))) {
                 checkTerm(body, t2)
             }
-            unification.unify(expected, TApply(TApply(TConstructor("->"), t1), t2))
             EFunction(at, variable, b)
 
         case EApply(at, function, argument) =>
