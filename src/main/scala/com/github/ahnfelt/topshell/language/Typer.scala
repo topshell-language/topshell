@@ -57,7 +57,7 @@ class Typer {
                         None
                     }.getOrElse {
                         if(optional) None else throw new RuntimeException(
-                            "Field not found: {" + fields.map(_.name).mkString(", ") + "}." + label
+                            "Field ." + label + " not found in {" + fields.map(_.name).mkString(", ") + "}"
                         )
                     }
                 case TConstructor("Json") =>
@@ -315,7 +315,7 @@ class Typer {
                             instantiate(Some(b.scheme))
                         case None =>
                             throw new RuntimeException(
-                                "Field not found: {" + ss2.map(_.name).mkString(", ") + "}." + field
+                                "Field ." + field + " not found in {" + ss2.map(_.name).mkString(", ") + "}"
                             )
                     }
                 case other =>
