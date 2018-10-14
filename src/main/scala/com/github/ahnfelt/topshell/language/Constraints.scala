@@ -163,7 +163,7 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             }
         }
         unsatisfied.foreach { c =>
-            throw ParseException(at, "Type annotation doesn't guarantee " + unification.expand(c))
+            throw ParseException(at, "Type annotation lacks " + unification.expand(c))
         }
     }
 

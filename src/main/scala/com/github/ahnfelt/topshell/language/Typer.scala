@@ -53,8 +53,12 @@ class Typer {
             try {
                 withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
                     val v = checkTerm(s.binding.value, expected1)
-                    if(s.bind) unification.unify(TApply(TConstructor("Task"), constraints.freshTypeVariable()), expected1)
-                    val actual = constraints.generalize(expected1, freeInEnvironment())
+                    val expected3 = if(!s.bind) expected1 else {
+                        val expected2 = constraints.freshTypeVariable()
+                        unification.unify(TApply(TConstructor("Task"), expected2), expected1)
+                        expected2
+                    }
+                    val actual = constraints.generalize(expected3, freeInEnvironment())
                     s.binding.scheme.foreach(constraints.checkTypeAnnotation(s.binding.at, _, actual))
                     val scheme = s.binding.scheme.getOrElse(actual)
                     schemes += (s.binding.name -> scheme)
