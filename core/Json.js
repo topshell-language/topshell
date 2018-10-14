@@ -24,3 +24,11 @@ exports.at = index => json =>
 //: String -> Json -> Maybe Json
 exports.get = key => json =>
     Object.prototype.hasOwnProperty.call(json, key) ? self.tsh.some(json[key]) : self.tsh.none;
+//: Number -> Json -> Json
+exports.atOrFail = index => json => {
+    if(index >= 0 && index < json.length) return json[index]; else throw "Index out of bounds: " + index;
+};
+//: String -> Json -> Json
+exports.getOrFail = key => json =>{
+    if(Object.prototype.hasOwnProperty.call(json, key)) return json[key]; else throw "No such field: " + key;
+};
