@@ -10,9 +10,6 @@ exports.toAny = json => json;
 exports.fromAny = json => json;
 //: Json -> List Json
 exports.list = json => json;
-//: String -> Maybe Json
-exports.get = key => json =>
-    Object.prototype.hasOwnProperty.call(json, key) ? self.tsh.some(json[key]) : self.tsh.none;
 //: Json -> List {key: String, value: Json}
 exports.pairs = json => {
     var result = [];
@@ -21,3 +18,9 @@ exports.pairs = json => {
     }
     return result;
 };
+//: Number -> Maybe Json
+exports.at = index => json =>
+    index >= 0 && index < json.length ? self.tsh.some(json[index]) : self.tsh.none;
+//: String -> Maybe Json
+exports.get = key => json =>
+    Object.prototype.hasOwnProperty.call(json, key) ? self.tsh.some(json[key]) : self.tsh.none;
