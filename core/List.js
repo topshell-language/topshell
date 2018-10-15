@@ -66,7 +66,12 @@ exports.filter = function(f) { return function(r) { return r.filter(f); }; };
 //: List a -> List a
 exports.reverse = function(r) { return r.slice().reverse(); };
 //: (a -> Bool) -> List a -> Maybe a
-exports.find = function(f) { return function(r) { return r.find(f); }; };
+exports.find = f => r => {
+    for(var i = 0; i < r.length; i++) {
+        if(f(r[i])) return self.tsh.some(r[i]);
+    }
+    return self.tsh.none;
+};
 //: (a -> Bool) -> List a -> Bool
 exports.all = function(f) { return function(r) { return r.every(f); }; };
 //: (a -> Bool) -> List a -> Bool
