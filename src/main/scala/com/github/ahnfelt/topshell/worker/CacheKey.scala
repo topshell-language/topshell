@@ -41,7 +41,7 @@ object CacheKey {
         case EField(_, record, field, optional) =>
             EField(zeroLocation, withoutLocation(record), field, optional)
         case EIf(_, condition, thenBody, elseBody) =>
-            EIf(zeroLocation, withoutLocation(condition), withoutLocation(thenBody), withoutLocation(elseBody))
+            EIf(zeroLocation, withoutLocation(condition), withoutLocation(thenBody), elseBody.map(withoutLocation))
         case EUnary(_, operator, operand) =>
             EUnary(zeroLocation, operator, withoutLocation(operand))
         case EBinary(_, operator, left, right) =>

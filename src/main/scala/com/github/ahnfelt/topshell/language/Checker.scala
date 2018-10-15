@@ -52,7 +52,7 @@ object Checker {
         case EIf(at, condition, thenBody, elseBody) =>
             checkTerm(condition, visible) ++
             checkTerm(thenBody, visible) ++
-            checkTerm(elseBody, visible)
+            elseBody.map(checkTerm(_, visible)).getOrElse(Set())
         case EUnary(at, operator, operand) =>
             checkTerm(operand, visible)
         case EBinary(at, operator, left, right) =>

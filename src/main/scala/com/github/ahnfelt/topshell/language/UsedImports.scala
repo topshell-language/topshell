@@ -40,7 +40,7 @@ object UsedImports {
         case EIf(at, condition, thenBody, elseBody) =>
             usedImports(condition) ++
             usedImports(thenBody) ++
-            usedImports(elseBody)
+            elseBody.map(usedImports).getOrElse(Map.empty)
         case EUnary(at, operator, operand) =>
             usedImports(operand)
         case EBinary(at, operator, left, right) =>

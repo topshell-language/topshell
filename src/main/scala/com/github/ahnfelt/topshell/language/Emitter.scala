@@ -80,7 +80,7 @@ object Emitter {
         case EField(at, record, field, _) =>
             Math.max(at.line, lastLine(record))
         case EIf(at, condition, thenBody, elseBody) =>
-            Math.max(at.line, Math.max(lastLine(condition), Math.max(lastLine(thenBody), lastLine(elseBody))))
+            Math.max(at.line, Math.max(lastLine(condition), Math.max(lastLine(thenBody), elseBody.map(lastLine).getOrElse(0))))
         case EUnary(at, operator, operand) =>
             Math.max(at.line, lastLine(operand))
         case EBinary(at, operator, left, right) =>
@@ -120,8 +120,10 @@ object Emitter {
             escapeField(field, Some(record))
         case EField(at, record, field, true) =>
             "_h.lookup(" + emitTerm(record) + ", " + JSON.stringify(field) + ")"
-        case EIf(at, condition, thenBody, elseBody) =>
+        case EIf(at, condition, thenBody, Some(elseBody)) =>
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
+        case EIf(at, condition, thenBody, None) =>
+            "(" + emitTerm(condition) + " ? self.tsh.some(" + emitTerm(thenBody) + ") : self.tsh.none)"
         case EUnary(at, operator, operand) =>
             "(" + operator + "(" + emitTerm(operand) + "))"
         case EBinary(at, "^", left, right) =>

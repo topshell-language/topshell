@@ -213,13 +213,18 @@ class Typer {
             unification.unify(expected, t4)
             EField(at, r, field, optional)
 
-        case EIf(at, condition, thenBody, elseBody) =>
+        case EIf(at, condition, thenBody, Some(elseBody)) =>
+            val c = checkTerm(condition, TConstructor("Bool"))
+            val t = checkTerm(thenBody, expected)
+            val e = checkTerm(elseBody, expected)
+            EIf(at, c, t, Some(e))
+
+        case EIf(at, condition, thenBody, None) =>
             val t1 = constraints.freshTypeVariable()
+            unification.unify(expected, TApply(TConstructor("Maybe"), t1))
             val c = checkTerm(condition, TConstructor("Bool"))
             val t = checkTerm(thenBody, t1)
-            val e = checkTerm(elseBody, t1)
-            unification.unify(expected, t1)
-            EIf(at, c, t, e)
+            EIf(at, c, t, None)
 
         case EUnary(at, operator, operand) =>
             val t1 =

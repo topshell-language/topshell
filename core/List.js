@@ -35,6 +35,17 @@ exports.range = function(start) {
     };
 };
 
+//: (a -> Maybe {key: a, value: b}) -> a -> List b
+exports.unfold = f => z => {
+    var result = [];
+    var e = null;
+    while(self.tsh.isSome(e = f(z))) {
+        z = e.value.key;
+        result.push(e.value.value);
+    }
+    return result;
+};
+
 //: List a -> Number
 exports.size = function(r) { return r.length; };
 //: List a -> Number
