@@ -25,7 +25,7 @@ object Checker {
         case ENumber(at, value) =>
             Set.empty
         case EVariable(at, name) =>
-            if(!visible(name)) throw ParseException(at, "Unknown variable: " + name)
+            if(!visible(name)) throw ParseException(at, "Not in scope: " + name)
             Set(name)
         case EFunction(at, variable, body) =>
             checkTerm(body, visible + variable) - variable

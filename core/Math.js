@@ -75,3 +75,8 @@ exports.tan = Math.tan;
 exports.tanh = Math.tanh;
 //: Number -> Number
 exports.trunc = Math.trunc;
+
+//: Number -> Bool
+exports.isEven = x => x % 2 === 0;
+//: Number -> Bool
+exports.isOdd = x => (x + 1) % 2 === 0;

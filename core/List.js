@@ -133,6 +133,16 @@ exports.dropWhile = f => a => {
     return result;
 };
 
+//: (a -> Bool) -> List a -> List a
+exports.dropLastWhile = f => a => {
+    let result = [];
+    for(var j = a.length - 1; j >= 0 && f(a[j]); j--) {}
+    for(var i = 0; i <= j; i++) {
+        result.push(a[i]);
+    }
+    return result;
+};
+
 //: List {key: a, value: b} -> {key: List a, value: List b}
 exports.unzip = a => {
     let keys = [];

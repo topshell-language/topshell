@@ -272,17 +272,17 @@ self.tsh.tokenize = (file, code) => {
 
             var dot = false;
             var exponent = false;
-            i += 1;
             while(code[i] >= '0' && code[i] <= '9') {
                 i += 1;
+                if((code[i] === 'e' || code[i] === 'E') && !exponent) {
+                    i += 1;
+                    dot = true;
+                    exponent = true;
+                    if(code[i] === '+' || code[i] === '-') i += 1;
+                }
                 if(code[i] === '.' && !dot && !exponent) {
                     i += 1;
                     dot = true;
-                }
-                if((code[i] === 'e' || code[i] === 'E') && !exponent) {
-                    i += 1;
-                    exponent = true;
-                    if(code[i] === '+' || code[i] === '-') i += 1;
                 }
             }
             tokens.push(token("number", start, i));
