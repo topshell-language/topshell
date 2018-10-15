@@ -48,7 +48,7 @@ class Typer {
         var schemes = symbols.map(s =>
             s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), constraints.freshTypeVariable()))
         ).toMap
-        val result = symbols.map { s =>
+        val result = symbols.map { s => if(s.error.nonEmpty) s else {
             val expected1 = constraints.instantiate(s.binding.scheme)
             try {
                 withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
@@ -70,7 +70,7 @@ class Typer {
                     val parseException = ParseException(Location("unknown", 0, 0), e.getMessage)
                     s.copy(error = Some(parseException))
             }
-        }
+        }}
         constraints.checkRemains()
         result
     }
