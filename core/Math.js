@@ -4,11 +4,6 @@ exports.pi = Math.PI;
 exports.e = Math.E;
 //: Number -> Number -> Number
 exports.remainder = top => bottom => top % bottom;
-//: Number -> Bool
-exports.isFinite = isFinite;
-//: Number -> Bool
-exports.isNaN = isNaN;
-
 //: Number -> Number
 exports.abs = Math.abs;
 //: Number -> Number
@@ -75,8 +70,3 @@ exports.tan = Math.tan;
 exports.tanh = Math.tanh;
 //: Number -> Number
 exports.trunc = Math.trunc;
-
-//: Number -> Bool
-exports.isEven = x => x % 2 === 0;
-//: Number -> Bool
-exports.isOdd = x => (x + 1) % 2 === 0;
