@@ -101,12 +101,13 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
 
     def generalize(theType : Type, nonFree : Set[Int], topLevel : Boolean) : Scheme = {
         constraints = simplifyConstraints(constraints)
+        val reversed = constraints.reverse
         val t = unification.expand(theType)
         var free = Pretty.freeInType(t).filterNot(nonFree)
         @tailrec
         def findConstraints(found : List[Type]) : List[Type] = {
-            val cs1 = constraints.filter(Pretty.freeInType(_).exists(free.contains))
-            val cs2 = (found ++ cs1).distinct
+            val cs1 = reversed.filter(Pretty.freeInType(_).exists(free.contains))
+            val cs2 = (cs1 ++ found).distinct
             if(cs2 != found) {
                 free = (free ++ cs2.flatMap(Pretty.determinedInConstraint).filterNot(nonFree)).distinct
                 findConstraints(cs2)
@@ -114,7 +115,7 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 found
             }
         }
-        val cs1 = findConstraints(List()).reverse
+        val cs1 = findConstraints(List())
         constraints = constraints.filterNot(cs1.contains)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
@@ -126,6 +127,7 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         if(topLevel) Pretty.freeInScheme(scheme2).headOption.foreach { id =>
             throw new RuntimeException("Ambiguous type _" + id + " in " + scheme2)
         }
+        // Also check ambiguous types in type annotations
         scheme2
     }
 
