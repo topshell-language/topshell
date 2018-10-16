@@ -70,13 +70,14 @@ object Pretty {
         case TApply(constructor, argument) =>
             TApply(replace(constructor, replacement, expand), replace(argument, replacement, expand))
         case TRecord(fields) =>
-            TRecord(fields.map { f =>
-                // Shadow parameters
-                f.copy(scheme = f.scheme.copy(
-                    constraints = f.scheme.constraints.map(replace(_, replacement, expand)),
-                    generalized = replace(f.scheme.generalized, replacement, expand)
-                ))
-            })
+            TRecord(fields.map { f => f.copy(scheme = replaceInScheme(f.scheme, replacement, expand)) })
+    }
+
+    def replaceInScheme(search : Scheme, replacement : Map[Type, Type], expand : Int => Option[Type]) : Scheme = {
+        search.copy(
+            constraints = search.constraints.map(replace(_, replacement, expand)),
+            generalized = replace(search.generalized, replacement, expand)
+        )
     }
 
     def freeInScheme(theScheme : Scheme) : List[Int] = {

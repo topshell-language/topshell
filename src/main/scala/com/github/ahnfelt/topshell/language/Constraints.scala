@@ -126,7 +126,8 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         val scheme1 = Scheme(parameters, cs2, generalized)
         val scheme2 = Pretty.renameParameterNames(scheme1, unification.sub.get)
         if(topLevel) Pretty.freeInScheme(scheme2).headOption.foreach { id =>
-            throw new RuntimeException("Ambiguous type _" + id + " in " + scheme2)
+            val scheme3 = Pretty.replaceInScheme(scheme2, Map(TVariable(id) -> TParameter("_0")), _ => None)
+            throw new RuntimeException("Ambiguous type _0 in: " + scheme3)
         }
         // Also check ambiguous types in type annotations
         scheme2
