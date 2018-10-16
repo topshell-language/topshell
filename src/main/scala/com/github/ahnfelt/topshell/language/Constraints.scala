@@ -99,30 +99,34 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         }
     }
 
-    def generalize(theType : Type, nonFree : Set[Int]) : Scheme = {
+    def generalize(theType : Type, nonFree : Set[Int], topLevel : Boolean) : Scheme = {
         constraints = simplifyConstraints(constraints)
         val t = unification.expand(theType)
         var free = Pretty.freeInType(t).filterNot(nonFree)
         @tailrec
         def findConstraints(found : List[Type]) : List[Type] = {
-            val c1 = constraints.filter(Pretty.freeInType(_).exists(free.contains))
-            val c2 = (found ++ c1).distinct
-            if(c2 != found) {
-                free = (free ++ c2.flatMap(Pretty.freeInType).filterNot(nonFree)).distinct
-                findConstraints(c2)
+            val cs1 = constraints.filter(Pretty.freeInType(_).exists(free.contains))
+            val cs2 = (found ++ cs1).distinct
+            if(cs2 != found) {
+                free = (free ++ cs2.flatMap(Pretty.determinedInConstraint).filterNot(nonFree)).distinct
+                findConstraints(cs2)
             } else {
                 found
             }
         }
-        val cs1 = findConstraints(List())
+        val cs1 = findConstraints(List()).reverse
         constraints = constraints.filterNot(cs1.contains)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
         val cs2 = cs1.map(unification.replace(_, replacement))
         val generalized = unification.replace(t, replacement)
         val parameters = replacementList.map { case (_, p) => TypeParameter(p.name, KStar()) } // Kind
-        val scheme = Scheme(parameters, cs2, generalized)
-        Pretty.renameParameterNames(scheme, unification.sub.get)
+        val scheme1 = Scheme(parameters, cs2, generalized)
+        val scheme2 = Pretty.renameParameterNames(scheme1, unification.sub.get)
+        if(topLevel) Pretty.freeInScheme(scheme2).headOption.foreach { id =>
+            throw new RuntimeException("Ambiguous type _" + id + " in " + scheme2)
+        }
+        scheme2
     }
 
     def instantiate(scheme : Option[Scheme]) : Type = scheme.map { s =>

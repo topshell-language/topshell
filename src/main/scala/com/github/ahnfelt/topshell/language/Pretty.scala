@@ -92,4 +92,12 @@ object Pretty {
         case TRecord(fields) => fields.flatMap(f => freeInScheme(f.scheme))
     }).distinct
 
+    // Type variables that are *fully determined* (in the type class with functional dependencies sense)
+    // To avoid inferring: f : a | b.y: a = (Json.toAny (Json.read "{}")).y
+    // But still infer: g : a -> b | a.y: c | c.z: b = x -> x.y.z
+    def determinedInConstraint(constraint : Type) : List[Int] = constraint match {
+        case FieldConstraint(_, _, t, _) => freeInType(t)
+        case _ => List()
+    }
+
 }

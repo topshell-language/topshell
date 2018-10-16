@@ -58,7 +58,7 @@ class Typer {
                         unification.unify(TApply(TConstructor("Task"), expected2), expected1)
                         expected2
                     }
-                    val actual = constraints.generalize(expected3, freeInEnvironment())
+                    val actual = constraints.generalize(expected3, freeInEnvironment(), topLevel = true)
                     s.binding.scheme.foreach(constraints.checkTypeAnnotation(s.binding.at, _, actual))
                     val scheme = s.binding.scheme.getOrElse(actual)
                     schemes += (s.binding.name -> scheme)
@@ -117,7 +117,7 @@ class Typer {
                         value = checkTerm(b.value, t2)
                     ) -> t2
                 }
-                bs1.map { case (b, t2) => b.copy(scheme = Some(constraints.generalize(t2, freeInEnvironment()))) }
+                bs1.map { case (b, t2) => b.copy(scheme = Some(constraints.generalize(t2, freeInEnvironment(), topLevel = false))) }
             }
             val body2 = withVariables(bs.map(b => b.name -> b.scheme.get)) {
                 checkTerm(body, t1)
@@ -168,7 +168,7 @@ class Typer {
                 // Also use the explicit scheme, if present
                 val t1 = constraints.freshTypeVariable()
                 val v = checkTerm(f.value, t1)
-                val s1 = constraints.generalize(t1, freeInEnvironment())
+                val s1 = constraints.generalize(t1, freeInEnvironment(), false)
                 // A kind of value restriction for record fields, since the following is wrong in a non-lazy language:
                 // a -> {x: a.y}  :  a -> {x: b => b | a.y : b}
                 val s2 = f.value match {

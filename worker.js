@@ -59,12 +59,12 @@ self.tsh.toHtml = value => {
         result.push("]");
     } else {
         result.push("{");
-        if(Object.prototype.hasOwnProperty.call(value, "_")) {
-            var c = value._;
-            c = c.match(/^[A-Z][a-zA-Z0-9]*$/g) ? c : JSON.stringify(c);
-            result.push(c);
-        }
-        for(var k in value) if(k !== "_" && Object.prototype.hasOwnProperty.call(value, k)) {
+        var isConstructor =
+            Object.prototype.hasOwnProperty.call(value, "_") &&
+            typeof value._ === 'string' &&
+            value._.match(/^[A-Z][a-zA-Z0-9]*$/g);
+        if(isConstructor) result.push(value._);
+        for(var k in value) if((k !== "_" || !isConstructor) && Object.prototype.hasOwnProperty.call(value, k)) {
             if(result.length > 1) result.push(", ");
             var l = k.match(/^[a-z][a-zA-Z0-9]*$/g) ? k : JSON.stringify(k);
             result.push(l + ": ");
