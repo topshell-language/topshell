@@ -103,13 +103,14 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         constraints = simplifyConstraints(constraints)
         val reversed = constraints.reverse
         val t = unification.expand(theType)
-        var free = Pretty.freeInType(t).filterNot(nonFree)
+        var free = Pretty.determinedInType(t, false).map(_.toInt).filterNot(nonFree)
         @tailrec
         def findConstraints(found : List[Type]) : List[Type] = {
             val cs1 = reversed.filter(Pretty.freeInType(_).exists(free.contains))
             val cs2 = (cs1 ++ found).distinct
             if(cs2 != found) {
-                free = (free ++ cs2.flatMap(Pretty.determinedInConstraint).filterNot(nonFree)).distinct
+                val determined = cs2.flatMap(Pretty.determinedInConstraint(_, false)).map(_.toInt)
+                free = (free ++ determined).filterNot(nonFree).distinct
                 findConstraints(cs2)
             } else {
                 found

@@ -95,9 +95,24 @@ object Pretty {
     // Type variables that are *fully determined* (in the type class with functional dependencies sense)
     // To avoid inferring: f : a | b.y: a = (Json.toAny (Json.read "{}")).y
     // But still infer: g : a -> b | a.y: c | c.z: b = x -> x.y.z
-    def determinedInConstraint(constraint : Type) : List[Int] = constraint match {
-        case FieldConstraint(_, _, t, _) => freeInType(t)
+    def determinedInConstraint(constraint : Type, parameters : Boolean) : List[String] = constraint match {
+        case FieldConstraint(_, _, t, _) => determinedInType(t, parameters)
         case _ => List()
     }
+
+    def determinedInType(theType : Type, parameters : Boolean) : List[String] = (theType match {
+        case TVariable(id) => if(parameters) List() else List(id.toString)
+        case TParameter(name) => if(parameters) List(name) else List()
+        case TConstructor(name) => List()
+        case TApply(constructor, argument) =>
+            determinedInType(constructor, parameters) ++ determinedInType(argument, parameters)
+        case TSymbol(name) => List()
+        case TRecord(fields) => fields.flatMap(f => determinedInScheme(f.scheme, parameters))
+    }).distinct
+
+    def determinedInScheme(scheme : Scheme, parameters : Boolean) : List[String] = {
+        determinedInType(scheme.generalized, parameters) ++
+        scheme.constraints.flatMap(determinedInConstraint(_, parameters))
+    }.distinct
 
 }
