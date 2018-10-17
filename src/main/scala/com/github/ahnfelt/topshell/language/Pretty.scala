@@ -27,7 +27,7 @@ object Pretty {
         scheme.generalized + scheme.constraints.map(" | " + _).mkString
     }
 
-    private val alphabet = Stream.from(0).flatMap(i => Stream.range('a', ('z' + 1).toChar).map(_ -> i)).map {
+    val alphabet = Stream.from(0).flatMap(i => Stream.range('a', ('z' + 1).toChar).map(_ -> i)).map {
         case (c, 0) => c.toString
         case (c, i) => c + i.toString
     }
@@ -54,6 +54,22 @@ object Pretty {
         case TRecord(fields) =>
             fields.map(f => f.scheme.parameters.map(_.name).toSet ++ usedParameterNames(f.scheme.generalized, expand)).
                 fold(Set.empty)(_ ++ _)
+    }
+
+    def freeParameterNames(search : Type, expand : Int => Option[Type]) : Set[String] = search match {
+        case TVariable(id) => expand(id).map(freeParameterNames(_, expand)).getOrElse(Set.empty)
+        case TParameter(name) => Set(name)
+        case TConstructor(name) => Set.empty
+        case TSymbol(name) => Set.empty
+        case TApply(constructor, argument) =>
+            freeParameterNames(constructor, expand) ++ freeParameterNames(argument, expand)
+        case TRecord(fields) =>
+            fields.map(f =>
+                (
+                    freeParameterNames(f.scheme.generalized, expand) ::
+                    f.scheme.constraints.map(freeParameterNames(_, expand))
+                ).fold(Set.empty)(_ ++ _) -- f.scheme.parameters.map(_.name).toSet
+            ).fold(Set.empty)(_ ++ _)
     }
 
     def replace(search : Type, replacement : Map[Type, Type], expand : Int => Option[Type]) : Type = search match {

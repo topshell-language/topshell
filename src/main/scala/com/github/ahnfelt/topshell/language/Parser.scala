@@ -313,7 +313,7 @@ class Parser(file : String, tokens : Array[Token]) {
         constraints = constraints.reverse
         val parameters =
             if(explicit) explicitParameters.reverse
-            else Pretty.usedParameterNames(generalized, _ => None).toList.sorted.map(TypeParameter(_, KStar()))
+            else Pretty.freeParameterNames(generalized, _ => None).toList.sorted.map(TypeParameter(_, KStar()))
         Scheme(parameters, constraints, generalized)
     }
 

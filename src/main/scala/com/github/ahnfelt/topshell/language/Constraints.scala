@@ -117,19 +117,17 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             }
         }
         val cs1 = findConstraints(List())
-        constraints = constraints.filterNot(cs1.contains)
+        val cs2 = if(topLevel) constraints.reverse else cs1
+        if(topLevel) free = (free ++ Pretty.freeInType(t) ++ cs2.flatMap(Pretty.freeInType)).distinct
+        constraints = constraints.filterNot(cs2.contains)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
-        val cs2 = cs1.map(unification.replace(_, replacement))
+        val cs3 = cs2.map(unification.replace(_, replacement))
         val generalized = unification.replace(t, replacement)
         val parameters = replacementList.map { case (_, p) => TypeParameter(p.name, KStar()) } // Kind
-        val scheme1 = Scheme(parameters, cs2, generalized)
+        val scheme1 = Scheme(parameters, cs3, generalized)
         val scheme2 = Pretty.renameParameterNames(scheme1, unification.sub.get)
-        if(topLevel) Pretty.freeInScheme(scheme2).headOption.foreach { id =>
-            val scheme3 = Pretty.replaceInScheme(scheme2, Map(TVariable(id) -> TParameter("__")), _ => None)
-            throw new RuntimeException("Ambiguous type __ in: " + scheme3)
-        }
-        // Also check ambiguous types in type annotations
+        checkAmbiguousScheme(scheme2)
         scheme2
     }
 
@@ -173,6 +171,27 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         unsatisfied.foreach { c =>
             throw ParseException(at, "Type annotation lacks " + unification.expand(c))
         }
+    }
+
+    def checkAmbiguousScheme(annotation : Scheme) : Unit = {
+        val determined = Pretty.determinedInScheme(annotation, true).toSet
+        annotation.parameters.find(p => !determined(p.name)).foreach { p =>
+            println(Pretty.showScheme(annotation, true))
+            throw new RuntimeException("Ambiguous " + p.name + " in: " + annotation)
+        }
+        checkAmbiguousSchemesInType(annotation.generalized)
+    }
+
+    private def checkAmbiguousSchemesInType(theType : Type) : Unit = theType match {
+        case TVariable(id) =>
+        case TParameter(name) =>
+        case TConstructor(name) =>
+        case TApply(constructor, argument) =>
+            checkAmbiguousSchemesInType(constructor)
+            checkAmbiguousSchemesInType(argument)
+        case TSymbol(name) =>
+        case TRecord(fields) =>
+            fields.foreach(f => checkAmbiguousScheme(f.scheme))
     }
 
     def checkRemains() : Unit = {
