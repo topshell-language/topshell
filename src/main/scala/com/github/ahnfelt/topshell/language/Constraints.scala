@@ -155,7 +155,6 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             case e : RuntimeException =>
                 throw ParseException(at, "Type annotation differs vs. " + actual + " (" + e.getMessage + ")")
         }
-        println(cs)
         val unsatisfied = cs.find { c1 =>
             !annotation.constraints.exists { c2 =>
                 try {

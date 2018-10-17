@@ -162,12 +162,18 @@ class Typer {
 
         case ERecord(at, fields, rest) =>
             val seen = mutable.HashSet[String]()
+            val expectedSchemes = (unification.expand(expected) match {
+                case TRecord(expectedFields) => expectedFields.map(f => f.name -> f.scheme)
+                case _ => List()
+            }).toMap
             val (fs, ss) = fields.map { f =>
                 if(!seen.add(f.name)) {
                     throw new RuntimeException("Duplicate field " + f.name + " in: " + term)
                 }
-                // Also use the explicit scheme, if present
-                val t1 = constraints.freshTypeVariable()
+                val expectedScheme = expectedSchemes.get(f.name)
+                // There's no concrete syntax for writing explicit types directly on record fields
+                // Instead, check if the expected type is a record type and use the scheme from that
+                val t1 = expectedScheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
                 val v = checkTerm(f.value, t1)
                 val s1 = constraints.generalize(t1, freeInEnvironment(), false)
                 // A kind of value restriction for record fields, since the following is wrong in a non-lazy language:
@@ -176,6 +182,7 @@ class Typer {
                     case _ : EFunction | _ : EVariable => s1
                     case _ => Scheme(List(), List(), constraints.instantiate(Some(s1)))
                 }
+                expectedScheme.foreach(constraints.checkTypeAnnotation(f.at, _, s2))
                 f.copy(scheme = Some(s2), value = v) -> TypeBinding(f.name, s2)
             }.unzip
             val t2 = constraints.freshTypeVariable()
