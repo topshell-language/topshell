@@ -170,9 +170,8 @@ class Typer {
                 if(!seen.add(f.name)) {
                     throw new RuntimeException("Duplicate field " + f.name + " in: " + term)
                 }
+                // There's no concrete syntax for writing explicit types directly on record literals, so no check
                 val expectedScheme = expectedSchemes.get(f.name)
-                // There's no concrete syntax for writing explicit types directly on record fields
-                // Instead, check if the expected type is a record type and use the scheme from that
                 val t1 = expectedScheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
                 val v = checkTerm(f.value, t1)
                 val s1 = constraints.generalize(t1, freeInEnvironment(), false)
@@ -183,7 +182,8 @@ class Typer {
                     case _ => Scheme(List(), List(), constraints.instantiate(Some(s1)))
                 }
                 expectedScheme.foreach(constraints.checkTypeAnnotation(f.at, _, s2))
-                f.copy(scheme = Some(s2), value = v) -> TypeBinding(f.name, s2)
+                val s3 = expectedScheme.getOrElse(s2)
+                f.copy(scheme = Some(s3), value = v) -> TypeBinding(f.name, s3)
             }.unzip
             val t2 = constraints.freshTypeVariable()
             val r = rest.map(checkTerm(_, t2))
