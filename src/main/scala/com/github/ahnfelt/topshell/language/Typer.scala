@@ -50,6 +50,7 @@ class Typer {
             val expected1 = s.binding.scheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
             try {
                 s.binding.scheme.foreach(constraints.checkAmbiguousScheme)
+                schemes += s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), expected1))
                 withVariables(schemes.toList) {
                     val v = checkTerm(s.binding.value, expected1)
                     val expected3 = if(!s.bind) expected1 else {
