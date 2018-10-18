@@ -114,6 +114,7 @@ class Typer {
             EApply(at, f, a)
 
         case ELet(at, bindings, body) =>
+            // Check type annotation
             val variables = bindings.map { b =>
                 b.name -> b.scheme.getOrElse(Scheme(List(), List(), constraints.freshTypeVariable()))
             }
@@ -134,6 +135,7 @@ class Typer {
             ELet(at, bs, body2)
 
         case EBind(at, binding, body) =>
+            // Check type annotation
             val t1 = constraints.freshTypeVariable()
             val v = checkTerm(binding.value, t1)
             val (constructor, t2) = unification.expand(t1) match {
