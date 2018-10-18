@@ -45,14 +45,12 @@ class Typer {
             }
             environment += i.name -> Scheme(List(), List(), TRecord(fields))
         }
-        var schemes = symbols.map(s =>
-            s.binding.name -> s.binding.scheme.getOrElse(Scheme(List(), List(), constraints.freshTypeVariable()))
-        ).toMap
-        val result = symbols.map { s => if(s.error.nonEmpty) s else {
+        var schemes = symbols.flatMap(s => s.binding.scheme.map(s.binding.name -> _).toList).toMap
+        val result = symbols.zipWithIndex.map { case (s, i) => if(s.error.nonEmpty) s else {
             val expected1 = s.binding.scheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
             try {
                 s.binding.scheme.foreach(constraints.checkAmbiguousScheme)
-                withVariables(symbols.map(x => x.binding.name -> schemes(x.binding.name))) {
+                withVariables(schemes.toList) {
                     val v = checkTerm(s.binding.value, expected1)
                     val expected3 = if(!s.bind) expected1 else {
                         val expected2 = constraints.freshTypeVariable()
@@ -69,7 +67,10 @@ class Typer {
             } catch {
                 case e : RuntimeException =>
                     e.printStackTrace()
-                    val parseException = ParseException(Location("unknown", 0, 0), e.getMessage)
+                    val parseException = e match {
+                        case parseException : ParseException => parseException
+                        case _ => ParseException(Location("unknown", 0, 0), e.getMessage)
+                    }
                     constraints.clearConstraints()
                     s.copy(error = Some(parseException))
             }
@@ -88,8 +89,13 @@ class Typer {
             term
 
         case EVariable(at, name) =>
-            unification.unify(expected, constraints.instantiate(Some(environment(name))))
-            term
+            environment.get(name) match {
+                case Some(scheme) =>
+                    unification.unify(expected, constraints.instantiate(Some(scheme)))
+                    term
+                case None =>
+                    throw ParseException(at, "Forward reference requires a type annotation: " + name)
+            }
 
         case EFunction(at, variable, body) =>
             val t1 = constraints.freshTypeVariable()
