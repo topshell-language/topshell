@@ -193,8 +193,16 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             fields.foreach(f => checkAmbiguousScheme(f.scheme))
     }
 
-    def checkRemains() : Unit = {
-        constraints.foreach(c => println("Unsatisfied: " + c))
+    def assureEmpty() : Unit = {
+        val oldConstraints = constraints
+        constraints = List()
+        oldConstraints.foreach(c =>
+            throw new RuntimeException("Unsatisfied: " + c)
+        )
+    }
+
+    def clearConstraints() : Unit = {
+        constraints = List()
     }
 
 }

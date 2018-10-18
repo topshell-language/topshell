@@ -8,6 +8,8 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
     def copy() = new Unification(sub)
 
+    def reset() = sub = initialEnvironment
+
     def occursCheck(id : Int, theType : Type) : Unit = {
         if(Pretty.freeInType(theType).contains(id)) {
             throw new RuntimeException("Infinite type: " + TVariable(id) + " == " + theType)

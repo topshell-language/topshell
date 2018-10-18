@@ -117,6 +117,4 @@ object Processor {
 
     }
 
-    case class AbortedException() extends RuntimeException("Aborted due to new version of the code")
-
 }

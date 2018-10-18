@@ -61,6 +61,7 @@ class Typer {
                     }
                     val actual = constraints.generalize(expected3, freeInEnvironment(), topLevel = true)
                     s.binding.scheme.foreach(constraints.checkTypeAnnotation(s.binding.at, _, actual))
+                    constraints.assureEmpty()
                     val scheme = s.binding.scheme.getOrElse(actual)
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
@@ -69,10 +70,10 @@ class Typer {
                 case e : RuntimeException =>
                     e.printStackTrace()
                     val parseException = ParseException(Location("unknown", 0, 0), e.getMessage)
+                    constraints.clearConstraints()
                     s.copy(error = Some(parseException))
             }
         }}
-        constraints.checkRemains()
         result
     }
 
