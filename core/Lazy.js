@@ -3,7 +3,7 @@ exports.of = f => new self.tsh.Lazy(f);
 
 //: a -> Lazy a
 exports.fromValue = x => {
-    var lazy = new exports.Lazy(null);
+    var lazy = new self.tsh.Lazy(null);
     lazy.value = x;
     return lazy;
 };
