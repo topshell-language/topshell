@@ -6,3 +6,6 @@ exports.chain = f => g => x => g(f(x));
 
 //: ((a -> b) -> (a -> b)) -> a -> b
 exports.fix = f => x => f(exports.fix(f))(x);
+
+//: a -> a
+exports.id = x => x;
