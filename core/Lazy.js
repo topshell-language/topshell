@@ -1,9 +1,5 @@
-exports.Lazy = function(compute) {
-    this.compute = compute;
-};
-
-//: ({} -> a) -> Lazy a
-exports.of = f => new exports.Lazy(f);
+//: (b -> a) -> Lazy a
+exports.of = f => new self.tsh.Lazy(f);
 
 //: a -> Lazy a
 exports.fromValue = x => {
@@ -14,6 +10,6 @@ exports.fromValue = x => {
 
 //: Lazy a -> a
 exports.force = l => {
-    if(!Object.prototype.hasOwnProperty.call(l, "value")) l.value = l.compute({});
+    if(!Object.prototype.hasOwnProperty.call(l, "value")) l.value = l.compute();
     return l.value;
 };

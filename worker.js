@@ -38,6 +38,16 @@ self.tsh.Task = class extends self.tsh.AbstractView {
     }
 };
 
+self.tsh.Lazy = class extends self.tsh.AbstractView {
+    constructor(compute) {
+        super();
+        this.compute = compute;
+    }
+    toHtml() {
+        return {_tag: "span", children: ["lazy"]};
+    }
+};
+
 self.tsh.toHtml = value => {
     if(value instanceof self.tsh.AbstractView) return value.toHtml();
     if(value instanceof Function) return {_tag: "span", children: ["function"]};
