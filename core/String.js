@@ -18,7 +18,7 @@ exports.startsWith = x => s => s.startsWith(x);
 exports.endsWith = x => s => s.endsWith(x);
 //: String -> String -> List String
 exports.split = x => s => s.split(x);
-//: String -> String -> String
+//: Number -> String -> String
 exports.at = i => s => s.charAt(i) || "";
 //: String -> Number
 exports.size = s => s.length;
