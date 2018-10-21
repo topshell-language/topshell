@@ -27,3 +27,36 @@ exports.memoBy = g => f => v => {
 
 //: ((String -> a) -> (String -> a)) -> String -> a
 exports.memo = exports.memoBy(k => k);
+
+//: ((Number -> a) -> (Number -> a)) -> Number -> a
+exports.memoArray = f => x => {
+    var cache = [];
+    function t(x) {
+        var k = x;
+        if(!Object.prototype.hasOwnProperty.call(cache, k)) cache[k] = f(t)(x);
+        return cache[k];
+    }
+    return t(x);
+};
+
+//: ((Number -> Number -> a) -> (Number -> Number -> a)) -> Number -> Number -> a
+exports.memoTable = f => x => y => {
+    var cache = {};
+    function t(x) { return function(y) {
+        var k = x + "," + y;
+        if(!Object.prototype.hasOwnProperty.call(cache, k)) cache[k] = f(t)(x)(y);
+        return cache[k];
+    }}
+    return t(x)(y);
+};
+
+//: ((Number -> Number -> a) -> (Number -> Number -> a)) -> Number -> Number -> a
+exports.memoCube = f => x => y => z => {
+    var cache = {};
+    function t(x) { return function(y) {
+        var k = x + "," + y + "," + z;
+        if(!Object.prototype.hasOwnProperty.call(cache, k)) cache[k] = f(t)(x)(y)(z);
+        return cache[k];
+    }}
+    return t(x)(y)(z);
+};
