@@ -50,7 +50,7 @@ exports.memoTable = f => x => y => {
     return t(x)(y);
 };
 
-//: ((Number -> Number -> a) -> (Number -> Number -> a)) -> Number -> Number -> a
+//: ((Number -> Number -> Number -> a) -> (Number -> Number -> Number -> a)) -> Number -> Number -> Number -> a
 exports.memoCube = f => x => y => z => {
     var cache = {};
     function t(x) { return function(y) {
