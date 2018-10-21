@@ -14,7 +14,7 @@ exports.force = l => {
     return l.value;
 };
 
-//: (a -> String) -> (a -> b) -> a -> b
+//: (a -> String) -> ((a -> b) -> (a -> b)) -> a -> b
 exports.memoBy = g => f => v => {
     var cache = {};
     function h(x) {
@@ -25,5 +25,5 @@ exports.memoBy = g => f => v => {
     return h(v);
 };
 
-//: (String -> a) -> String -> a
-exports.memo = exports.dictionaryBy(k => k);
+//: ((String -> a) -> (String -> a)) -> String -> a
+exports.memo = exports.memoBy(k => k);
