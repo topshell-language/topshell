@@ -87,7 +87,8 @@ object Syntax {
         Seq("==", "!=")             -> "a -> a -> Bool | Equal a",
         Seq("+")                    -> "a -> a -> a | Add a",
         Seq("-")                    -> "a -> a -> a | Number a",
-        Seq("*", "/")               -> "a -> a -> a | Number a",
+        Seq("*")                    -> "a -> a -> a | Number a",
+        Seq("/")                    -> "a -> b -> Float | Number a | Number b",
         Seq("^")                    -> "a -> a -> a | Number a",
     )
 
