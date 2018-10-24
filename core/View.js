@@ -34,7 +34,7 @@ exports.table = exports.by(rows => {
     ]});
 });
 
-//: List Number -> View
+//: List Float -> View
 exports.bars = exports.by(data => {
     let attribute = (k, v) => ({_tag: ">attribute", key: k, value: v});
     let style = (k, v) => ({_tag: ">style", key: k, value: v});

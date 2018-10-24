@@ -180,7 +180,7 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseApply() : Term = {
         var result = parseDot()
-        while(List("lower", "upper", "number", "string", "definition").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
+        while(List("lower", "upper", "int", "float", "string", "definition").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
             val argument = parseDot()
             result = EApply(argument.at, result, argument)
         }
@@ -266,9 +266,12 @@ class Parser(file : String, tokens : Array[Token]) {
         case ("upper", _) =>
             val c = skip("upper")
             EVariable(c.at, c.raw)
-        case ("number", _) =>
-            val c = skip("number")
-            ENumber(c.at, c.raw)
+        case ("int", _) =>
+            val c = skip("int")
+            EInt(c.at, c.raw)
+        case ("float", _) =>
+            val c = skip("float")
+            EFloat(c.at, c.raw)
         case ("string", _) =>
             val c = skip("string")
             EString(c.at, c.raw)

@@ -61,7 +61,9 @@ object Emitter {
     def lastLine(term : Syntax.Term) : Int = term match {
         case EString(at, value) =>
             at.line
-        case ENumber(at, value) =>
+        case EInt(at, value) =>
+            at.line
+        case EFloat(at, value) =>
             at.line
         case EVariable(at, name) =>
             at.line
@@ -103,7 +105,8 @@ object Emitter {
 
     def emitTerm(term : Term) : String = term match {
         case EString(at, value) => value
-        case ENumber(at, value) => value
+        case EInt(at, value) => value
+        case EFloat(at, value) => value
         case EVariable(at, name) => name + "_"
         case EFunction(at, variable, body) => "(function(" + variable + "_) {\n" + emitBody(body) + "})"
         case EApply(at, function, argument) => "(" + emitTerm(function) + ")(" + emitTerm(argument) + ")"

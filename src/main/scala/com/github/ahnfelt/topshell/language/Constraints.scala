@@ -53,9 +53,24 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             None
         case TApply(TConstructor(c), target) if c == "Add" || c == "Equal" || c == "Order" =>
             target match {
-                case TConstructor("Number") =>
+                case TConstructor("Int") =>
+                    None
+                case TConstructor("Float") =>
                     None
                 case TConstructor("String") =>
+                    None
+                case TParameter(_) =>
+                    Some(constraint)
+                case TVariable(_) =>
+                    Some(constraint)
+                case _ =>
+                    throw new RuntimeException("Not satisfiable: " + constraint)
+            }
+        case TApply(TConstructor(c), target) if c == "Number" =>
+            target match {
+                case TConstructor("Int") =>
+                    None
+                case TConstructor("Float") =>
                     None
                 case TParameter(_) =>
                     Some(constraint)

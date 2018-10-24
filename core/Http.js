@@ -78,7 +78,7 @@ exports.header = header => response => response.headers.get(header);
 exports.ok = response => response.ok;
 //: Http -> Bool
 exports.redirected = response => response.redirected;
-//: Http -> Number
+//: Http -> Int
 exports.status = response => response.status;
 //: Http -> String
 exports.statusText = response => response.statusText;

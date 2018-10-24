@@ -1,8 +1,8 @@
-//: List Number -> Bytes
+//: List Int -> Bytes
 exports.fromList = bytes => new Uint8ClampedArray(bytes);
-//: Bytes -> List Number
+//: Bytes -> List Int
 exports.toList = bytes => Array.from(bytes);
-//: Bytes -> Number
+//: Bytes -> Int
 exports.size = bytes => bytes.byteLength;
-//: Number -> Number -> Bytes -> Bytes
+//: Int -> Int -> Bytes -> Bytes
 exports.slice = start => stop => bytes => bytes.slice(start, stop);

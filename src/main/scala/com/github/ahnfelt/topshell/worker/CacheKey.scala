@@ -24,7 +24,8 @@ object CacheKey {
 
     private def withoutLocation(t : Term) : Term = t match {
         case e : EString => e.copy(at = zeroLocation)
-        case e : ENumber => e.copy(at = zeroLocation)
+        case e : EInt => e.copy(at = zeroLocation)
+        case e : EFloat => e.copy(at = zeroLocation)
         case e : EVariable => e.copy(at = zeroLocation)
         case EFunction(_, variable, body) =>
             EFunction(zeroLocation, variable, withoutLocation(body))

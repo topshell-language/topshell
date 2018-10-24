@@ -13,7 +13,8 @@ object UsedImports {
 
     private def usedImports(term : Term) : Map[String, Location] = term match {
         case EString(at, value) => Map.empty
-        case ENumber(at, value) => Map.empty
+        case EInt(at, value) => Map.empty
+        case EFloat(at, value) => Map.empty
         case EVariable(at, name) if name.headOption.exists(_.isUpper) =>
             Map(name -> at)
         case EVariable(at, name) =>

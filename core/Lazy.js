@@ -28,7 +28,7 @@ exports.memoBy = g => f => v => {
 //: ((String -> a) -> (String -> a)) -> String -> a
 exports.memo = exports.memoBy(k => k);
 
-//: ((Number -> a) -> (Number -> a)) -> Number -> a
+//: ((Int -> a) -> (Int -> a)) -> Int -> a
 exports.memoArray = f => x => {
     var cache = [];
     function t(x) {
@@ -39,7 +39,7 @@ exports.memoArray = f => x => {
     return t(x);
 };
 
-//: ((Number -> Number -> a) -> (Number -> Number -> a)) -> Number -> Number -> a
+//: ((Int -> Int -> a) -> (Int -> Int -> a)) -> Int -> Int -> a
 exports.memoTable = f => x => y => {
     var cache = {};
     function t(x) { return function(y) {
@@ -50,7 +50,7 @@ exports.memoTable = f => x => y => {
     return t(x)(y);
 };
 
-//: ((Number -> Number -> Number -> a) -> (Number -> Number -> Number -> a)) -> Number -> Number -> Number -> a
+//: ((Int -> Int -> Int -> a) -> (Int -> Int -> Int -> a)) -> Int -> Int -> Int -> a
 exports.memoCube = f => x => y => z => {
     var cache = {};
     function t(x) { return function(y) {

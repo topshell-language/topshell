@@ -22,7 +22,9 @@ object Checker {
     private def checkTerm(term : Term, visible : Set[String]) : Set[String] = term match {
         case EString(at, value) =>
             Set.empty
-        case ENumber(at, value) =>
+        case EInt(at, value) =>
+            Set.empty
+        case EFloat(at, value) =>
             Set.empty
         case EVariable(at, name) =>
             if(!visible(name)) throw ParseException(at, "Not in scope: " + name)

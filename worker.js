@@ -300,7 +300,7 @@ self.tsh.tokenize = (file, code) => {
                     dot = true;
                 }
             }
-            tokens.push(token("number", start, i));
+            tokens.push(token(dot || exponent ? "float" : "int", start, i));
 
         } else if(code[i] === '_') {
 

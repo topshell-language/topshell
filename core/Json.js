@@ -18,13 +18,13 @@ exports.pairs = json => {
     }
     return result;
 };
-//: Number -> Json -> Maybe Json
+//: Int -> Json -> Maybe Json
 exports.at = index => json =>
     index >= 0 && index < json.length ? self.tsh.some(json[index]) : self.tsh.none;
 //: String -> Json -> Maybe Json
 exports.get = key => json =>
     Object.prototype.hasOwnProperty.call(json, key) ? self.tsh.some(json[key]) : self.tsh.none;
-//: Number -> Json -> Json
+//: Int -> Json -> Json
 exports.atOrFail = index => json => {
     if(index >= 0 && index < json.length) return json[index]; else throw "Index out of bounds: " + index;
 };

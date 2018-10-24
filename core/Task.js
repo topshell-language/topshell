@@ -188,7 +188,7 @@ exports.map = f => task => new self.tsh.Task((w, t, c) => {
     }, c);
 });
 
-//: Number -> Task {}
+//: Float -> Task {}
 exports.sleep = s => new self.tsh.Task((w, t, c) => {
     var handle = setTimeout(_ => {
         try {
@@ -200,7 +200,7 @@ exports.sleep = s => new self.tsh.Task((w, t, c) => {
     return () => clearTimeout(handle);
 });
 
-//: Number -> Task {}
+//: Float -> Task {}
 exports.interval = s => new self.tsh.Task((w, t, c) => {
     try {
         t(void 0)
@@ -217,12 +217,12 @@ exports.interval = s => new self.tsh.Task((w, t, c) => {
     return () => clearInterval(handle);
 });
 
-//: Task Number
+//: Task Float
 exports.now = new self.tsh.Task((w, t, c) => {
     try { t(Date.now() * 0.001) } catch(e) { c(e) }
 });
 
-//: Task Number
+//: Task Float
 exports.random = new self.tsh.Task((w, t, c) => {
     try { t(Math.random()) } catch(e) { c(e) }
 });

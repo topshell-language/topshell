@@ -24,7 +24,7 @@ exports.then = function(f) {
     };
 };
 
-//: Number -> Number -> List Number
+//: Int -> Int -> List Int
 exports.range = function(start) {
     return function(stop) {
         var result = [];
@@ -46,19 +46,19 @@ exports.unfold = f => z => {
     return result;
 };
 
-//: List a -> Number
+//: List a -> Int
 exports.size = function(r) { return r.length; };
-//: List a -> Number
+//: List a -> Bool
 exports.isEmpty = function(r) { return r.length === 0; };
-//: Number -> List a -> Maybe a
+//: Int -> List a -> Maybe a
 exports.at = function(i) { return function(r) { return i >= 0 && i < r.length ? self.tsh.some(r[i]) : self.tsh.none; }; };
-//: Number -> List a -> List a
+//: Int -> List a -> List a
 exports.take = function(i) { return function(r) { return r.slice(0, i); }; };
-//: Number -> List a -> List a
+//: Int -> List a -> List a
 exports.drop = function(i) { return function(r) { return r.slice(i); }; };
-//: Number -> List a -> List a
+//: Int -> List a -> List a
 exports.takeLast = function(i) { return function(r) { return r.slice(-i); }; };
-//: Number -> List a -> List a
+//: Int -> List a -> List a
 exports.dropLast = function(i) { return function(r) { return r.slice(0, -i); }; };
 
 //: (a -> Bool) -> List a -> List a
@@ -92,7 +92,7 @@ exports.foldRight = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
 //: (a -> a -> Bool) -> List a -> List a
 exports.sort = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
 
-//: Number -> a -> List a
+//: Int -> a -> List a
 exports.repeat = n => v => new Array(n).fill(v);
 
 //: List (List a) -> List a
@@ -159,10 +159,10 @@ exports.unzip = a => {
     return {key: keys, value: values};
 };
 
-//: List a -> List {key: Number, value: a}
+//: List a -> List {key: Int, value: a}
 exports.withKeys = a => a.map((e, i) => ({key: i, value: e}));
 
-//: List a -> List Number
+//: List a -> List Int
 exports.keys = a => a.map((e, i) => i);
 
 //: (a -> b -> a) -> a -> List b -> List a

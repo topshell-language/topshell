@@ -26,7 +26,8 @@ object Syntax {
 
     sealed abstract class Term { val at : Location }
     case class EString(at : Location, value : String) extends Term
-    case class ENumber(at : Location, value : String) extends Term
+    case class EInt(at : Location, value : String) extends Term
+    case class EFloat(at : Location, value : String) extends Term
     case class EVariable(at : Location, name : String) extends Term
     case class EFunction(at : Location, variable : String, body : Term) extends Term
     case class EApply(at : Location, function : Term, argument : Term) extends Term
@@ -73,6 +74,10 @@ object Syntax {
 
     }
 
+    val unaryOperators = Seq(
+        Seq("-")                    -> "a -> a | Number a",
+        Seq("!")                    -> "Bool -> Bool",
+    )
 
     val binaryOperators = Seq(
         Seq("|")                    -> "a -> (a -> b) -> b",
@@ -81,10 +86,17 @@ object Syntax {
         Seq(">", "<", ">=", "<=")   -> "a -> a -> Bool | Order a",
         Seq("==", "!=")             -> "a -> a -> Bool | Equal a",
         Seq("+")                    -> "a -> a -> a | Add a",
-        Seq("-")                    -> "Number -> Number -> Number",
-        Seq("*", "/")               -> "Number -> Number -> Number",
-        Seq("^")                    -> "Number -> Number -> Number",
+        Seq("-")                    -> "a -> a -> a | Number a",
+        Seq("*", "/")               -> "a -> a -> a | Number a",
+        Seq("^")                    -> "a -> a -> a | Number a",
     )
+
+    val unaryOperatorSymbols = unaryOperators.flatMap(_._1)
+
+    lazy val unaryOperatorSchemes = unaryOperators.flatMap { case (o, t) =>
+        val s = Parser.easy("Syntax.scala", t, _.parseScheme(false))
+        o.map(_ -> s)
+    }.toMap
 
     val binaryOperatorSymbols = binaryOperators.flatMap(_._1)
 

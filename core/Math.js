@@ -1,72 +1,72 @@
-//: Number
+//: Float
 exports.pi = Math.PI;
-//: Number
+//: Float
 exports.e = Math.E;
-//: Number -> Number -> Number
+//: Float -> Float -> Float
 exports.remainder = top => bottom => top % bottom;
-//: Number -> Number
+//: Float -> Float
 exports.abs = Math.abs;
-//: Number -> Number
+//: Float -> Float
 exports.acos = Math.acos;
-//: Number -> Number
+//: Float -> Float
 exports.acosh = Math.acosh;
-//: Number -> Number
+//: Float -> Float
 exports.asin = Math.asin;
-//: Number -> Number
+//: Float -> Float
 exports.asinh = Math.asinh;
-//: Number -> Number
+//: Float -> Float
 exports.atan = Math.atan;
-//: Number -> Number -> Number
+//: Float -> Float -> Float
 exports.atan2 = y => x => Math.atan2(y, x);
-//: Number -> Number
+//: Float -> Float
 exports.atanh = Math.atanh;
-//: Number -> Number
+//: Float -> Float
 exports.cbrt = Math.cbrt;
-//: Number -> Number
+//: Float -> Int
 exports.ceil = Math.ceil;
-//: Number -> Number
+//: Float -> Float
 exports.clz32 = Math.clz32;
-//: Number -> Number
+//: Float -> Float
 exports.cos = Math.cos;
-//: Number -> Number
+//: Float -> Float
 exports.cosh = Math.cosh;
-//: Number -> Number
+//: Float -> Float
 exports.exp = Math.exp;
-//: Number -> Number
+//: Float -> Float
 exports.expm1 = Math.expm1;
-//: Number -> Number
+//: Float -> Int
 exports.floor = Math.floor;
-//: Number -> Number
+//: Float -> Float
 exports.fround = Math.fround;
-//: Number -> Number -> Number
+//: Float -> Float -> Float
 exports.hypot = x => y => Math.hypot(x, y);
-//: Number -> Number -> Number
+//: Float -> Float -> Float
 exports.imul = x => y => Math.imul(x, y);
-//: Number -> Number
+//: Float -> Float
 exports.log = Math.log;
-//: Number -> Number
+//: Float -> Float
 exports.log10 = Math.log10;
-//: Number -> Number
+//: Float -> Float
 exports.log1p = Math.log1p;
-//: Number -> Number
+//: Float -> Float
 exports.log2 = Math.log2;
-//: Number -> Number -> Number
-exports.max = x => y => Math.max(x, y);
-//: Number -> Number -> Number
-exports.min = x => y => Math.min(x, y);
-//: Number -> Number
+//: a -> a -> a | Order a
+exports.max = x => y => x > y ? x : y;
+//: a -> a -> a | Order a
+exports.min = x => y => x < y ? x : y;
+//: Float -> Int
 exports.round = Math.round;
-//: Number -> Number
+//: Float -> Int
 exports.sign = Math.sign;
-//: Number -> Number
+//: Float -> Float
 exports.sin = Math.sin;
-//: Number -> Number
+//: Float -> Float
 exports.sinh = Math.sinh;
-//: Number -> Number
+//: Float -> Float
 exports.sqrt = Math.sqrt;
-//: Number -> Number
+//: Float -> Float
 exports.tan = Math.tan;
-//: Number -> Number
+//: Float -> Float
 exports.tanh = Math.tanh;
-//: Number -> Number
+//: Float -> Float
 exports.trunc = Math.trunc;

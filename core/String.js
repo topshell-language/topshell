@@ -1,14 +1,14 @@
-//: List Number -> String
+//: List Int -> String
 exports.fromCodePoints = c => String.fromCodePoint.apply(String, c);
-//: String -> List Number
+//: String -> List Int
 exports.toCodePoints = s => Array.from(s).map(c => c.codePointAt(0));
 //: String -> List String -> String
 exports.join = s => a => a.join(s);
-//: Number -> String -> String -> String
+//: Int -> String -> String -> String
 exports.padStart = n => c => s => s.padStart(n, c);
-//: Number -> String -> String -> String
+//: Int -> String -> String -> String
 exports.padEnd = n => c => s => s.padEnd(n, c);
-//: Number -> String -> String
+//: Int -> String -> String
 exports.repeat = n => s => s.repeat(n);
 //: String -> String -> String -> String
 exports.replace = i => o => s => s.replace(i, o);
@@ -18,17 +18,17 @@ exports.startsWith = x => s => s.startsWith(x);
 exports.endsWith = x => s => s.endsWith(x);
 //: String -> String -> List String
 exports.split = x => s => s.split(x);
-//: Number -> String -> String
+//: Int -> String -> String
 exports.at = i => s => s.charAt(i) || "";
-//: String -> Number
+//: String -> Int
 exports.size = s => s.length;
 //: String -> String -> Bool
 exports.includes = x => s => s.includes(x);
-//: Number -> Number -> String -> String
+//: Int -> Int -> String -> String
 exports.slice = a => b => s => s.slice(a, b);
-//: Number -> String -> String
+//: Int -> String -> String
 exports.take = i => s => s.slice(0, i);
-//: Number -> String -> String
+//: Int -> String -> String
 exports.drop = i => s => s.slice(i);
 //: String -> String
 exports.trim = s => s.trim();
@@ -36,17 +36,17 @@ exports.trim = s => s.trim();
 exports.toUpper = s => s.toUpperCase();
 //: String -> String
 exports.toLower = s => s.toLowerCase();
-//: String -> Number
-exports.toNumber = i => parseFloat(i);
-//: Number -> String
-exports.fromNumber = i => "" + i;
-//: String -> Number
+//: String -> Float
+exports.toFloat = i => parseFloat(i);
+//: Float -> String
+exports.fromFloat = i => "" + i;
+//: String -> Int
 exports.toInt = i => parseInt(i, 10);
-//: Number -> String
+//: Int -> String
 exports.fromInt = i => "" + i;
-//: Number -> String -> Number
+//: Int -> String -> Int
 exports.toIntBase = b => i => parseInt(i, b);
-//: Number -> Number -> String
+//: Int -> Int -> String
 exports.fromIntBase = b => i => i.toString(b);
 //: String -> List String
 exports.lines = s => s.split("\n");

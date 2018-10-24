@@ -85,8 +85,12 @@ class Typer {
             unification.unify(expected, TConstructor("String"))
             term
 
-        case ENumber(at, value) =>
-            unification.unify(expected, TConstructor("Number"))
+        case EInt(at, value) =>
+            unification.unify(expected, TConstructor("Int"))
+            term
+
+        case EFloat(at, value) =>
+            unification.unify(expected, TConstructor("Float"))
             term
 
         case EVariable(at, name) =>
@@ -245,13 +249,15 @@ class Typer {
             EIf(at, c, t, None)
 
         case EUnary(at, operator, operand) =>
-            val t1 =
-                if(operator == "-") TConstructor("Number")
-                else if(operator == "!") TConstructor("Bool")
-                else throw ParseException(at, "Unknown operator: " + operator)
-            val o = checkTerm(operand, t1)
-            unification.unify(expected, t1)
-            EUnary(at, operator, o)
+            val s = Syntax.unaryOperatorSchemes(operator)
+            constraints.instantiate(Some(s)) match {
+                case TApply(TApply(TConstructor("->"), t1), t2) =>
+                    val o = checkTerm(operand, t1)
+                    unification.unify(expected, t2)
+                    EUnary(at, operator, o)
+                case _ =>
+                    throw ParseException(at, "Bad type for unary operator: " + s)
+            }
 
         case EBinary(at, operator, left, right) =>
             val s = Syntax.binaryOperatorSchemes(operator)
