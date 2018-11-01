@@ -68,6 +68,26 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             unify(constructor1, constructor2)
             unify(argument1, argument2)
 
+        case (TVariant(variants1), TVariant(variants2)) =>
+            val sorted1 = variants1.sortBy(_._1)
+            val sorted2 = variants2.sortBy(_._1)
+            if(sorted1.map(_._1) != sorted2.map(_._1)) {
+                throw new RuntimeException(
+                    "Variant names don't match. " +
+                        "Got: " + sorted2.map(_._1).mkString(", ") + ", " +
+                        "expected: " + sorted1.map(_._1).mkString(", ")
+                )
+            } else {
+                sorted1.zip(sorted2).foreach {
+                    case ((_, None), (_, None)) =>
+                    case ((x, Some(t)), (_, None)) =>
+                        throw new RuntimeException("Variant " + x + " must have an argument of type: " + t)
+                    case ((_, None), (x, Some(t))) =>
+                        throw new RuntimeException("Variant " + x + " can't have an argument. Got argument type: " + t)
+                    case ((_, Some(t1)), (_, Some(t2))) => unify(t1, t2)
+                }
+            }
+
         case (TRecord(fields1), TRecord(fields2)) =>
             val sorted1 = fields1.sortBy(_.name)
             val sorted2 = fields2.sortBy(_.name)
@@ -84,22 +104,22 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                     if(parameters1.size != parameters2.size) {
                         throw new RuntimeException(
                             "Incompatible type parameters: " +
-                            Pretty.showScheme(b1.scheme, true) + " vs. " +
-                            Pretty.showScheme(b2.scheme, true)
+                                Pretty.showScheme(b1.scheme, true) + " vs. " +
+                                Pretty.showScheme(b2.scheme, true)
                         )
                     }
                     parameters1.zip(parameters2).find { case (p1, p2) => p1.kind != p2.kind }.foreach { case (p1, p2) =>
                         throw new RuntimeException(
                             "Incompatible kinds: " +
-                            p1.name + " : " + p1.kind + " vs. " +
-                            p2.name + " : " + p2.kind + "."
+                                p1.name + " : " + p1.kind + " vs. " +
+                                p2.name + " : " + p2.kind + "."
                         )
                     }
                     if(b1.scheme.constraints.size != b2.scheme.constraints.size) {
                         throw new RuntimeException(
                             "Incompatible constraints: " +
-                            Pretty.showScheme(b1.scheme, true) + " vs. " +
-                            Pretty.showScheme(b2.scheme, true)
+                                Pretty.showScheme(b1.scheme, true) + " vs. " +
+                                Pretty.showScheme(b2.scheme, true)
                         )
                     }
                     val replacement1 = parameters1.zipWithIndex.map {
@@ -141,6 +161,8 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             unexpanded
         case TSymbol(name) =>
             unexpanded
+        case TVariant(variants) =>
+            TVariant(variants.map { case (n, t) => n -> t.map(expand) })
         case TApply(constructor, argument) =>
             TApply(expand(constructor), expand(argument))
         case TRecord(fields) =>

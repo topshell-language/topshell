@@ -181,7 +181,7 @@ case class MainComponent(
                 })
             }),
             E.div(BottomRightAreaCss,
-                E.div(ShortcutAreaCss, Text("TopShell 2018.1")),
+                E.div(ShortcutAreaCss, Text("TopShell 2018.2")),
                 E.div(CenterTextCss,
                     S.color(Palette.textHint),
                     Text(if(get(code).code == get(debouncedCode).code) "Saved." else "Saving...")

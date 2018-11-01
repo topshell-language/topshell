@@ -26,7 +26,7 @@ exports.flatMap = f => v => exports.isNone(v) ? v : f(v.value);
 exports.toList = v => exports.isNone(v) ? [] : [v.value];
 
 //: String -> Maybe a -> a
-exports.orFail = e => v => {if(exports.isNone(v)) throw e; else return v;};
+exports.orFail = e => v => {if(exports.isNone(v)) throw e; else return v.value;};
 
 //: List (Maybe a) -> List a
 exports.flattenList = v => {

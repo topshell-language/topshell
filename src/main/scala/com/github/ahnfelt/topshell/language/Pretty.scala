@@ -11,6 +11,10 @@ object Pretty {
         case TParameter(name) => name
         case TConstructor(name) => name
         case TSymbol(name) => JSON.stringify(name)
+        case TVariant(variants) =>
+            "[" + variants.map { case (n, t1) => n + t1.map(" " + _).getOrElse("") }.mkString(", ") + "]"
+        case VariantConstraint(variantType, label, fieldType) =>
+            variantType + " # " + label + fieldType.map(" " + _).getOrElse("")
         case TRecord(fields) =>
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
@@ -49,6 +53,9 @@ object Pretty {
         case TParameter(name) => Set(name)
         case TConstructor(name) => Set.empty
         case TSymbol(name) => Set.empty
+        case TVariant(variants) =>
+            variants.map { case (_, t) => t.map(usedParameterNames(_, expand)).getOrElse(Set.empty) }.
+                fold(Set.empty)(_ ++ _)
         case TApply(constructor, argument) =>
             usedParameterNames(constructor, expand) ++ usedParameterNames(argument, expand)
         case TRecord(fields) =>
@@ -63,6 +70,9 @@ object Pretty {
         case TSymbol(name) => Set.empty
         case TApply(constructor, argument) =>
             freeParameterNames(constructor, expand) ++ freeParameterNames(argument, expand)
+        case TVariant(variants) =>
+            variants.map { case (_, t) => t.map(freeParameterNames(_, expand)).getOrElse(Set.empty) }.
+                fold(Set.empty)(_ ++ _)
         case TRecord(fields) =>
             fields.map(f =>
                 (
@@ -85,6 +95,8 @@ object Pretty {
             search
         case TApply(constructor, argument) =>
             TApply(replace(constructor, replacement, expand), replace(argument, replacement, expand))
+        case TVariant(variants) =>
+            TVariant(variants.map { case (n, t) => n -> t.map(replace(_, replacement, expand)) })
         case TRecord(fields) =>
             TRecord(fields.map { f => f.copy(scheme = replaceInScheme(f.scheme, replacement, expand)) })
     }
@@ -106,6 +118,7 @@ object Pretty {
         case TConstructor(name) => List()
         case TSymbol(name) => List()
         case TApply(constructor, argument) => freeInType(constructor) ++ freeInType(argument)
+        case TVariant(variants) => variants.flatMap { case (_, t) => t.toList.flatMap(freeInType) }
         case TRecord(fields) => fields.flatMap(f => freeInScheme(f.scheme))
     }).distinct
 
@@ -114,6 +127,7 @@ object Pretty {
     // But still infer: g : a -> b | a.y: c | c.z: b = x -> x.y.z
     def determinedInConstraint(constraint : Type, parameters : Boolean) : List[String] = constraint match {
         case FieldConstraint(_, _, t, _) => determinedInType(t, parameters)
+        case VariantConstraint(_, _, t) => t.map(determinedInType(_, parameters)).getOrElse(List())
         case _ => List()
     }
 
@@ -124,6 +138,7 @@ object Pretty {
         case TApply(constructor, argument) =>
             determinedInType(constructor, parameters) ++ determinedInType(argument, parameters)
         case TSymbol(name) => List()
+        case TVariant(variants) => variants.flatMap { case (_, t) => t.toList.flatMap(determinedInType(_, parameters)) }
         case TRecord(fields) => fields.flatMap(f => determinedInScheme(f.scheme, parameters))
     }).distinct
 

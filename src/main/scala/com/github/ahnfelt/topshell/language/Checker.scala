@@ -46,6 +46,8 @@ object Checker {
         case EList(at, elements, rest) =>
             (for(element <- elements) yield checkTerm(element, visible)).toSet.flatten ++
             (for(element <- rest) yield checkTerm(element, visible)).toSet.flatten
+        case EVariant(at, name, argument) =>
+            Set.empty
         case ERecord(at, fields, rest) =>
             (for(element <- fields.map(_.value)) yield checkTerm(element, visible)).toSet.flatten ++
             (for(element <- rest) yield checkTerm(element, visible)).toSet.flatten

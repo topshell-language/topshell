@@ -180,11 +180,16 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseApply() : Term = {
         var result = parseDot()
-        while(List("lower", "upper", "int", "float", "string", "definition").contains(current.kind) || List("(", "[", "{").contains(current.raw)) {
+        while(isAtomStartToken(current)) {
             val argument = parseDot()
             result = EApply(argument.at, result, argument)
         }
         result
+    }
+
+    private def isAtomStartToken(token : Token) : Boolean = {
+        List("lower", "upper", "int", "float", "string", "definition").contains(token.kind) ||
+        List("(", "[", "{").contains(token.raw)
     }
 
     private def parseDot() : Term = {
@@ -265,7 +270,10 @@ class Parser(file : String, tokens : Array[Token]) {
             EVariable(c.at, c.raw)
         case ("upper", _) =>
             val c = skip("upper")
-            EVariable(c.at, c.raw)
+            if(current.raw == ".") EVariable(c.at, c.raw)
+            else if(current.raw == "..") { skip("separator"); EVariable(c.at, c.raw) }
+            else if(isAtomStartToken(current)) EVariant(c.at, c.raw, Some(parseDot()))
+            else EVariant(c.at, c.raw, None)
         case ("int", _) =>
             val c = skip("int")
             EInt(c.at, c.raw)
@@ -355,6 +363,8 @@ class Parser(file : String, tokens : Array[Token]) {
             val result = parseType()
             skip("bracket", Some(")"))
             result
+        } else if(current.raw == "[") {
+            parseVariantType()
         } else if(current.raw == "{") {
             parseRecordType()
         } else if(current.kind == "upper") {
@@ -372,6 +382,19 @@ class Parser(file : String, tokens : Array[Token]) {
         } else {
             throw ParseException(current.at, "Expected type, got: " + current.raw)
         }
+    }
+
+    def parseVariantType() : Type = {
+        skip("bracket", Some("["))
+        var variants : List[(String, Option[Type])] = List.empty
+        while(current.raw != "]") {
+            val name = skip("upper").raw
+            val t = if(isAtomStartToken(current)) Some(parseType()) else None
+            variants ::= (name -> t)
+            if(current.raw != "]") skip("separator", Some(","))
+        }
+        skip("bracket", Some("]"))
+        TVariant(variants.reverse)
     }
 
     def parseRecordType() : Type = {
@@ -396,11 +419,17 @@ class Parser(file : String, tokens : Array[Token]) {
             val record = skip("lower").raw
             val o = skip("separator").raw
             val label =
-                if(current.kind == "lower") skip("lower").raw
+                if (current.kind == "lower") skip("lower").raw
                 else JSON.parse(skip("string").raw).asInstanceOf[String]
             skip("separator", Some(":"))
             val t = parseType()
-            TApply(TApply(TApply(TConstructor(o), TSymbol(label)), t), TParameter(record))
+            FieldConstraint(TParameter(record), label, t, o == ".?")
+        } else if(ahead.raw == "#") {
+            val variant = skip("lower").raw
+            skip("operator").raw
+            val name = skip("upper").raw
+            val t = if(isAtomStartToken(current)) Some(parseType()) else None
+            VariantConstraint(TParameter(variant), name, t)
         } else {
             val left = parseType()
             if(current.raw == "==") {

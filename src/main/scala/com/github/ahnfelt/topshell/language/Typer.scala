@@ -174,6 +174,33 @@ class Typer {
             unification.unify(expected, t2)
             EList(at, es, r)
 
+        case EVariant(at, name, argument) =>
+            expected match {
+                case TVariant(variants) =>
+                    variants.find(_._1 == name).map { case (n, t) =>
+                        val a = (t, argument) match {
+                            case (None, None) =>
+                                argument
+                            case (None, Some(a1)) =>
+                                throw ParseException(at, "Unexpected argument to variant " + name)
+                            case (Some(t1), None) =>
+                                throw ParseException(at, "Expected argument to variant " + name + " of type: " + t1)
+                            case (Some(t1), Some(a1)) =>
+                                Some(checkTerm(a1, t1))
+                        }
+                        EVariant(at, name, a)
+                    }.getOrElse {
+                        throw ParseException(at, "Unexpected variant: " + name)
+                    }
+                case _ =>
+                    val a = argument.map { e =>
+                        val t = constraints.freshTypeVariable()
+                        t -> checkTerm(e, t)
+                    }
+                    constraints.add(Syntax.VariantConstraint(expected, name, a.map(_._1)))
+                    EVariant(at, name, a.map(_._2))
+            }
+
         case ERecord(at, fields, rest) =>
             val seen = mutable.HashSet[String]()
             val expectedSchemes = (unification.expand(expected) match {

@@ -40,6 +40,9 @@ exports.catch = f => task => new self.tsh.Task((w, t, c) => {
 //: (a -> Task b) -> Task a -> Task b
 exports.then = self.tsh.taskThen;
 
+//: Task a
+exports.never = new self.tsh.Task((w, t, c) => {});
+
 //: (a -> Bool) -> Task a -> Task a
 exports.filter = f => task => new self.tsh.Task((w, t, c) => {
     try {
@@ -84,16 +87,18 @@ exports.merge = task1 => task2 => new self.tsh.Task((w, t, c) => {
 
 //: Task a -> Task a -> Task a
 exports.race = task1 => task2 => new self.tsh.Task((w, t, c) => {
+    var cancelled = false;
     try {
         var cancel1 = task1._run(w, v => {
             if(cancel2 instanceof Function) cancel2();
-            t(v)
+            if(!cancelled) t(v)
         }, c);
         var cancel2 = task2._run(w, v => {
             if(cancel1 instanceof Function) cancel1();
-            t(v)
+            if(!cancelled) t(v)
         }, c);
         return () => {
+            cancelled = true;
             if(cancel1 instanceof Function) cancel1();
             if(cancel2 instanceof Function) cancel2();
         }

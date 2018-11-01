@@ -37,6 +37,8 @@ object CacheKey {
             EBind(zeroLocation, withoutLocation(binding), withoutLocation(body))
         case EList(_, elements, rest) =>
             EList(zeroLocation, elements.map(withoutLocation), rest.map(withoutLocation))
+        case EVariant(_, name, argument) =>
+            EVariant(zeroLocation, name, argument.map(withoutLocation))
         case ERecord(_, fields, rest) =>
             ERecord(zeroLocation, fields.map(withoutLocation), rest.map(withoutLocation))
         case EField(_, record, field, optional) =>

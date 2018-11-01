@@ -77,6 +77,8 @@ object Emitter {
             Math.max(at.line, Math.max(bindingLastLine(binding), lastLine(body)))
         case EList(at, elements, rest) =>
             Math.max(at.line, Math.max((0 :: elements.map(lastLine)).max, rest.map(lastLine).getOrElse(0)))
+        case EVariant(at, name, argument) =>
+            at.line
         case ERecord(at, fields, rest) =>
             Math.max(at.line, Math.max((0 :: fields.map(bindingLastLine)).max, rest.map(lastLine).getOrElse(0)))
         case EField(at, record, field, _) =>
@@ -116,6 +118,8 @@ object Emitter {
         case EList(at, elements, rest) =>
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
+        case EVariant(at, name, argument) =>
+            "{_: " + JSON.stringify(name) + argument.map(a => ", value: " + emitTerm(a)).getOrElse("") + "}"
         case ERecord(at, fields, rest) =>
             val record = "{" + fields.map(b => escapeField(b.name, None) + ": " + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)

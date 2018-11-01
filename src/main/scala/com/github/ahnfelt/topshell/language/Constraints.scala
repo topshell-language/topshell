@@ -48,6 +48,24 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 case _ =>
                     throw new RuntimeException("Non-record field access: " + record + "." + label)
             }
+        case VariantConstraint(variantType, name, fieldType) =>
+            variantType match {
+                case TVariant(variants) =>
+                    variants.find(_._1 == name).map { case (n, t) =>
+                        checkVariantArgumentConstraint(fieldType, t, constraint)
+                        None
+                    }.getOrElse {
+                        throw new RuntimeException(
+                            "Variant " + name + " not found in " + variantType
+                        )
+                    }
+                case TParameter(_) =>
+                    Some(constraint)
+                case TVariable(_) =>
+                    Some(constraint)
+                case _ =>
+                    throw new RuntimeException("Non-variant: " + constraint)
+            }
         case TApply(TApply(TConstructor("=="), a), b) =>
             unification.unify(a, b)
             None
@@ -83,13 +101,25 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             throw new RuntimeException("Invalid constraint: " + constraint)
     }
 
+    def checkVariantArgumentConstraint(t1Option : Option[Type], t2Option : Option[Type], constraint : Type) : Unit = {
+        (t1Option, t2Option) match {
+            case (None, None) =>
+            case (Some(_), None) =>
+                throw new RuntimeException("Variant also constrained to have a parameter: " + constraint)
+            case (None, Some(_)) =>
+                throw new RuntimeException("Variant also constrained to not have a parameter: " + constraint)
+            case (Some(t1), Some(t2)) => unification.unify(t1, t2)
+        }
+    }
+
     @tailrec
     private def simplifyConstraints(constraints : List[Type]) : List[Type] = {
         val expandedConstraints = constraints.map(unification.expand).distinct
-        val seen = mutable.Map[(Type, String), Type]()
+        val fieldConstraints = mutable.Map[(Type, String), Type]()
+        val variantConstraints = mutable.Map[(Type, String), Option[Type]]()
         val newConstraints = expandedConstraints.flatMap(simplifyConstraint).flatMap {
             case c@FieldConstraint(record, label, t, _) =>
-                seen.get((record, label)).map { t0 =>
+                fieldConstraints.get((record, label)).map { t0 =>
                     try {
                         unification.unify(t0, t)
                     } catch {
@@ -101,7 +131,15 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     }
                     List()
                 }.getOrElse {
-                    seen.put((record, label), t)
+                    fieldConstraints.put((record, label), t)
+                    List(c)
+                }
+            case c@VariantConstraint(variant, label, t) =>
+                variantConstraints.get((variant, label)).map { t0 =>
+                    checkVariantArgumentConstraint(t0, t, c)
+                    List()
+                }.getOrElse {
+                    variantConstraints.put((variant, label), t)
                     List(c)
                 }
             case c =>
@@ -204,6 +242,8 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             checkAmbiguousSchemesInType(constructor)
             checkAmbiguousSchemesInType(argument)
         case TSymbol(name) =>
+        case TVariant(variants) =>
+            variants.foreach { case (_, t) => t.foreach(checkAmbiguousSchemesInType) }
         case TRecord(fields) =>
             fields.foreach(f => checkAmbiguousScheme(f.scheme))
     }
