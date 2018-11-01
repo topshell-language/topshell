@@ -351,7 +351,7 @@ class Parser(file : String, tokens : Array[Token]) {
         val left = parseTypeAtom()
         var applies = List.empty[Type]
         val kinds = List("definition", "lower", "upper", "string")
-        while(kinds.contains(current.kind) || current.raw == "(" || current.raw == "{") {
+        while(kinds.contains(current.kind) || current.raw == "(" || current.raw == "{" || current.raw == "[") {
             applies ::= parseTypeAtom()
         }
         applies.reverse.foldLeft(left)(TApply)
