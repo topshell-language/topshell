@@ -174,31 +174,24 @@ class Typer {
             unification.unify(expected, t2)
             EList(at, es, r)
 
-        case EVariant(at, name, argument) =>
+        case EVariant(at, name, arguments) =>
             expected match {
                 case TVariant(variants) =>
-                    variants.find(_._1 == name).map { case (n, t) =>
-                        val a = (t, argument) match {
-                            case (None, None) =>
-                                argument
-                            case (None, Some(a1)) =>
-                                throw ParseException(at, "Unexpected argument to variant " + name)
-                            case (Some(t1), None) =>
-                                throw ParseException(at, "Expected argument to variant " + name + " of type: " + t1)
-                            case (Some(t1), Some(a1)) =>
-                                Some(checkTerm(a1, t1))
-                        }
-                        EVariant(at, name, a)
+                    variants.find(_._1 == name).map { case (n, ts1) =>
+                        if(ts1.size < arguments.size) throw new RuntimeException("Too many arguments: " + n + arguments.map(_ => " _").mkString)
+                        if(ts1.size > arguments.size) throw new RuntimeException("Too few arguments: " + n + arguments.map(_ => " _").mkString)
+                        val as = ts1.zip(arguments).map { case (t1, a) => checkTerm(a, t1) }
+                        EVariant(at, name, as)
                     }.getOrElse {
                         throw ParseException(at, "Unexpected variant: " + name)
                     }
                 case _ =>
-                    val a = argument.map { e =>
+                    val as = arguments.map { e =>
                         val t = constraints.freshTypeVariable()
                         t -> checkTerm(e, t)
                     }
-                    constraints.add(Syntax.VariantConstraint(expected, name, a.map(_._1)))
-                    EVariant(at, name, a.map(_._2))
+                    constraints.add(Syntax.VariantConstraint(expected, name, as.map(_._1)))
+                    EVariant(at, name, as.map(_._2))
             }
 
         case ERecord(at, fields, rest) =>

@@ -34,7 +34,7 @@ object Syntax {
     case class ELet(at : Location, bindings : List[Binding], body : Term) extends Term
     case class EBind(at : Location, binding : Binding, body : Term) extends Term
     case class EList(at : Location, elements : List[Term], rest : Option[Term]) extends Term
-    case class EVariant(at : Location, name : String, argument : Option[Term]) extends Term
+    case class EVariant(at : Location, name : String, argument : List[Term]) extends Term
     case class ERecord(at : Location, fields : List[Binding], rest : Option[Term]) extends Term
     case class EField(at : Location, record : Term, field : String, optional : Boolean) extends Term
     case class EIf(at : Location, condition : Term, thenBody : Term, elseBody : Option[Term]) extends Term
@@ -47,7 +47,7 @@ object Syntax {
     case class TConstructor(name : String) extends Type
     case class TApply(constructor : Type, argument : Type) extends Type
     case class TSymbol(name : String) extends Type
-    case class TVariant(variants : List[(String, Option[Type])]) extends Type
+    case class TVariant(variants : List[(String, List[Type])]) extends Type
     case class TRecord(fields : List[TypeBinding]) extends Type
 
     sealed abstract class Kind
@@ -78,19 +78,21 @@ object Syntax {
 
     object VariantConstraint {
 
-        def apply(variantType : Type, label : String, fieldType : Option[Type]) =
-            fieldType match {
-                case Some(t) =>
-                    TApply(TApply(TApply(TConstructor("#"), TSymbol(label)), t), variantType)
-                case None =>
-                    TApply(TApply(TConstructor("##"), TSymbol(label)), variantType)
-            }
+        def apply(variantType : Type, label : String, fieldTypes : List[Type]) = {
+            val applied = fieldTypes.foldLeft[Type](TSymbol(label))(TApply)
+            TApply(TApply(TConstructor("#"), applied), variantType)
+        }
 
         def unapply(constraint : Type) = constraint match {
-            case TApply(TApply(TApply(TConstructor("#"), TSymbol(label)), t), variantType) =>
-                Some((variantType, label, Some(t)))
-            case TApply(TApply(TConstructor("##"), TSymbol(label)), variantType) =>
-                Some((variantType, label, None))
+            case TApply(TApply(TConstructor("#"), applied), variantType) =>
+                def extract(a : Type, arguments : List[Type]) : Option[(String, List[Type])] = a match {
+                    case TApply(x, y) => extract(x, y :: arguments)
+                    case TSymbol(l) => Some(l -> arguments)
+                    case _ => None
+                }
+                extract(applied, List()).map { case (label, ts) =>
+                    (variantType, label, ts)
+                }
             case _ =>
                 None
         }

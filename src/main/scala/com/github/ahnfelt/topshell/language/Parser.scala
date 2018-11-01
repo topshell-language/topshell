@@ -272,8 +272,11 @@ class Parser(file : String, tokens : Array[Token]) {
             val c = skip("upper")
             if(current.raw == ".") EVariable(c.at, c.raw)
             else if(current.raw == "..") { skip("separator"); EVariable(c.at, c.raw) }
-            else if(isAtomStartToken(current)) EVariant(c.at, c.raw, Some(parseDot()))
-            else EVariant(c.at, c.raw, None)
+            else {
+                var arguments = List[Term]()
+                while(isAtomStartToken(current)) arguments ::= parseDot()
+                EVariant(c.at, c.raw, arguments.reverse)
+            }
         case ("int", _) =>
             val c = skip("int")
             EInt(c.at, c.raw)
@@ -386,11 +389,12 @@ class Parser(file : String, tokens : Array[Token]) {
 
     def parseVariantType() : Type = {
         skip("bracket", Some("["))
-        var variants : List[(String, Option[Type])] = List.empty
+        var variants : List[(String, List[Type])] = List.empty
         while(current.raw != "]") {
             val name = skip("upper").raw
-            val t = if(isAtomStartToken(current)) Some(parseType()) else None
-            variants ::= (name -> t)
+            var arguments = List[Type]()
+            while(isAtomStartToken(current)) arguments ::= parseTypeAtom()
+            variants ::= (name -> arguments.reverse)
             if(current.raw != "]") skip("separator", Some(","))
         }
         skip("bracket", Some("]"))
@@ -428,8 +432,9 @@ class Parser(file : String, tokens : Array[Token]) {
             val variant = skip("lower").raw
             skip("operator").raw
             val name = skip("upper").raw
-            val t = if(isAtomStartToken(current)) Some(parseType()) else None
-            VariantConstraint(TParameter(variant), name, t)
+            var arguments = List[Type]()
+            while(isAtomStartToken(current)) arguments ::= parseTypeAtom()
+            VariantConstraint(TParameter(variant), name, arguments.reverse)
         } else {
             val left = parseType()
             if(current.raw == "==") {

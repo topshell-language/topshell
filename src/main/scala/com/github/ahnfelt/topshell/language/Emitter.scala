@@ -118,8 +118,10 @@ object Emitter {
         case EList(at, elements, rest) =>
             val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
-        case EVariant(at, name, argument) =>
-            "{_: " + JSON.stringify(name) + argument.map(a => ", value: " + emitTerm(a)).getOrElse("") + "}"
+        case EVariant(at, name, arguments) =>
+            "{_: " + JSON.stringify(name) + arguments.zipWithIndex.map { case (a, i) =>
+                ", v" + (i + 1) + ": " + emitTerm(a)
+            }.mkString + "}"
         case ERecord(at, fields, rest) =>
             val record = "{" + fields.map(b => escapeField(b.name, None) + ": " + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)

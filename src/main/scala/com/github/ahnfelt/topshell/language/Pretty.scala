@@ -6,15 +6,15 @@ import scala.scalajs.js.JSON
 
 object Pretty {
 
-    def showType(t : Type) = t match {
+    def showType(t : Type) : String = t match {
         case TVariable(id) => "_" + id
         case TParameter(name) => name
         case TConstructor(name) => name
         case TSymbol(name) => JSON.stringify(name)
         case TVariant(variants) =>
-            "[" + variants.map { case (n, t1) => n + t1.map(" " + _).getOrElse("") }.mkString(", ") + "]"
-        case VariantConstraint(variantType, label, fieldType) =>
-            variantType + " # " + label + fieldType.map(" " + _).getOrElse("")
+            "[" + variants.map { case (n, t1) => n + t1.map(t2 => " " + showTypeEnclosed(t2)).mkString }.mkString(", ") + "]"
+        case VariantConstraint(variantType, label, fieldTypes) =>
+            variantType + " # " + label + fieldTypes.map(t2 => " " + showTypeEnclosed(t2)).mkString
         case TRecord(fields) =>
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
@@ -24,6 +24,11 @@ object Pretty {
         case TApply(TApply(TConstructor("->"), a), b) => a + " -> " + b
         case TApply(constructor, argument : TApply) => constructor + " (" + argument + ")"
         case TApply(constructor, argument) => constructor + " " + argument
+    }
+
+    def showTypeEnclosed(t : Type) : String = t match {
+        case TApply(_, _) => "(" + showType(t) + ")"
+        case _ => showType(t)
     }
 
     def showScheme(scheme : Scheme, explicit : Boolean) = {
@@ -54,7 +59,7 @@ object Pretty {
         case TConstructor(name) => Set.empty
         case TSymbol(name) => Set.empty
         case TVariant(variants) =>
-            variants.map { case (_, t) => t.map(usedParameterNames(_, expand)).getOrElse(Set.empty) }.
+            variants.map { case (_, t) => t.map(usedParameterNames(_, expand)).fold(Set.empty)(_ ++ _) }.
                 fold(Set.empty)(_ ++ _)
         case TApply(constructor, argument) =>
             usedParameterNames(constructor, expand) ++ usedParameterNames(argument, expand)
@@ -71,7 +76,7 @@ object Pretty {
         case TApply(constructor, argument) =>
             freeParameterNames(constructor, expand) ++ freeParameterNames(argument, expand)
         case TVariant(variants) =>
-            variants.map { case (_, t) => t.map(freeParameterNames(_, expand)).getOrElse(Set.empty) }.
+            variants.map { case (_, ts) => ts.map(freeParameterNames(_, expand)).fold(Set.empty)(_ ++ _) }.
                 fold(Set.empty)(_ ++ _)
         case TRecord(fields) =>
             fields.map(f =>
@@ -127,7 +132,7 @@ object Pretty {
     // But still infer: g : a -> b | a.y: c | c.z: b = x -> x.y.z
     def determinedInConstraint(constraint : Type, parameters : Boolean) : List[String] = constraint match {
         case FieldConstraint(_, _, t, _) => determinedInType(t, parameters)
-        case VariantConstraint(_, _, t) => t.map(determinedInType(_, parameters)).getOrElse(List())
+        case VariantConstraint(_, _, ts) => ts.flatMap(determinedInType(_, parameters))
         case _ => List()
     }
 

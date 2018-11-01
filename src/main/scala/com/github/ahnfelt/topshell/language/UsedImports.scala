@@ -33,8 +33,8 @@ object UsedImports {
         case EList(at, elements, rest) =>
             val list = for(element <- elements) yield usedImports(element)
             list.foldLeft(rest.map(usedImports).getOrElse(Map.empty))(_ ++ _)
-        case EVariant(at, name, argument) =>
-            argument.map(usedImports).getOrElse(Map.empty)
+        case EVariant(at, name, arguments) =>
+            arguments.map(usedImports).foldLeft(Map.empty[String, Location])(_ ++ _)
         case ERecord(at, fields, rest) =>
             val list = for(field <- fields.map(_.value)) yield usedImports(field)
             list.foldLeft(rest.map(usedImports).getOrElse(Map.empty))(_ ++ _)

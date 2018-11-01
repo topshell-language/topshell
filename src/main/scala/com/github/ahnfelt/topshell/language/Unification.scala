@@ -78,13 +78,10 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                         "expected: " + sorted1.map(_._1).mkString(", ")
                 )
             } else {
-                sorted1.zip(sorted2).foreach {
-                    case ((_, None), (_, None)) =>
-                    case ((x, Some(t)), (_, None)) =>
-                        throw new RuntimeException("Variant " + x + " must have an argument of type: " + t)
-                    case ((_, None), (x, Some(t))) =>
-                        throw new RuntimeException("Variant " + x + " can't have an argument. Got argument type: " + t)
-                    case ((_, Some(t1)), (_, Some(t2))) => unify(t1, t2)
+                sorted1.zip(sorted2).foreach { case ((x1, ts1), (x2, ts2)) =>
+                    if(ts1.size < ts2.size) throw new RuntimeException("Too many arguments: " + x2 + ts2.map(" " + _).mkString)
+                    if(ts1.size > ts2.size) throw new RuntimeException("Too few arguments: " + x2 + ts2.map(" " + _).mkString)
+                    ts1.zip(ts2).foreach { case (t1, t2) => unify(t1, t2) }
                 }
             }
 

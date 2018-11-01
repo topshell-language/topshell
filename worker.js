@@ -74,9 +74,13 @@ self.tsh.toHtml = value => {
             value._.match(/^[A-Z][a-zA-Z0-9]*$/g);
         if(isConstructor) {
             result.push(value._);
-            if(Object.prototype.hasOwnProperty.call(value, "value")) {
+            for(var j = 1; Object.prototype.hasOwnProperty.call(value, "v" + j); j++) {
+                var v = value["v" + j];
+                var simple = !v || !Object.prototype.hasOwnProperty.call(v, "v1") || !v._;
                 result.push(" ");
-                result.push(self.tsh.toHtml(value["value"]));
+                if(!simple) result.push("(");
+                result.push(self.tsh.toHtml(v));
+                if(!simple) result.push(")");
             }
         } else {
             result.push("{");

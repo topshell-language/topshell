@@ -101,22 +101,17 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             throw new RuntimeException("Invalid constraint: " + constraint)
     }
 
-    def checkVariantArgumentConstraint(t1Option : Option[Type], t2Option : Option[Type], constraint : Type) : Unit = {
-        (t1Option, t2Option) match {
-            case (None, None) =>
-            case (Some(_), None) =>
-                throw new RuntimeException("Variant also constrained to have a parameter: " + constraint)
-            case (None, Some(_)) =>
-                throw new RuntimeException("Variant also constrained to not have a parameter: " + constraint)
-            case (Some(t1), Some(t2)) => unification.unify(t1, t2)
-        }
+    def checkVariantArgumentConstraint(t1s : List[Type], t2s : List[Type], constraint : Type) : Unit = {
+        if(t1s.size < t2s.size) throw new RuntimeException("Too many parameters: " + constraint)
+        if(t1s.size > t2s.size) throw new RuntimeException("Too few parameters: " + constraint)
+        t1s.zip(t2s).foreach { case (t1, t2) => unification.unify(t1, t2) }
     }
 
     @tailrec
     private def simplifyConstraints(constraints : List[Type]) : List[Type] = {
         val expandedConstraints = constraints.map(unification.expand).distinct
         val fieldConstraints = mutable.Map[(Type, String), Type]()
-        val variantConstraints = mutable.Map[(Type, String), Option[Type]]()
+        val variantConstraints = mutable.Map[(Type, String), List[Type]]()
         val newConstraints = expandedConstraints.flatMap(simplifyConstraint).flatMap {
             case c@FieldConstraint(record, label, t, _) =>
                 fieldConstraints.get((record, label)).map { t0 =>
