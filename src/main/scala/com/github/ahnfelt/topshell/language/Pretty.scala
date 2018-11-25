@@ -123,7 +123,7 @@ object Pretty {
         case TConstructor(name) => List()
         case TSymbol(name) => List()
         case TApply(constructor, argument) => freeInType(constructor) ++ freeInType(argument)
-        case TVariant(variants) => variants.flatMap { case (_, t) => t.toList.flatMap(freeInType) }
+        case TVariant(variants) => variants.flatMap { case (_, ts) => ts.flatMap(freeInType) }
         case TRecord(fields) => fields.flatMap(f => freeInScheme(f.scheme))
     }).distinct
 

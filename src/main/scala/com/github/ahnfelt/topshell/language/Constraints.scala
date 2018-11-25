@@ -147,6 +147,14 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         }
     }
 
+    def filterAmbiguousVariants(allConstraints : List[Type], determinedConstraints : List[Type]) : List[Type] = {
+        val determined = determinedConstraints.collect { case VariantConstraint(TVariable(x), _, _) => x }.toSet
+        allConstraints.filter {
+            case VariantConstraint(TVariable(x), _, _) => determined(x)
+            case _ => true
+        }
+    }
+
     def generalize(theType : Type, nonFree : Set[Int], topLevel : Boolean) : Scheme = {
         constraints = simplifyConstraints(constraints)
         val reversed = constraints.reverse
@@ -165,9 +173,9 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             }
         }
         val cs1 = findConstraints(List())
-        val cs2 = if(topLevel) constraints.reverse else cs1
+        val cs2 = if(topLevel) filterAmbiguousVariants(reversed, cs1) else cs1
         if(topLevel) free = (free ++ Pretty.freeInType(t) ++ cs2.flatMap(Pretty.freeInType)).distinct
-        constraints = constraints.filterNot(cs2.contains)
+        constraints = if(topLevel) List.empty else constraints.filterNot(cs2.contains)
         val replacementList = free.map(id => TVariable(id) -> TParameter("$" + id))
         val replacement = replacementList.toMap[Type, Type]
         val cs3 = cs2.map(unification.replace(_, replacement))

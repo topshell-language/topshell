@@ -19,12 +19,12 @@ class Typer {
     val unification = new Unification(Map.empty)
     val constraints = new Constraints(unification)
 
-    def freeInEnvironment() : Set[Int] = {
+    def freeInEnvironment(except : Option[String]) : Set[Int] = {
         environment = environment.mapValues(v => v.copy(
             constraints = v.constraints.map(unification.expand),
             generalized = unification.expand(v.generalized)
         ))
-        environment.values.toList.flatMap(Pretty.freeInScheme)
+        environment.filterKeys(k => !except.contains(k)).values.toList.flatMap(Pretty.freeInScheme)
     }.toSet
 
     def withVariables[T](variables : Seq[(String, Scheme)])(body : => T) = {
@@ -58,7 +58,8 @@ class Typer {
                         unification.unify(TApply(TConstructor("Task"), expected2), expected1)
                         expected2
                     }
-                    val actual = constraints.generalize(expected3, freeInEnvironment(), topLevel = true)
+                    val otherFree = freeInEnvironment(Some(s.binding.name))
+                    val actual = constraints.generalize(expected3, otherFree, topLevel = true)
                     s.binding.scheme.foreach(constraints.checkTypeAnnotation(s.binding.at, _, actual))
                     constraints.assureEmpty()
                     val scheme = s.binding.scheme.getOrElse(actual)
@@ -131,7 +132,9 @@ class Typer {
                         value = checkTerm(b.value, t2)
                     ) -> t2
                 }
-                bs1.map { case (b, t2) => b.copy(scheme = Some(constraints.generalize(t2, freeInEnvironment(), topLevel = false))) }
+                bs1.map { case (b, t2) =>
+                    b.copy(scheme = Some(constraints.generalize(t2, freeInEnvironment(None), topLevel = false)))
+                }
             }
             val body2 = withVariables(bs.map(b => b.name -> b.scheme.get)) {
                 checkTerm(body, t1)
@@ -208,7 +211,7 @@ class Typer {
                 val expectedScheme = expectedSchemes.get(f.name)
                 val t1 = expectedScheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
                 val v = checkTerm(f.value, t1)
-                val s1 = constraints.generalize(t1, freeInEnvironment(), false)
+                val s1 = constraints.generalize(t1, freeInEnvironment(None), false)
                 // A kind of value restriction for record fields, since the following is wrong in a non-lazy language:
                 // a -> {x: a.y}  :  a -> {x: b => b | a.y : b}
                 val s2 = f.value match {
