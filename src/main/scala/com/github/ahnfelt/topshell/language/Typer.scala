@@ -197,6 +197,27 @@ class Typer {
                     EVariant(at, name, as.map(_._2))
             }
 
+        case EMatch(at, cases, defaultCase) =>
+            val t1 = constraints.freshTypeVariable()
+            val t2 = constraints.freshTypeVariable()
+            unification.unify(expected, TApply(TApply(TConstructor("->"), t1), t2))
+            var variants = List.empty[(String, List[Type])]
+            val cases2 = cases.map { case c@VariantCase(_, variant, arguments, body) =>
+                val ts = arguments.map(_ -> constraints.freshTypeVariable())
+                if(defaultCase.nonEmpty) constraints.add(VariantConstraint(t1, variant, ts.map(_._2)))
+                else variants ::= variant -> ts.map(_._2)
+                val xs = ts.collect { case (Some(x), t) => x -> Scheme(List(), List(), t) }
+                c.copy(body = withVariables(xs) { checkTerm(c.body, t2) })
+            }
+            if(defaultCase.isEmpty) unification.unify(t1, TVariant(variants.reverse))
+            val defaultCase2 = defaultCase.map {
+                case c@DefaultCase(_, Some(x), _) =>
+                    c.copy(body = withVariables(Seq(x -> Scheme(List(), List(), t1))) { checkTerm(c.body, t2) })
+                case c =>
+                    c.copy(body = checkTerm(c.body, t2))
+            }
+            EMatch(at, cases2, defaultCase2)
+
         case ERecord(at, fields, rest) =>
             val seen = mutable.HashSet[String]()
             val expectedSchemes = (unification.expand(expected) match {

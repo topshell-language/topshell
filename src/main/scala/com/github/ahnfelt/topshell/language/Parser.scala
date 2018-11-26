@@ -241,6 +241,37 @@ class Parser(file : String, tokens : Array[Token]) {
             }
             skip("bracket", Some("]"))
             EList(at, elements.reverse, rest)
+        case (_, "{") if ahead.raw == "#" =>
+            val at = skip("bracket", Some("{")).at
+            var cases : List[VariantCase] = List.empty
+            var defaultCase : Option[DefaultCase] = None
+            while(current.raw == "#" && defaultCase.isEmpty) {
+                val c = skip("operator", Some("#"))
+                if(current.raw.startsWith("_")) {
+                    skip(if(current.kind == "definition") "definition" else "lower")
+                    skip("separator", Some("->"))
+                    val body = parseTerm()
+                    defaultCase = Some(DefaultCase(c.at, None, body))
+                } else if(current.kind == "lower" || current.kind == "definition") {
+                    val name = skip(if(current.kind == "definition") "definition" else "lower").raw
+                    skip("separator", Some("->"))
+                    val body = parseTerm()
+                    defaultCase = Some(DefaultCase(c.at, Some(name), body))
+                } else {
+                    val name = skip("upper").raw
+                    var arguments : List[Option[String]] = List.empty
+                    while(current.raw.startsWith("_") || current.kind == "lower" || current.kind == "definition") {
+                        val v = skip(if(current.kind == "definition") "definition" else "lower").raw
+                        if(v.startsWith("_")) arguments ::= None
+                        else arguments ::= Some(v)
+                    }
+                    skip("separator", Some("->"))
+                    val body = parseTerm()
+                    cases ::= VariantCase(c.at, name, arguments.reverse, body)
+                }
+            }
+            skip("bracket", Some("}"))
+            EMatch(at, cases.reverse, defaultCase)
         case (_, "{") =>
             val at = skip("bracket", Some("{")).at
             var bindings : List[Binding] = List.empty

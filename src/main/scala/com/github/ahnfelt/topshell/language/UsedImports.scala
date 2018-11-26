@@ -35,6 +35,9 @@ object UsedImports {
             list.foldLeft(rest.map(usedImports).getOrElse(Map.empty))(_ ++ _)
         case EVariant(at, name, arguments) =>
             arguments.map(usedImports).foldLeft(Map.empty[String, Location])(_ ++ _)
+        case EMatch(at, cases, defaultCase) =>
+            cases.map(c => usedImports(c.body)).foldLeft(Map.empty[String, Location])(_ ++ _) ++
+            defaultCase.map(c => usedImports(c.body)).getOrElse(Map.empty[String, Location])
         case ERecord(at, fields, rest) =>
             val list = for(field <- fields.map(_.value)) yield usedImports(field)
             list.foldLeft(rest.map(usedImports).getOrElse(Map.empty))(_ ++ _)

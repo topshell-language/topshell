@@ -39,6 +39,8 @@ object CacheKey {
             EList(zeroLocation, elements.map(withoutLocation), rest.map(withoutLocation))
         case EVariant(_, name, argument) =>
             EVariant(zeroLocation, name, argument.map(withoutLocation))
+        case EMatch(_, cases, defaultCase) =>
+            EMatch(zeroLocation, cases.map(withoutLocation), defaultCase.map(withoutLocation))
         case ERecord(_, fields, rest) =>
             ERecord(zeroLocation, fields.map(withoutLocation), rest.map(withoutLocation))
         case EField(_, record, field, optional) =>
@@ -50,5 +52,11 @@ object CacheKey {
         case EBinary(_, operator, left, right) =>
             EBinary(zeroLocation, operator, withoutLocation(left), withoutLocation(right))
     }
+
+    private def withoutLocation(c : VariantCase) : VariantCase =
+        c.copy(at = zeroLocation, body = withoutLocation(c.body))
+
+    private def withoutLocation(c : DefaultCase) : DefaultCase =
+        c.copy(at = zeroLocation, body = withoutLocation(c.body))
 
 }

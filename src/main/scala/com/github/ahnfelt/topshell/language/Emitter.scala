@@ -79,6 +79,11 @@ object Emitter {
             Math.max(at.line, Math.max((0 :: elements.map(lastLine)).max, rest.map(lastLine).getOrElse(0)))
         case EVariant(at, name, argument) =>
             at.line
+        case EMatch(at, cases, defaultCase) =>
+            Math.max(
+                (at.line :: cases.map(c => lastLine(c.body))).max,
+                defaultCase.map(c => lastLine(c.body)).getOrElse(0)
+            )
         case ERecord(at, fields, rest) =>
             Math.max(at.line, Math.max((0 :: fields.map(bindingLastLine)).max, rest.map(lastLine).getOrElse(0)))
         case EField(at, record, field, _) =>
@@ -122,6 +127,24 @@ object Emitter {
             "{_: " + JSON.stringify(name) + arguments.zipWithIndex.map { case (a, i) =>
                 ", v" + (i + 1) + ": " + emitTerm(a)
             }.mkString + "}"
+        case EMatch(at, cases, defaultCase) =>
+            "function(_v) { switch(_v._) {\n" +
+            (for(VariantCase(_, variant, arguments, body) <- cases) yield
+                "case " + JSON.stringify(variant) + ":\n" +
+                (for((o, i) <- arguments.zipWithIndex; a <- o.toSeq) yield
+                    "var " + a + "_ = _v.v" + (i + 1) + ";\n"
+                ).mkString +
+                emitBody(body)
+            ).mkString +
+            (defaultCase match {
+                case Some(DefaultCase(_, x, body)) =>
+                    "default:\n" +
+                    x.map("var " + _ + "_ = _v;\n").getOrElse("") +
+                    emitBody(body)
+                case None =>
+                    "default: throw 'Unmatched variant: ' + _v._;\n"
+            }) +
+            "}}"
         case ERecord(at, fields, rest) =>
             val record = "{" + fields.map(b => escapeField(b.name, None) + ": " + emitTerm(b.value)).mkString(", ") + "}"
             rest.map(r => "_h.record(" + record + ", " + emitTerm(r) + ")").getOrElse(record)

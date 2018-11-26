@@ -40,6 +40,10 @@ object Syntax {
     case class EIf(at : Location, condition : Term, thenBody : Term, elseBody : Option[Term]) extends Term
     case class EUnary(at : Location, operator : String, operand : Term) extends Term
     case class EBinary(at : Location, operator : String, left : Term, right : Term) extends Term
+    case class EMatch(at : Location, cases : List[VariantCase], defaultCase : Option[DefaultCase]) extends Term
+
+    case class VariantCase(at : Location, variant : String, arguments : List[Option[String]], body : Term)
+    case class DefaultCase(at : Location, variable : Option[String], body : Term)
 
     sealed abstract class Type { override def toString = Pretty.showType(this) }
     case class TVariable(id : Int) extends Type

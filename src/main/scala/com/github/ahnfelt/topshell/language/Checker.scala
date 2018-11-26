@@ -48,6 +48,12 @@ object Checker {
             (for(element <- rest) yield checkTerm(element, visible)).toSet.flatten
         case EVariant(at, name, argument) =>
             Set.empty
+        case EMatch(at, cases, defaultCase) =>
+            cases.map { c =>
+                val newVisible = visible ++ c.arguments.flatten.toSet
+                checkTerm(c.body, newVisible) -- c.arguments.flatten
+            }.toSet.flatten ++
+            defaultCase.map(c => checkTerm(c.body, visible ++ c.variable.toSet) -- c.variable.toSet).toSet.flatten
         case ERecord(at, fields, rest) =>
             (for(element <- fields.map(_.value)) yield checkTerm(element, visible)).toSet.flatten ++
             (for(element <- rest) yield checkTerm(element, visible)).toSet.flatten
