@@ -125,14 +125,14 @@ object Emitter {
             rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
         case EVariant(at, name, arguments) =>
             "{_: " + JSON.stringify(name) + arguments.zipWithIndex.map { case (a, i) =>
-                ", v" + (i + 1) + ": " + emitTerm(a)
+                ", _" + (i + 1) + ": " + emitTerm(a)
             }.mkString + "}"
         case EMatch(at, cases, defaultCase) =>
             "function(_v) { switch(_v._) {\n" +
             (for(VariantCase(_, variant, arguments, body) <- cases) yield
                 "case " + JSON.stringify(variant) + ":\n" +
                 (for((o, i) <- arguments.zipWithIndex; a <- o.toSeq) yield
-                    "var " + a + "_ = _v.v" + (i + 1) + ";\n"
+                    "var " + a + "_ = _v._" + (i + 1) + ";\n"
                 ).mkString +
                 emitBody(body)
             ).mkString +

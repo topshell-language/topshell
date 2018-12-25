@@ -74,9 +74,9 @@ self.tsh.toHtml = value => {
             value._.match(/^[A-Z][a-zA-Z0-9]*$/g);
         if(isConstructor) {
             result.push(value._);
-            for(var j = 1; Object.prototype.hasOwnProperty.call(value, "v" + j); j++) {
-                var v = value["v" + j];
-                var simple = !v || !Object.prototype.hasOwnProperty.call(v, "v1") || !v._;
+            for(var j = 1; Object.prototype.hasOwnProperty.call(value, "_" + j); j++) {
+                var v = value["_" + j];
+                var simple = !v || !Object.prototype.hasOwnProperty.call(v, "_1") || !v._;
                 result.push(" ");
                 if(!simple) result.push("(");
                 result.push(self.tsh.toHtml(v));
@@ -108,7 +108,7 @@ self.tsh.lookup = (r, f) => {
 };
 
 self.tsh.none = {_: "None"};
-self.tsh.some = v => ({_: "Some", value: v});
+self.tsh.some = v => ({_: "Some", _1: v});
 self.tsh.isNone = v => v._ === "None";
 self.tsh.isSome = v => v._ === "Some";
 

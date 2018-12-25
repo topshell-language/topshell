@@ -12,3 +12,15 @@ exports.null = null;
 
 //: a
 exports.undefined = void 0;
+
+//: Maybe a -> a
+exports.get = v => { if(v._ !== "Some") throw "Debug.get None"; else return v._1; };
+
+//: Int -> List a -> a
+exports.at = i => v => {
+    if(!(i < v.length)) throw "List.at " + i + " [... " + v.length + " elements]";
+    return v[i];
+};
+
+//: a -> b
+exports.cast = x => x;

@@ -40,8 +40,8 @@ exports.unfold = f => z => {
     var result = [];
     var e = null;
     while(self.tsh.isSome(e = f(z))) {
-        z = e.value.key;
-        result.push(e.value.value);
+        z = e._1.key;
+        result.push(e._1.value);
     }
     return result;
 };

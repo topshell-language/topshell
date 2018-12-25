@@ -11,28 +11,28 @@ exports.isNone = self.tsh.isNone;
 exports.isSome = self.tsh.isSome;
 
 //: a -> Maybe a -> a
-exports.default = d => v => exports.isNone(v) ? d : v.value;
+exports.default = d => v => exports.isNone(v) ? d : v._1;
 
 //: Maybe (Maybe a) -> Maybe a
-exports.flatten = v => exports.isNone(v) ? v : v.value;
+exports.flatten = v => exports.isNone(v) ? v : v._1;
 
 //: (a -> b) -> Maybe a -> Maybe b
-exports.map = f => v => exports.isNone(v) ? v : exports.some(f(v.value));
+exports.map = f => v => exports.isNone(v) ? v : exports.some(f(v._1));
 
 //: (a -> Maybe b) -> Maybe a -> Maybe b
-exports.flatMap = f => v => exports.isNone(v) ? v : f(v.value);
+exports.flatMap = f => v => exports.isNone(v) ? v : f(v._1);
 
 //: Maybe a -> List a
-exports.toList = v => exports.isNone(v) ? [] : [v.value];
+exports.toList = v => exports.isNone(v) ? [] : [v._1];
 
 //: String -> Maybe a -> a
-exports.orFail = e => v => {if(exports.isNone(v)) throw e; else return v.value;};
+exports.orFail = e => v => {if(exports.isNone(v)) throw e; else return v._1;};
 
 //: List (Maybe a) -> List a
 exports.flattenList = v => {
     var result = [];
     for(var i = 0; i < v.length; i++) {
-        if(!exports.isNone(v[i])) result.push(v[i].value);
+        if(!exports.isNone(v[i])) result.push(v[i]._1);
     }
     return result;
 };
