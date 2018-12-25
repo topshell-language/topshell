@@ -1,34 +1,34 @@
-//: Maybe a
+//: [None, Some a]
 exports.none = self.tsh.none;
 
-//: a -> Maybe a
+//: a -> [None, Some a]
 exports.some = self.tsh.some;
 
-//: Maybe a -> Bool
+//: [None, Some a] -> Bool
 exports.isNone = self.tsh.isNone;
 
-//: Maybe a -> Bool
+//: [None, Some a] -> Bool
 exports.isSome = self.tsh.isSome;
 
-//: a -> Maybe a -> a
+//: a -> [None, Some a] -> a
 exports.default = d => v => exports.isNone(v) ? d : v._1;
 
-//: Maybe (Maybe a) -> Maybe a
+//: [None, Some [None, Some a]] -> [None, Some a]
 exports.flatten = v => exports.isNone(v) ? v : v._1;
 
-//: (a -> b) -> Maybe a -> Maybe b
+//: (a -> b) -> [None, Some a] -> [None, Some b]
 exports.map = f => v => exports.isNone(v) ? v : exports.some(f(v._1));
 
-//: (a -> Maybe b) -> Maybe a -> Maybe b
+//: (a -> [None, Some b]) -> [None, Some a] -> [None, Some b]
 exports.flatMap = f => v => exports.isNone(v) ? v : f(v._1);
 
-//: Maybe a -> List a
+//: [None, Some a] -> List a
 exports.toList = v => exports.isNone(v) ? [] : [v._1];
 
-//: String -> Maybe a -> a
+//: String -> [None, Some a] -> a
 exports.orFail = e => v => {if(exports.isNone(v)) throw e; else return v._1;};
 
-//: List (Maybe a) -> List a
+//: List [None, Some a] -> List a
 exports.flattenList = v => {
     var result = [];
     for(var i = 0; i < v.length; i++) {

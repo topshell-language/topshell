@@ -71,7 +71,7 @@ exports.json = exports._processResponse(r => r.json().then(j => Promise.resolve(
 //: Http -> Task Bytes
 exports.bytes = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
 
-//: String -> Http -> Maybe String
+//: String -> Http -> [None, Some String]
 exports.header = header => response => response.headers.get(header);
 
 //: Http -> Bool

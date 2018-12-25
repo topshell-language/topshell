@@ -275,7 +275,7 @@ class Typer {
                     constraints.add(FieldConstraint(other, field, t2, optional))
                     t2
             }
-            val t4 = if(optional) TApply(TConstructor("Maybe"), t3) else t3
+            val t4 = if(optional) TVariant(List("None" -> List(), "Some" -> List(t3))) else t3
             unification.unify(expected, t4)
             EField(at, r, field, optional)
 
@@ -287,7 +287,7 @@ class Typer {
 
         case EIf(at, condition, thenBody, None) =>
             val t1 = constraints.freshTypeVariable()
-            unification.unify(expected, TApply(TConstructor("Maybe"), t1))
+            unification.unify(expected, TVariant(List("None" -> List(), "Some" -> List(t1))))
             val c = checkTerm(condition, TConstructor("Bool"))
             val t = checkTerm(thenBody, t1)
             EIf(at, c, t, None)

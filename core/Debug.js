@@ -13,7 +13,7 @@ exports.null = null;
 //: a
 exports.undefined = void 0;
 
-//: Maybe a -> a
+//: [None, Some a] -> a
 exports.get = v => { if(v._ !== "Some") throw "Debug.get None"; else return v._1; };
 
 //: Int -> List a -> a

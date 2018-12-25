@@ -18,10 +18,10 @@ exports.pairs = json => {
     }
     return result;
 };
-//: Int -> Json -> Maybe Json
+//: Int -> Json -> [None, Some Json]
 exports.at = index => json =>
     index >= 0 && index < json.length ? self.tsh.some(json[index]) : self.tsh.none;
-//: String -> Json -> Maybe Json
+//: String -> Json -> [None, Some Json]
 exports.get = key => json =>
     Object.prototype.hasOwnProperty.call(json, key) ? self.tsh.some(json[key]) : self.tsh.none;
 //: Int -> Json -> Json

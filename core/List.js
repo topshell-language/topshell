@@ -35,7 +35,7 @@ exports.range = function(start) {
     };
 };
 
-//: (a -> Maybe {key: a, value: b}) -> a -> List b
+//: (a -> [None, Some {key: a, value: b}]) -> a -> List b
 exports.unfold = f => z => {
     var result = [];
     var e = null;
@@ -50,7 +50,7 @@ exports.unfold = f => z => {
 exports.size = function(r) { return r.length; };
 //: List a -> Bool
 exports.isEmpty = function(r) { return r.length === 0; };
-//: Int -> List a -> Maybe a
+//: Int -> List a -> [None, Some a]
 exports.at = function(i) { return function(r) { return i >= 0 && i < r.length ? self.tsh.some(r[i]) : self.tsh.none; }; };
 //: Int -> List a -> List a
 exports.take = function(i) { return function(r) { return r.slice(0, i); }; };
@@ -65,7 +65,7 @@ exports.dropLast = function(i) { return function(r) { return r.slice(0, -i); }; 
 exports.filter = function(f) { return function(r) { return r.filter(f); }; };
 //: List a -> List a
 exports.reverse = function(r) { return r.slice().reverse(); };
-//: (a -> Bool) -> List a -> Maybe a
+//: (a -> Bool) -> List a -> [None, Some a]
 exports.find = f => r => {
     for(var i = 0; i < r.length; i++) {
         if(f(r[i])) return self.tsh.some(r[i]);
@@ -77,7 +77,7 @@ exports.all = function(f) { return function(r) { return r.every(f); }; };
 //: (a -> Bool) -> List a -> Bool
 exports.any = function(f) { return function(r) { return r.some(f); }; };
 
-//: List a -> Maybe a
+//: List a -> [None, Some a]
 exports.head = function(r) { return r.length > 0 ? self.tsh.some(r[0]) : self.tsh.none; };
 //: List a -> List a
 exports.tail = function(r) { return r.slice(1); };
