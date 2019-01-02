@@ -3,9 +3,10 @@ exports._fetchThen = f => configuration => new self.tsh.Task((w, t, c) => {
     for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
         options[k] = configuration[k];
     }
+    var url = configuration.url;
     if(options.mode === "proxy") {
         options.credentials = "omit"; // Don't send cookies etc. to third parties
-        configuration.url = "/proxy/" + encodeURI(configuration.url);
+        url = "/proxy/" + encodeURI(url);
         delete options.mode;
     }
     var headers = configuration.headers;
@@ -19,13 +20,13 @@ exports._fetchThen = f => configuration => new self.tsh.Task((w, t, c) => {
     var controller = new AbortController();
     options.signal = controller.signal;
     try {
-        fetch(configuration.url, options).then(response => {
+        fetch(url, options).then(response => {
             if(!canceled) {
                 if(response.ok || options.check === false) {
                     try { return f(response).then(v => Promise.resolve(t(v))); } catch(e) { c(e) }
                 } else {
                     c(new Error("HTTP error " + response.status + " on " +
-                        (options.method || "GET") + " " + configuration.url));
+                        (options.method || "GET") + " " + url));
                 }
             }
         }, e => {
