@@ -19,3 +19,5 @@ exports.round = x => {
     if(!isFinite(x)) throw 'Int.round ' + x;
     return Math.round(x);
 };
+//: Int -> Int -> Int
+exports.remainder = top => bottom => top % bottom;

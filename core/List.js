@@ -50,6 +50,8 @@ exports.unfold = f => z => {
 exports.size = function(r) { return r.length; };
 //: List a -> Bool
 exports.isEmpty = function(r) { return r.length === 0; };
+//: List a
+exports.empty = [];
 //: Int -> List a -> [None, Some a]
 exports.at = function(i) { return function(r) { return i >= 0 && i < r.length ? self.tsh.some(r[i]) : self.tsh.none; }; };
 //: Int -> List a -> List a

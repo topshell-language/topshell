@@ -21,7 +21,7 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         constraints ::= constraint
     }
 
-    private def simplifyConstraint(constraint : Type) : Option[Type] = constraint match {
+    private def simplifyConstraint(constraint : Type) : List[Type] = constraint match {
         case FieldConstraint(record, label, t, optional) =>
             record match {
                 case TRecord(fields) =>
@@ -32,19 +32,19 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                             case e : RuntimeException =>
                                 throw new RuntimeException(e.getMessage + " (when checking ." + label + ")")
                         }
-                        None
+                        List()
                     }.getOrElse {
-                        if(optional) None else throw new RuntimeException(
+                        if(optional) List() else throw new RuntimeException(
                             "Field ." + label + " not found in {" + fields.map(_.name).mkString(", ") + "}"
                         )
                     }
                 case TConstructor("Json") =>
                     unification.unify(t, TConstructor("Json"))
-                    None
+                    List()
                 case TParameter(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case TVariable(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case _ =>
                     throw new RuntimeException("Non-record field access: " + record + "." + label)
             }
@@ -53,47 +53,88 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 case TVariant(variants) =>
                     variants.find(_._1 == name).map { case (n, t) =>
                         checkVariantArgumentConstraint(fieldType, t, constraint)
-                        None
+                        List()
                     }.getOrElse {
                         throw new RuntimeException(
                             "Variant " + name + " not found in " + variantType
                         )
                     }
                 case TParameter(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case TVariable(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case _ =>
                     throw new RuntimeException("Non-variant: " + constraint)
             }
         case TApply(TApply(TConstructor("=="), a), b) =>
             unification.unify(a, b)
-            None
-        case TApply(TConstructor(c), target) if c == "Add" || c == "Equal" || c == "Order" =>
+            List()
+        case TApply(TConstructor(c), target) if c == "Add" =>
             target match {
                 case TConstructor("Int") =>
-                    None
+                    List()
                 case TConstructor("Float") =>
-                    None
+                    List()
                 case TConstructor("String") =>
-                    None
+                    List()
                 case TParameter(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case TVariable(_) =>
-                    Some(constraint)
+                    List(constraint)
+                case _ =>
+                    throw new RuntimeException("Not satisfiable: " + constraint)
+            }
+        case TApply(TConstructor(c), target) if c == "Equal" =>
+            target match {
+                case TConstructor("Int") =>
+                    List()
+                case TConstructor("Float") =>
+                    List()
+                case TConstructor("String") =>
+                    List()
+                case TConstructor("Bool") =>
+                    List()
+                case TParameter(_) =>
+                    List(constraint)
+                case TVariable(_) =>
+                    List(constraint)
+                case _ =>
+                    throw new RuntimeException("Not satisfiable: " + constraint)
+            }
+        case TApply(TConstructor(c), target) if c == "Order" =>
+            target match {
+                case TConstructor("Int") =>
+                    List()
+                case TConstructor("Float") =>
+                    List()
+                case TConstructor("String") =>
+                    List()
+                case TConstructor("Bool") =>
+                    List()
+                case TApply(TConstructor("List"), t) =>
+                    List(TApply(TConstructor(c), t))
+                case TRecord(List(
+                    TypeBinding("key", Scheme(List(), List(), k)),
+                    TypeBinding("value", Scheme(List(), List(), v))
+                )) =>
+                    List(TApply(TConstructor(c), k), TApply(TConstructor(c), v))
+                case TParameter(_) =>
+                    List(constraint)
+                case TVariable(_) =>
+                    List(constraint)
                 case _ =>
                     throw new RuntimeException("Not satisfiable: " + constraint)
             }
         case TApply(TConstructor(c), target) if c == "Number" =>
             target match {
                 case TConstructor("Int") =>
-                    None
+                    List()
                 case TConstructor("Float") =>
-                    None
+                    List()
                 case TParameter(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case TVariable(_) =>
-                    Some(constraint)
+                    List(constraint)
                 case _ =>
                     throw new RuntimeException("Not satisfiable: " + constraint)
             }

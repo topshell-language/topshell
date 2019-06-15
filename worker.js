@@ -51,6 +51,7 @@ self.tsh.Lazy = class extends self.tsh.AbstractView {
 self.tsh.toHtml = value => {
     if(value instanceof self.tsh.AbstractView) return value.toHtml();
     if(value instanceof Function) return {_tag: "span", children: ["function"]};
+    if(XMap.isInstance(value)) return {_tag: "span", children: ["map"]};
     if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["bytes"]};
     if(value instanceof Response) return {_tag: "span", children: ["response"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
