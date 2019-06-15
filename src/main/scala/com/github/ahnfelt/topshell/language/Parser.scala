@@ -134,13 +134,25 @@ class Parser(file : String, tokens : Array[Token]) {
         }
     }
 
-    private def parseTerm() : Term = parseIf()
+    private def parseTerm() : Term = parseSemicolon()
+
+    private def parseSemicolon() = {
+        val term = parseNonSemicolonTerm()
+        if(current.raw != ";") term else {
+            val at = skip("separator", Some(";")).at
+            nextWildcard += 1
+            val binding = Binding(at, "_" + nextWildcard, None, term)
+            EBind(at, binding, parseTerm())
+        }
+    }
+
+    private def parseNonSemicolonTerm() : Term = parseIf()
 
     private def parseIf() : Term = {
         val condition = parsePipe()
         if(current.raw != "?") condition else {
             val at = skip("separator", Some("?")).at
-            val thenBody = parseTerm()
+            val thenBody = parseNonSemicolonTerm()
             val elseBody = if(current.raw == ";") {
                 skip("separator", Some(";"))
                 Some(parseTerm())

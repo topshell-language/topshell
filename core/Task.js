@@ -205,16 +205,18 @@ exports.sleep = s => new self.tsh.Task((w, t, c) => {
     return () => clearTimeout(handle);
 });
 
-//: Float -> Task {}
+//: Float -> Task Int
 exports.interval = s => new self.tsh.Task((w, t, c) => {
+    var ticks = 0;
     try {
-        t(void 0)
+        t(0)
     } catch(e) {
         c(e)
     }
     var handle = setInterval(_ => {
+        ticks += 1;
         try {
-            t(void 0)
+            t(ticks)
         } catch(e) {
             c(e)
         }
