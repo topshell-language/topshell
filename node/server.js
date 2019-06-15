@@ -76,7 +76,11 @@ var server = http.createServer((request, response) => {
     } else if(parts.pathname.startsWith(base) && request.method === 'GET') {
         var path = parts.pathname.slice(base.length);
         if(path.includes("..")) throw 'Illegal path: ' + path;
-        var stream = fs.createReadStream("../" + path);
+        path = "../" + path;
+        var fastOptPath = '../target/scala-2.12/topshell-fastopt.js';
+        if(path === '../target/scala-2.12/topshell-opt.js' && fs.existsSync(fastOptPath)) path = fastOptPath;
+        var stream = fs.createReadStream(path);
+        if(path.endsWith(".js")) response.setHeader("Content-Type", "application/javascript");
         stream.on('error', function() {
             response.writeHead(404);
             response.end();

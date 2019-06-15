@@ -160,7 +160,7 @@ class Parser(file : String, tokens : Array[Token]) {
         result
     }
 
-    private def parsePipe() : Term = parseBinary(Seq("|"), () => parsePair())
+    private def parsePipe() : Term = parseBinary(Seq("<|", "|>"), () => parsePair())
     private def parsePair() : Term = parseBinary(Seq("~>"), () => parseAndOr())
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), () => parseCompare())
     private def parseCompare() : Term = parseBinary(Seq(">", "<", ">=", "<=", "==", "!="), () => parsePlus())
@@ -241,12 +241,12 @@ class Parser(file : String, tokens : Array[Token]) {
             }
             skip("bracket", Some("]"))
             EList(at, elements.reverse, rest)
-        case (_, "{") if ahead.raw == "#" =>
+        case (_, "{") if ahead.raw == "|" =>
             val at = skip("bracket", Some("{")).at
             var cases : List[VariantCase] = List.empty
             var defaultCase : Option[DefaultCase] = None
-            while(current.raw == "#" && defaultCase.isEmpty) {
-                val c = skip("operator", Some("#"))
+            while(current.raw == "|" && defaultCase.isEmpty) {
+                val c = skip("operator", Some("|"))
                 if(current.raw.startsWith("_")) {
                     skip(if(current.kind == "definition") "definition" else "lower")
                     skip("separator", Some("->"))
@@ -459,7 +459,7 @@ class Parser(file : String, tokens : Array[Token]) {
             skip("separator", Some(":"))
             val t = parseType()
             FieldConstraint(TParameter(record), label, t, o == ".?")
-        } else if(ahead.raw == "#") {
+        } else if(ahead.raw == "/") {
             val variant = skip("lower").raw
             skip("operator").raw
             val name = skip("upper").raw

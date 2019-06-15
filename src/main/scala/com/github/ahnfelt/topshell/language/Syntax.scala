@@ -84,11 +84,11 @@ object Syntax {
 
         def apply(variantType : Type, label : String, fieldTypes : List[Type]) = {
             val applied = fieldTypes.foldLeft[Type](TSymbol(label))(TApply)
-            TApply(TApply(TConstructor("#"), applied), variantType)
+            TApply(TApply(TConstructor("/"), applied), variantType)
         }
 
         def unapply(constraint : Type) = constraint match {
-            case TApply(TApply(TConstructor("#"), applied), variantType) =>
+            case TApply(TApply(TConstructor("/"), applied), variantType) =>
                 def extract(a : Type, arguments : List[Type]) : Option[(String, List[Type])] = a match {
                     case TApply(x, y) => extract(x, y :: arguments)
                     case TSymbol(l) => Some(l -> arguments)
@@ -109,7 +109,8 @@ object Syntax {
     )
 
     val binaryOperators = Seq(
-        Seq("|")                    -> "a -> (a -> b) -> b",
+        Seq("<|")                   -> "(a -> b) -> a -> b",
+        Seq("|>")                   -> "a -> (a -> b) -> b",
         Seq("~>")                   -> "a -> b -> {key: a, value: b}",
         Seq("&&", "||")             -> "Bool -> Bool -> Bool",
         Seq(">", "<", ">=", "<=")   -> "a -> a -> Bool | Order a",
