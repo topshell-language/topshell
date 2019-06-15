@@ -51,7 +51,6 @@ self.tsh.Lazy = class extends self.tsh.AbstractView {
 self.tsh.toHtml = value => {
     if(value instanceof self.tsh.AbstractView) return value.toHtml();
     if(value instanceof Function) return {_tag: "span", children: ["function"]};
-    if(XMap.isInstance(value)) return {_tag: "span", children: ["map"]};
     if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["bytes"]};
     if(value instanceof Response) return {_tag: "span", children: ["response"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
@@ -66,6 +65,16 @@ self.tsh.toHtml = value => {
         for(var i = 0; i < value.length; i++) {
             if(result.length > 1) result.push(", ");
             result.push(self.tsh.toHtml(value[i]));
+        }
+        result.push("]");
+    } else if(XMap.isInstance(value)) {
+        result.push("Map.of [");
+        var pairs = XMap.toList(value);
+        for(var i = 0; i < pairs.length; i++) {
+            if(result.length > 1) result.push(", ");
+            result.push(self.tsh.toHtml(pairs[i].key));
+            result.push(" ~> ");
+            result.push(self.tsh.toHtml(pairs[i].value));
         }
         result.push("]");
     } else {

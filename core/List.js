@@ -88,7 +88,8 @@ exports.append = function(r) { return function(a) { return r.concat(a); }; };
 
 //: (a -> b -> a) -> a -> List b -> a
 exports.foldLeft = f => z => a => a.reduce((x, y) => f(x)(y), z);
-//: (a -> b -> b) -> b -> List a -> b
+
+//: (a -> b -> a) -> a -> List b -> a
 exports.foldRight = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
 
 //: (a -> a -> Bool) -> List a -> List a

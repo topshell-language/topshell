@@ -25,6 +25,18 @@ exports.get = k => m => XMap.get(k, m);
 //: k -> Map k v -> Bool | Order k
 exports.has = k => m => XMap.has(k, m);
 
+//: k -> Map k v -> Map k v | Order k
+exports.from = k => m => XMap.from(k, m);
+
+//: k -> Map k v -> Map k v | Order k
+exports.until = k => m => XMap.until(k, m);
+
+//: (k -> v -> a -> a) -> a -> Map k v -> a
+exports.foldLeft = f => z => m => XMap.foldLeft(f, z, m);
+
+//: (k -> v -> a -> a) -> a -> Map k v -> a
+exports.foldRight = f => z => m => XMap.foldRight(f, z, m);
+
 //: Map k v -> Int | Order k
 exports.size = m => XMap.size(m);
 

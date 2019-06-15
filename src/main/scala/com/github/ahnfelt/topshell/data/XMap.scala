@@ -69,6 +69,26 @@ object XMap {
     }
 
     @JSExport
+    def from(key : Any, map : XMap) : XMap = {
+        map.from(key)
+    }
+
+    @JSExport
+    def until(key : Any, map : XMap) : XMap = {
+        map.until(key)
+    }
+
+    @JSExport
+    def foldLeft(f : Fun[Any, Fun[Any, Fun[Any, Any]]], z : Any, map : XMap) : Any = {
+        map.foldLeft(z) { (v, p) => f(p._1)(p._2)(v) }
+    }
+
+    @JSExport
+    def foldRight(f : Fun[Any, Fun[Any, Fun[Any, Any]]], z : Any, map : XMap) : Any = {
+        map.foldRight(z) { (p, v) => f(p._1)(p._2)(v) }
+    }
+
+    @JSExport
     def size(map : XMap) : Int = {
         map.size
     }
