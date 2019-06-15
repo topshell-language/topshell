@@ -16,8 +16,11 @@ exports.remove = k => m => XSet.remove(k, m);
 //: Set v -> Set v -> Set v | Order v
 exports.union = m1 => m2 => XSet.union(m1, m2);
 
-//: Set v -> Set v -> Map k w | Order v
+//: Set v -> Set v -> Set v | Order v
 exports.intersect = m1 => m2 => XSet.intersect(m1, m2);
+
+//: Set v -> Set v -> Set v | Order v
+exports.exclude = m1 => m2 => XSet.exclude(m1, m2);
 
 //: v -> Set v -> Bool | Order v
 exports.has = k => m => XSet.has(k, m);

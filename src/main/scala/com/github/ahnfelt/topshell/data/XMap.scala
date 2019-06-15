@@ -64,6 +64,11 @@ object XMap {
     }
 
     @JSExport
+    def exclude(a : XSet.XSet, b : XMap) : XMap = {
+        b -- a
+    }
+
+    @JSExport
     def get(key : Any, map : XMap) : Any = {
         map.get(key).map(v => js.Dictionary("_" -> "Some", "_1" -> v)).getOrElse(js.Dictionary("_" -> "None"))
     }

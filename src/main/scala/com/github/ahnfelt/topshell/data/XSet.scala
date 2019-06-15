@@ -51,6 +51,11 @@ object XSet {
     }
 
     @JSExport
+    def exclude(a : XSet, b : XSet) : XSet = {
+        b -- a
+    }
+
+    @JSExport
     def has(value : Any, set : XSet) : Boolean = {
         set.contains(value)
     }
