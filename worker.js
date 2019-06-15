@@ -68,7 +68,7 @@ self.tsh.toHtml = value => {
         }
         result.push("]");
     } else if(XMap.isInstance(value)) {
-        result.push("map[");
+        result.push("[map: ");
         var pairs = XMap.toList(value);
         for(var i = 0; i < pairs.length; i++) {
             if(result.length > 1) result.push(", ");
@@ -78,7 +78,7 @@ self.tsh.toHtml = value => {
         }
         result.push("]");
     } else if(XSet.isInstance(value)) {
-        result.push("set[");
+        result.push("[set: ");
         var members = XSet.toList(value);
         for(var i = 0; i < members.length; i++) {
             if(result.length > 1) result.push(", ");
