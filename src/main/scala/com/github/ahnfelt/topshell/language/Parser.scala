@@ -149,7 +149,7 @@ class Parser(file : String, tokens : Array[Token]) {
     private def parseNonSemicolonTerm() : Term = parseIf()
 
     private def parseIf() : Term = {
-        val condition = parsePipe()
+        val condition = parseLeftPipe()
         if(current.raw != "?") condition else {
             val at = skip("separator", Some("?")).at
             val thenBody = parseNonSemicolonTerm()
@@ -158,6 +158,14 @@ class Parser(file : String, tokens : Array[Token]) {
                 Some(parseTerm())
             } else None
             EIf(at, condition, thenBody, elseBody)
+        }
+    }
+
+    private def parseLeftPipe() : Term = {
+        val result = parseRightPipe()
+        if(current.raw != "<|") result else {
+            val c = skip("operator", Some("<|"))
+            EBinary(c.at, "<|", result, parseLeftPipe())
         }
     }
 
@@ -172,7 +180,7 @@ class Parser(file : String, tokens : Array[Token]) {
         result
     }
 
-    private def parsePipe() : Term = parseBinary(Seq("<|", "|>"), () => parsePair())
+    private def parseRightPipe() : Term = parseBinary(Seq("|>"), () => parsePair())
     private def parsePair() : Term = parseBinary(Seq("~>"), () => parseAndOr())
     private def parseAndOr() : Term = parseBinary(Seq("&&", "||"), () => parseCompare())
     private def parseCompare() : Term = parseBinary(Seq(">", "<", ">=", "<=", "==", "!="), () => parsePlus())
