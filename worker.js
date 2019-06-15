@@ -77,6 +77,14 @@ self.tsh.toHtml = value => {
             result.push(self.tsh.toHtml(pairs[i].value));
         }
         result.push("]");
+    } else if(XSet.isInstance(value)) {
+        result.push("Set.of [");
+        var members = XSet.toList(value);
+        for(var i = 0; i < members.length; i++) {
+            if(result.length > 1) result.push(", ");
+            result.push(self.tsh.toHtml(members[i]));
+        }
+        result.push("]");
     } else {
         var isConstructor =
             Object.prototype.hasOwnProperty.call(value, "_") &&

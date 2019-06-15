@@ -7,6 +7,9 @@ exports.fromList = f => l => XMap.fromList(f, l);
 //: Map k v -> List {key: k, value: v} | Order k
 exports.toList = m => XMap.toList(m);
 
+//: Map k v -> Set k | Order k
+exports.keys = m => XMap.keys(m);
+
 //: k -> v -> Map k v -> Map k v | Order k
 exports.add = k => v => m => XMap.add(k, v, m);
 

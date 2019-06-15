@@ -1,6 +1,6 @@
 package com.github.ahnfelt.topshell.data
 
-import scala.collection.immutable.TreeMap
+import scala.collection.immutable.{TreeMap, TreeSet}
 import scala.scalajs.js
 import scala.scalajs.js.annotation.{JSExport, JSExportTopLevel}
 
@@ -30,6 +30,11 @@ object XMap {
     @JSExport
     def toList(map : XMap) : js.Array[Any] = {
         js.Array(map.toList.map { case (k, v) => js.Dictionary("key" -> k, "value" -> v) } : _*)
+    }
+
+    @JSExport
+    def keys(map : XMap) : XSet.XSet = {
+        map.keySet
     }
 
     @JSExport
