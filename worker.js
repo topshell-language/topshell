@@ -216,4 +216,4 @@ self.tsh.loadImport = url => new self.tsh.Task((w, t, e) => {
 
 
 importScripts("./tokenizer.js");
-importScripts("./target/scala-2.12/topshell-fastopt.js");
+importScripts("./target/scala-2.12/topshell-opt.js");
