@@ -8,16 +8,6 @@ exports.pretty = indentation => json => JSON.stringify(json, null, indentation);
 exports.toAny = json => json;
 //: a -> Json
 exports.fromAny = json => json;
-//: Json -> List Json
-exports.toList = json => json;
-//: Json -> List {key: String, value: Json}
-exports.pairs = json => {
-    var result = [];
-    for(var k in json) if(Object.prototype.hasOwnProperty.call(json, k)) {
-        result.push({key: k, value: json[k]})
-    }
-    return result;
-};
 //: Json -> Map String Json
 exports.toMap = json => XMap.of(exports.pairs(json));
 //: Map String Json -> Json
