@@ -9,7 +9,7 @@ exports.toAny = json => json;
 //: a -> Json
 exports.fromAny = json => json;
 //: Json -> List Json
-exports.list = json => json;
+exports.toList = json => json;
 //: Json -> List {key: String, value: Json}
 exports.pairs = json => {
     var result = [];
@@ -18,6 +18,8 @@ exports.pairs = json => {
     }
     return result;
 };
+//: Json -> Map String Json
+exports.toMap = json => XMap.of(exports.pairs(json));
 //: Int -> Json -> [None, Some Json]
 exports.at = index => json =>
     index >= 0 && index < json.length ? self.tsh.some(json[index]) : self.tsh.none;
