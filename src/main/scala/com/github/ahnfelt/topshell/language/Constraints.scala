@@ -118,6 +118,11 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     TypeBinding("value", Scheme(List(), List(), v))
                 )) =>
                     List(TApply(TConstructor(c), k), TApply(TConstructor(c), v))
+                case TRecord(List(
+                    TypeBinding("value", Scheme(List(), List(), v)),
+                    TypeBinding("key", Scheme(List(), List(), k))
+                )) =>
+                    List(TApply(TConstructor(c), k), TApply(TConstructor(c), v))
                 case TParameter(_) =>
                     List(constraint)
                 case TVariable(_) =>
