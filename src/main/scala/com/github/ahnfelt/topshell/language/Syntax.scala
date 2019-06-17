@@ -115,6 +115,7 @@ object Syntax {
         Seq("&&", "||")             -> "Bool -> Bool -> Bool",
         Seq(">", "<", ">=", "<=")   -> "a -> a -> Bool | Order a",
         Seq("==", "!=")             -> "a -> a -> Bool | Equal a",
+        Seq("++")                   -> "List a -> List a -> List a",
         Seq("+")                    -> "a -> a -> a | Add a",
         Seq("-")                    -> "a -> a -> a | Number a",
         Seq("*")                    -> "a -> a -> a | Number a",
