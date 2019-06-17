@@ -9,7 +9,13 @@ exports.toAny = json => json;
 //: a -> Json
 exports.fromAny = json => json;
 //: Json -> Map String Json
-exports.toMap = json => XMap.of(exports.pairs(json));
+exports.toMap = json => {
+    var result = XMap.empty;
+    for(var k in json) if(Object.prototype.hasOwnProperty.call(json, k)) {
+        result = XMap.add(k, json[k], result);
+    }
+    return result;
+};
 //: Map String Json -> Json
 exports.fromMap = map => { var r = {}; XMap.toList(map).forEach(p => r[p.key] = p.value); return r; };
 //: Int -> Json -> [None, Some Json]

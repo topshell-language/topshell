@@ -182,6 +182,21 @@ exports.all = tasks => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: List (Task a) -> Task (List a)
+exports.sequence = list => {
+    var reversedTask = list.reduce((accumulator, task) => exports.then(tail => exports.then(head => {
+        return exports.of({head: head, tail: tail});
+    })(task))(accumulator), exports.of({}));
+    return exports.then(reversed => {
+        var result = [];
+        while(Object.prototype.hasOwnProperty.call(reversed, "head")) {
+            result.push(reversed.head);
+            reversed = reversed.tail;
+        }
+        return exports.of(result.reverse());
+    })(reversedTask);
+};
+
 //: (a -> b) -> Task a -> Task b
 exports.map = f => task => new self.tsh.Task((w, t, c) => {
     return task._run(w, v => {
@@ -197,7 +212,7 @@ exports.map = f => task => new self.tsh.Task((w, t, c) => {
 exports.sleep = s => new self.tsh.Task((w, t, c) => {
     var handle = setTimeout(_ => {
         try {
-            t(void _)
+            t({})
         } catch(e) {
             c(e)
         }
@@ -236,7 +251,7 @@ exports.random = new self.tsh.Task((w, t, c) => {
 
 //: a -> Task {}
 exports.log = message => new self.tsh.Task((w, t, c) => {
-    try { t(void console.dir(message)) } catch(e) { c(e) }
+    try { console.dir(message); t({}) } catch(e) { c(e) }
 });
 
 //: (a -> Task b) -> Task a -> Task b

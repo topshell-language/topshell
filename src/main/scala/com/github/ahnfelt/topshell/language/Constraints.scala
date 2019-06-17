@@ -69,6 +69,19 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         case TApply(TApply(TConstructor("=="), a), b) =>
             unification.unify(a, b)
             List()
+        case TApply(TConstructor(c), target) if c == "Monad" =>
+            target match {
+                case TConstructor("List") =>
+                    List()
+                case TConstructor("Task") =>
+                    List()
+                case TParameter(_) =>
+                    List(constraint)
+                case TVariable(_) =>
+                    List(constraint)
+                case _ =>
+                    throw new RuntimeException("Not satisfiable: " + constraint)
+            }
         case TApply(TConstructor(c), target) if c == "Add" =>
             target match {
                 case TConstructor("Int") =>

@@ -51,17 +51,17 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
         case (TParameter(name1), TParameter(name2)) =>
             if(name1 != name2) {
-                throw new RuntimeException("Got: " + name2 + ", expected: " + name1)
+                throw new RuntimeException("Type mismatch: " + name2 + " vs. " + name1)
             }
 
         case (TConstructor(name1), TConstructor(name2)) =>
             if(name1 != name2) {
-                throw new RuntimeException("Got: " + name2 + ", expected: " + name1)
+                throw new RuntimeException("Type mismatch: " + name2 + " vs. " + name1)
             }
 
         case (TSymbol(name1), TSymbol(name2)) =>
             if(name1 != name2) {
-                throw new RuntimeException("Got: " + name2 + ", expected: " + name1)
+                throw new RuntimeException("Type mismatch: " + name2 + " vs. " + name1)
             }
 
         case (TApply(constructor1, argument1), TApply(constructor2, argument2)) =>
@@ -73,9 +73,9 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             val sorted2 = variants2.sortBy(_._1)
             if(sorted1.map(_._1) != sorted2.map(_._1)) {
                 throw new RuntimeException(
-                    "Variant names don't match. " +
-                        "Got: " + sorted2.map(_._1).mkString(", ") + ", " +
-                        "expected: " + sorted1.map(_._1).mkString(", ")
+                    "Variant names don't match: " +
+                        sorted2.map(_._1).mkString(", ") + " vs. " +
+                        sorted1.map(_._1).mkString(", ")
                 )
             } else {
                 sorted1.zip(sorted2).foreach { case ((x1, ts1), (x2, ts2)) =>
@@ -90,9 +90,9 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             val sorted2 = fields2.sortBy(_.name)
             if(sorted1.map(_.name) != sorted2.map(_.name)) {
                 throw new RuntimeException(
-                    "Record fields don't match. " +
-                        "Got: {" + sorted2.map(_.name).mkString(", ") + "}, " +
-                        "expected: {" + sorted1.map(_.name).mkString(", ") + "}"
+                    "Record fields don't match: " +
+                        "{" + sorted2.map(_.name).mkString(", ") + "} vs. " +
+                        "{" + sorted1.map(_.name).mkString(", ") + "}"
                 )
             } else {
                 sorted1.zip(sorted2).foreach { case (b1, b2) =>

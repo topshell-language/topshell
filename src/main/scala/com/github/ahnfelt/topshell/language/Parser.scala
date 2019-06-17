@@ -235,6 +235,13 @@ class Parser(file : String, tokens : Array[Token]) {
                     EFunction(at, "_1", EFunction(at, "_2",
                         EBinary(at, c.raw, EVariable(at, "_1"), EVariable(at, "_2"))
                     ))
+                } else if(current.raw == ";" && ahead.raw == ")") {
+                    val at = skip("separator", Some(";")).at
+                    nextWildcard += 1
+                    EFunction(at, "_x1", EFunction(at, "_x2", {
+                        val binding = Binding(at, "_" + nextWildcard, None, EVariable(at, "_x1"))
+                        EBind(at, binding, EVariable(at, "_x2"))
+                    }))
                 } else if(current.raw == "." || current.raw == ".?") {
                     val optional = current.raw == ".?"
                     val at = skip("separator").at

@@ -143,19 +143,11 @@ class Typer {
             ELet(at, bs, body2)
 
         case EBind(at, binding, body) =>
-            // Check type annotation
             val t1 = constraints.freshTypeVariable()
-            val v = checkTerm(binding.value, t1)
-            val (constructor, t2) = unification.expand(t1) match {
-                case TApply(TConstructor(name), argument) =>
-                    if(name != "List" && name != "Task") {
-                        throw new RuntimeException("Expected List or Task, got: " + name)
-                    }
-                    name -> argument
-                case unbindableType =>
-                    throw new RuntimeException("Not bindable: " + unbindableType)
-            }
-            val t3 = TApply(TConstructor(constructor), constraints.freshTypeVariable())
+            val t2 = constraints.freshTypeVariable()
+            val v = checkTerm(binding.value, TApply(t1, t2))
+            constraints.add(TApply(TConstructor("Monad"), t1))
+            val t3 = TApply(t1, constraints.freshTypeVariable())
             val b = withVariables(Seq(binding.name -> Scheme(List(), List(), t2))) {
                 checkTerm(body, t3)
             }
@@ -163,10 +155,10 @@ class Typer {
             if(binding.scheme.exists(s => s.parameters.nonEmpty || s.constraints.nonEmpty)) {
                 throw new RuntimeException(
                     "Bind may not have type parameters or constraints: " +
-                    binding.name + " : " + binding.scheme.get
+                        binding.name + " : " + binding.scheme.get
                 )
             }
-            val s = Scheme(List(), List(), t1)
+            val s = Scheme(List(), List(), TApply(t1, t2))
             EBind(at, Binding(binding.at, binding.name, Some(s), v), b)
 
         case EList(at, elements, rest) =>
