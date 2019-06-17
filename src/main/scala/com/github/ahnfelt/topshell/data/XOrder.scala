@@ -18,10 +18,18 @@ object XOrder {
         case (a : Double, b : Double) => a.compareTo(b)
         case (a : Int, b : Int) => a.compareTo(b)
         case _ =>
-            val a = l.asInstanceOf[js.Dynamic]
-            val b = r.asInstanceOf[js.Dynamic]
-            val v = ordering.compare(a.key, b.key)
-            if(v != 0) v else ordering.compare(a.value, b.value)
+            val a = l.asInstanceOf[js.Dictionary[Any]]
+            val b = r.asInstanceOf[js.Dictionary[Any]]
+            var key = ""
+            var result = 0
+            for((k, v) <- a; w <- b.get(k)) {
+                val newResult = ordering.compare(v, w)
+                if(newResult != 0 && (result == 0 || k < key)) {
+                    key = k
+                    result = newResult
+                }
+            }
+            result
     }
 
     @JSExport

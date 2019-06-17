@@ -126,16 +126,17 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     List()
                 case TApply(TConstructor("List"), t) =>
                     List(TApply(TConstructor(c), t))
-                case TRecord(List(
-                    TypeBinding("key", Scheme(List(), List(), k)),
-                    TypeBinding("value", Scheme(List(), List(), v))
-                )) =>
-                    List(TApply(TConstructor(c), k), TApply(TConstructor(c), v))
-                case TRecord(List(
-                    TypeBinding("value", Scheme(List(), List(), v)),
-                    TypeBinding("key", Scheme(List(), List(), k))
-                )) =>
-                    List(TApply(TConstructor(c), k), TApply(TConstructor(c), v))
+                case TRecord(fields) =>
+                    fields.map {
+                        case TypeBinding(_, Scheme(List(), List(), t)) =>
+                            TApply(TConstructor(c), t)
+                        case _ =>
+                            throw new RuntimeException("Not satisfiable: " + constraint)
+                    }
+                case TVariant(variants) =>
+                    variants.flatMap { case (_, ts) =>
+                        ts.map(t => TApply(TConstructor(c), t))
+                    }
                 case TParameter(_) =>
                     List(constraint)
                 case TVariable(_) =>
