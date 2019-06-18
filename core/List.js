@@ -99,7 +99,15 @@ exports.sort = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0
 exports.repeat = n => v => new Array(n).fill(v);
 
 //: List (List a) -> List a
-exports.flatten = l => Array.prototype.concat.apply(...l);
+exports.flatten = l => {
+    var result = [];
+    for(var i = 0; i < l.length; i++) {
+        for(var j = 0; j < l[i].length; j++) {
+            result.push(l[i][j]);
+        }
+    }
+    return result;
+};
 //: (a -> List b) -> List a -> List b
 exports.flatMap = exports.then;
 

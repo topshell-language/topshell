@@ -34,7 +34,7 @@ object Syntax {
     case class ELet(at : Location, bindings : List[Binding], body : Term) extends Term
     case class EBind(at : Location, binding : Binding, body : Term) extends Term
     case class EList(at : Location, elements : List[Term], rest : Option[Term]) extends Term
-    case class EVariant(at : Location, name : String, argument : List[Term]) extends Term
+    case class EVariant(at : Location, name : String, arguments : List[Term]) extends Term
     case class ERecord(at : Location, fields : List[Binding], rest : Option[Term]) extends Term
     case class EField(at : Location, record : Term, field : String, optional : Boolean) extends Term
     case class EIf(at : Location, condition : Term, thenBody : Term, elseBody : Option[Term]) extends Term
