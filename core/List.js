@@ -102,8 +102,9 @@ exports.repeat = n => v => new Array(n).fill(v);
 exports.flatten = l => {
     var result = [];
     for(var i = 0; i < l.length; i++) {
-        for(var j = 0; j < l[i].length; j++) {
-            result.push(l[i][j]);
+        var inner = l[i];
+        for(var j = 0; j < inner.length; j++) {
+            result.push(inner[j]);
         }
     }
     return result;
