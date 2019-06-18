@@ -7,6 +7,8 @@ exports.multiLine = s => new self.tsh.Regex(s, "um");
 //: String -> Regex
 exports.multiLineIgnoringCase = s => new self.tsh.Regex(s, "ium");
 //: Regex -> String
+exports.pattern = r => r.pattern;
+//: Regex -> String
 exports.flags = r => r.flags;
 //: Regex -> String -> String -> String
 exports.replace = r => t => s => s.replace(r.cacheNonGlobal(), t);
