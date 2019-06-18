@@ -48,6 +48,32 @@ self.tsh.Lazy = class extends self.tsh.AbstractView {
     }
 };
 
+self.tsh.Regex = class extends self.tsh.AbstractView {
+    constructor(pattern, flags) {
+        super();
+        this.pattern = pattern;
+        this.flags = flags;
+        this.global = null;
+        this.nonGlobal = null;
+    }
+    cacheNonGlobal() {
+        if(this.nonGlobal === null) this.nonGlobal = new RegExp(this.pattern, this.flags);
+        return this.nonGlobal;
+    }
+    cacheGlobal(offset) {
+        if(this.global === null || this.global.lastIndex !== offset) {
+            this.global = new RegExp(this.pattern, this.flags + "g");
+            this.global.lastIndex = offset;
+        }
+        return this.global;
+    }
+    toHtml() {
+        return {_tag: "span", children: [
+            "[regex: " + JSON.stringify(this.pattern) + ", flags: " + this.flags + "]"
+        ]};
+    }
+};
+
 self.tsh.toHtml = value => {
     if(value instanceof self.tsh.AbstractView) return value.toHtml();
     if(value instanceof Function) return {_tag: "span", children: ["function"]};
