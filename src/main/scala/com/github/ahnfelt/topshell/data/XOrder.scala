@@ -20,11 +20,12 @@ object XOrder {
         case _ =>
             val a = l.asInstanceOf[js.Dictionary[Any]]
             val b = r.asInstanceOf[js.Dictionary[Any]]
-            var key = ""
-            var result = 0
-            for((k, v) <- a; w <- b.get(k)) {
+            var (key, result) = if(a.contains("_") && b.contains("_")) {
+                ("_", ordering.compare(a("_"), b("_")))
+            } else ("", 0)
+            for((k, v) <- a; w <- b.get(k) if k != "_" && (result == 0 || k < key)) {
                 val newResult = ordering.compare(v, w)
-                if(newResult != 0 && (result == 0 || k < key)) {
+                if(newResult != 0) {
                     key = k
                     result = newResult
                 }
