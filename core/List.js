@@ -83,8 +83,6 @@ exports.any = function(f) { return function(r) { return r.some(f); }; };
 exports.head = function(r) { return r.length > 0 ? self.tsh.some(r[0]) : self.tsh.none; };
 //: List a -> List a
 exports.tail = function(r) { return r.slice(1); };
-//: List a -> List a -> List a
-exports.append = function(r) { return function(a) { return r.concat(a); }; };
 
 //: (a -> b -> a) -> a -> List b -> a
 exports.foldLeft = f => z => a => a.reduce((x, y) => f(x)(y), z);
