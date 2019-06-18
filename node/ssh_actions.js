@@ -46,7 +46,7 @@ module.exports = {
         execFile(context.ssh, json.config, json.path, json.arguments, json.config.in || "", callback);
     },
     'Process.shell': (json, context, callback) => {
-        var arguments = ["-o", "BatchMode yes", context.ssh.user + "@" + context.ssh.host, json.command];
+        var arguments = ["-oBatchMode=yes", context.ssh.user + "@" + context.ssh.host, json.command];
         let child = child_process.execFile("ssh", arguments, json.config, (error, stdout, stderr) => {
             if(json.config.check !== false) callback(error, {out: stdout, error: stderr});
             else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
@@ -61,7 +61,7 @@ function execFile(ssh, config, path, arguments, stdin, callback) {
     config = config || {};
     let escape = a => "'" + a.replace(/'/g, "'\\''") + "'";
     let command = [path].concat(arguments).map(a => escape(a)).join(" ");
-    let newArguments = ["-o", "BatchMode yes", ssh.user + "@" + ssh.host, command];
+    let newArguments = ["-oBatchMode=yes", ssh.user + "@" + ssh.host, command];
     let child = child_process.execFile("ssh", newArguments, config, (error, stdout, stderr) => {
         if(config.check !== false) callback(error, {out: stdout, error: stderr});
         else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});
