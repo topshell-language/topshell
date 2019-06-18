@@ -1,11 +1,11 @@
 //: String -> Regex
 exports.of = s => new self.tsh.Regex(s, "u");
 //: String -> Regex
-exports.ignoreCase = s => new self.tsh.Regex(s, "iu");
+exports.ignoringCase = s => new self.tsh.Regex(s, "iu");
 //: String -> Regex
 exports.multiLine = s => new self.tsh.Regex(s, "um");
 //: String -> Regex
-exports.multiLineIgnoreCase = s => new self.tsh.Regex(s, "ium");
+exports.multiLineIgnoringCase = s => new self.tsh.Regex(s, "ium");
 //: Regex -> String
 exports.flags = r => r.flags;
 //: Regex -> String -> String -> String
