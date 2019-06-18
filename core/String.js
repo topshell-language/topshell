@@ -10,6 +10,8 @@ exports.padStart = n => c => s => s.padStart(n, c);
 exports.padEnd = n => c => s => s.padEnd(n, c);
 //: Int -> String -> String
 exports.repeat = n => s => s.repeat(n);
+//: String -> String
+exports.reverse = s => s.split("").reverse().join("");
 //: String -> String -> String -> String
 exports.replace = i => o => s => s.replace(i, o);
 //: String -> String -> Bool
