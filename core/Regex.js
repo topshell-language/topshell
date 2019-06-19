@@ -30,10 +30,14 @@ exports.replaceAllWith = r => f => s => s.replace(r.cacheGlobal(), function() {
 });
 //: Regex -> String -> List String
 exports.split = r => s => s.split(r.cacheNonGlobal());
+//: Regex -> String -> Maybe String
+exports.findFirst = r => s => {
+    var groups = s.match(r.cacheNonGlobal());
+    if(groups == null) return self.tsh.none;
+    return self.tsh.some(groups[0]);
+};
 //: Regex -> String -> List String
-exports.findFirst = r => s => s.match(r.cacheNonGlobal()) || [];
-//: Regex -> String -> List [List String]
-exports.findAll = r => s => exports.matchAll(r)(s).map(m => m.groups);
+exports.findAll = r => s => exports.matchAll(r)(s).map(m => m.groups[0]);
 //: Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, until: Int}
 exports.matchFirst = r => s => exports.matchFirstFrom(0)(r)(s);
 //: Int -> Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, until: Int}
