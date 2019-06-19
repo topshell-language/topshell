@@ -492,6 +492,22 @@ class Parser(file : String, tokens : Array[Token]) {
             }
             skip("bracket", Some("]"))
             result.reverse
+        } else if(current.raw == "{") {
+            val at = skip("bracket").at
+            val t1 = parseType()
+            val t2 = if(current.raw != "<=>") t1 else {
+                skip("operator", Some("<=>"))
+                parseType()
+            }
+            skip("bracket", Some("}"))
+            def splitStructure(t : Type) = t match {
+                case TApply(c, TParameter(s)) => TParameter(s) -> Some(c)
+                case TParameter(s) => TParameter(s) -> None
+                case _ => throw ParseException(at, "Expected structure, got: " + t)
+            }
+            val (s1, c1) = splitStructure(t1)
+            val (s2, c2) = splitStructure(t2)
+            List(StructureConstraint(s1, c1, s2, c2))
         } else if(ahead.raw == "." || ahead.raw == ".?") {
             val record = skip("lower").raw
             val o = skip("separator").raw

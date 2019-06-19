@@ -84,11 +84,11 @@ object Syntax {
 
         def apply(variantType : Type, label : String, fieldTypes : List[Type]) = {
             val applied = fieldTypes.foldLeft[Type](TSymbol(label))(TApply)
-            TApply(TApply(TConstructor("#"), applied), variantType)
+            TApply(TApply(TConstructor("[]"), applied), variantType)
         }
 
         def unapply(constraint : Type) = constraint match {
-            case TApply(TApply(TConstructor("#"), applied), variantType) =>
+            case TApply(TApply(TConstructor("[]"), applied), variantType) =>
                 def extract(a : Type, arguments : List[Type]) : Option[(String, List[Type])] = a match {
                     case TApply(x, y) => extract(x, y :: arguments)
                     case TSymbol(l) => Some(l -> arguments)
@@ -97,6 +97,25 @@ object Syntax {
                 extract(applied, List()).map { case (label, ts) =>
                     (variantType, label, ts)
                 }
+            case _ =>
+                None
+        }
+
+    }
+
+    object StructureConstraint {
+
+        def apply(structure1 : Type, constructor1 : Option[Type], structure2 : Type, constructor2 : Option[Type]) = {
+            val c1 = constructor1.getOrElse(TSymbol("_"))
+            val c2 = constructor2.getOrElse(TSymbol("_"))
+            TApply(TApply(TApply(TApply(TConstructor("{}"), structure1), c1), structure2), c2)
+        }
+
+        def unapply(constraint : Type) = constraint match {
+            case TApply(TApply(TApply(TApply(TConstructor("{}"), structure1), c1), structure2), c2) =>
+                val constructor1 = Some(c1).filter(!_.isInstanceOf[TSymbol])
+                val constructor2 = Some(c2).filter(!_.isInstanceOf[TSymbol])
+                Some((structure1, constructor1, structure2, constructor2))
             case _ =>
                 None
         }

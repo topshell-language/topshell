@@ -15,6 +15,10 @@ object Pretty {
             "[" + variants.map { case (n, t1) => n + t1.map(t2 => " " + showTypeEnclosed(t2)).mkString }.mkString(", ") + "]"
         case VariantConstraint(variantType, label, fieldTypes) =>
             "[" + variantType + ", " + label + fieldTypes.map(t2 => " " + showTypeEnclosed(t2)).mkString + "]"
+        case StructureConstraint(s1, c1, s2, c2) if s1 == s2 && c1 == c2 =>
+            "{" + showStructureConstraintPart(s1, c1) + "}"
+        case StructureConstraint(s1, c1, s2, c2) =>
+            "{" + showStructureConstraintPart(s1, c1) + " <=> " + showStructureConstraintPart(s2, c2) + "}"
         case TRecord(fields) =>
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
@@ -24,6 +28,11 @@ object Pretty {
         case TApply(TApply(TConstructor("->"), a), b) => a + " -> " + b
         case TApply(constructor, argument : TApply) => constructor + " (" + argument + ")"
         case TApply(constructor, argument) => constructor + " " + argument
+    }
+
+    def showStructureConstraintPart(structure : Type, constructor : Option[Type]) = (structure, constructor) match {
+        case (s, None) => showType(s)
+        case (s, Some(c)) => showType(c) + " " + showTypeEnclosed(s)
     }
 
     def showTypeEnclosed(t : Type) : String = t match {
@@ -133,6 +142,7 @@ object Pretty {
     def determinedInConstraint(constraint : Type, parameters : Boolean) : List[String] = constraint match {
         case FieldConstraint(_, _, t, _) => determinedInType(t, parameters)
         case VariantConstraint(_, _, ts) => ts.flatMap(determinedInType(_, parameters))
+        // case StructureConstraint ?
         case _ => List()
     }
 
