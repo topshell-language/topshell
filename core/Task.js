@@ -187,6 +187,23 @@ exports.both = task1 => task2 => {
     return exports.map(results => ({key: results[0], value: results[1]}))(exports.all([task1, task2]));
 };
 
+//: r1 -> Task r2 | {Task r1 <=> r2}
+exports.parallel = taskStructure => {
+    var tasks = [];
+    for(var k in taskStructure) if(Object.prototype.hasOwnProperty.call(taskStructure, k)) {
+        tasks.push(taskStructure[k]);
+    }
+    return exports.map(results => {
+        var result = {};
+        var i = 0;
+        for(var k in taskStructure) if(Object.prototype.hasOwnProperty.call(taskStructure, k)) {
+            result[k] = results[i];
+            i++;
+        }
+        return result;
+    })(exports.all(tasks));
+};
+
 //: List (Task a) -> Task (List a)
 exports.sequence = list => {
     var reversedTask = list.reduce((accumulator, task) => exports.then(tail => exports.then(head => {
