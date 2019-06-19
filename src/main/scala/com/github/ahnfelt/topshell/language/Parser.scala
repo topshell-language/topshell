@@ -382,7 +382,7 @@ class Parser(file : String, tokens : Array[Token]) {
         while(explicit && ahead.raw == "=>") explicitParameters ::= parseTypeParameter()
         val generalized = parseType()
         var constraints = List.empty[Type]
-        while(current.raw == "|") constraints ::= parseConstraint()
+        while(current.raw == "|") constraints = parseConstraint().reverse ++ constraints
         constraints = constraints.reverse
         val parameters =
             if(explicit) explicitParameters.reverse
@@ -476,9 +476,23 @@ class Parser(file : String, tokens : Array[Token]) {
         TRecord(bindings.reverse)
     }
 
-    def parseConstraint() : Type = {
+    def parseConstraint() : List[Type] = {
         skip("operator", Some("|"))
-        if(ahead.raw == "." || ahead.raw == ".?") {
+        if(current.raw == "[") {
+            skip("bracket")
+            val variant = skip("lower").raw
+            skip("separator", Some(","))
+            var result = List[Type]()
+            while(current.raw != "]") {
+                val name = skip("upper").raw
+                var arguments = List[Type]()
+                while(isAtomStartToken(current)) arguments ::= parseTypeAtom()
+                result ::= VariantConstraint(TParameter(variant), name, arguments.reverse)
+                if(current.raw == ",") skip("separator", Some(","))
+            }
+            skip("bracket", Some("]"))
+            result.reverse
+        } else if(ahead.raw == "." || ahead.raw == ".?") {
             val record = skip("lower").raw
             val o = skip("separator").raw
             val label =
@@ -486,22 +500,15 @@ class Parser(file : String, tokens : Array[Token]) {
                 else JSON.parse(skip("string").raw).asInstanceOf[String]
             skip("separator", Some(":"))
             val t = parseType()
-            FieldConstraint(TParameter(record), label, t, o == ".?")
-        } else if(ahead.raw == "/") {
-            val variant = skip("lower").raw
-            skip("operator").raw
-            val name = skip("upper").raw
-            var arguments = List[Type]()
-            while(isAtomStartToken(current)) arguments ::= parseTypeAtom()
-            VariantConstraint(TParameter(variant), name, arguments.reverse)
+            List(FieldConstraint(TParameter(record), label, t, o == ".?"))
         } else {
             val left = parseType()
             if(current.raw == "==") {
                 val o = skip("operator", Some("==")).raw
                 val right = parseType()
-                TApply(TApply(TConstructor(o), left), right)
+                List(TApply(TApply(TConstructor(o), left), right))
             } else {
-                left
+                List(left)
             }
         }
     }

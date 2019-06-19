@@ -14,7 +14,7 @@ object Pretty {
         case TVariant(variants) =>
             "[" + variants.map { case (n, t1) => n + t1.map(t2 => " " + showTypeEnclosed(t2)).mkString }.mkString(", ") + "]"
         case VariantConstraint(variantType, label, fieldTypes) =>
-            variantType + " / " + label + fieldTypes.map(t2 => " " + showTypeEnclosed(t2)).mkString
+            "[" + variantType + ", " + label + fieldTypes.map(t2 => " " + showTypeEnclosed(t2)).mkString + "]"
         case TRecord(fields) =>
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
