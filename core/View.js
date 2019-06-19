@@ -95,3 +95,29 @@ exports.tree = exports.by(data => {
         return new self.tsh.Tag(self.tsh.toHtml(data));
     }
 });
+
+//: List (List a) -> View
+exports.matrix = exports.by(data => {
+    let rows = [];
+    for(let i = 0; i < data.length; i++) {
+        var row = [];
+        for(let j = 0; j < data[i].length; j++) {
+            row.push(data[i][j]);
+        }
+        rows.push(row);
+    }
+    let cell = c => ({_tag: "td", children: [
+        {_tag: ">style", key: "padding", value: "5px 10px"},
+        {_tag: ">style", key: "border", value: "1px solid #333"},
+        self.tsh.toHtml(c)
+    ]});
+    let toRow = r => ({_tag: "tr", children: r.map(cell)});
+    return new self.tsh.Tag({_tag: "table", children: [
+        {_tag: ">attribute", key: "border", value: "0"},
+        {_tag: ">attribute", key: "cellspacing", value: "0"},
+        {_tag: ">attribute", key: "cellpadding", value: "0"},
+        {_tag: ">style", key: "text-align", value: "center"},
+        {_tag: ">style", key: "border-collapse", value: "collapse"},
+        {_tag: "tbody", children: rows.map(toRow)},
+    ]});
+});
