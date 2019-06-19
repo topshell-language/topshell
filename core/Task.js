@@ -182,6 +182,11 @@ exports.all = tasks => new self.tsh.Task((w, t, c) => {
     }
 });
 
+//: Task a -> Task b -> Task {key: a, value: b}
+exports.both = task1 => task2 => {
+    return exports.map(results => ({key: results[0], value: results[1]}))(exports.all([task1, task2]));
+};
+
 //: List (Task a) -> Task (List a)
 exports.sequence = list => {
     var reversedTask = list.reduce((accumulator, task) => exports.then(tail => exports.then(head => {

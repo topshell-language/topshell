@@ -30,7 +30,7 @@ exports.replaceAllWith = r => f => s => s.replace(r.cacheGlobal(), function() {
 });
 //: Regex -> String -> List String
 exports.split = r => s => s.split(r.cacheNonGlobal());
-//: Regex -> String -> Maybe String
+//: Regex -> String -> [None, Some String]
 exports.findFirst = r => s => {
     var groups = s.match(r.cacheNonGlobal());
     if(groups == null) return self.tsh.none;
@@ -38,9 +38,9 @@ exports.findFirst = r => s => {
 };
 //: Regex -> String -> List String
 exports.findAll = r => s => exports.matchAll(r)(s).map(m => m.groups[0]);
-//: Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, until: Int}
+//: Regex -> String -> [None, Some {groups: List String, matched: String, input: String, from: Int, until: Int}]
 exports.matchFirst = r => s => exports.matchFirstFrom(0)(r)(s);
-//: Int -> Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, until: Int}
+//: Int -> Regex -> String -> [None, Some {groups: List String, matched: String, input: String, from: Int, until: Int}]
 exports.matchFirstFrom = o => r => s => {
     var result = [];
     var groups = null;
