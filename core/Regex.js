@@ -14,19 +14,19 @@ exports.flags = r => r.flags;
 exports.replaceFirst = r => t => s => s.replace(r.cacheNonGlobal(), t);
 //: Regex -> String -> String -> String
 exports.replaceAll = r => t => s => s.replace(r.cacheGlobal(), t);
-//: Regex -> ({groups: List String, matched: String, input: String, from: Int, to: Int} -> String) -> String -> String
+//: Regex -> ({groups: List String, matched: String, input: String, from: Int, until: Int} -> String) -> String -> String
 exports.replaceFirstWith = r => f => s => s.replace(r.cacheNonGlobal(), function() {
     var groups = Array.prototype.slice.call(arguments, 0, arguments.length - 2);
     var from = arguments[arguments.length - 2];
-    var to = from + arguments[0].length;
-    return f({groups: groups, matched: groups[0], input: s, from: from, to: to});
+    var until = from + arguments[0].length;
+    return f({groups: groups, matched: groups[0], input: s, from: from, until: until});
 });
-//: Regex -> ({groups: List String, matched: String, input: String, from: Int, to: Int} -> String) -> String -> String
+//: Regex -> ({groups: List String, matched: String, input: String, from: Int, until: Int} -> String) -> String -> String
 exports.replaceAllWith = r => f => s => s.replace(r.cacheGlobal(), function() {
     var groups = Array.prototype.slice.call(arguments, 0, arguments.length - 2);
     var from = arguments[arguments.length - 2];
-    var to = from + arguments[0].length;
-    return f({groups: groups, matched: groups[0], input: s, from: from, to: to});
+    var until = from + arguments[0].length;
+    return f({groups: groups, matched: groups[0], input: s, from: from, until: until});
 });
 //: Regex -> String -> List String
 exports.split = r => s => s.split(r.cacheNonGlobal());
@@ -34,27 +34,27 @@ exports.split = r => s => s.split(r.cacheNonGlobal());
 exports.findFirst = r => s => s.match(r.cacheNonGlobal()) || [];
 //: Regex -> String -> List [List String]
 exports.findAll = r => s => exports.matchAll(r)(s).map(m => m.groups);
-//: Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, to: Int}
+//: Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, until: Int}
 exports.matchFirst = r => s => exports.matchFirstFrom(0)(r)(s);
-//: Int -> Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, to: Int}
+//: Int -> Regex -> String -> Maybe {groups: List String, matched: String, input: String, from: Int, until: Int}
 exports.matchFirstFrom = o => r => s => {
     var result = [];
     var groups = null;
     var cached = r.cacheGlobal(o);
     if((groups = cached.exec(s)) != null) {
-        return self.tsh.some({groups: groups, matched: groups[0], input: s, from: groups.index, to: cached.lastIndex});
+        return self.tsh.some({groups: groups, matched: groups[0], input: s, from: groups.index, until: cached.lastIndex});
     }
     return self.tsh.none;
 };
-//: Regex -> String -> List {groups: List String, matched: String, input: String, from: Int, to: Int}
+//: Regex -> String -> List {groups: List String, matched: String, input: String, from: Int, until: Int}
 exports.matchAll = r => s => exports.matchAllFrom(0)(r)(s);
-//: Int -> Regex -> String -> List {groups: List String, matched: String, input: String, from: Int, to: Int}
+//: Int -> Regex -> String -> List {groups: List String, matched: String, input: String, from: Int, until: Int}
 exports.matchAllFrom = o => r => s => {
     var result = [];
     var groups = null;
     var cached = r.cacheGlobal(o);
     while((groups = cached.exec(s)) != null) {
-        result.push({groups: groups, matched: groups[0], input: s, from: groups.index, to: cached.lastIndex});
+        result.push({groups: groups, matched: groups[0], input: s, from: groups.index, until: cached.lastIndex});
     }
     return result;
 };
