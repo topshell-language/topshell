@@ -194,7 +194,7 @@ exports.parallel = taskStructure => {
         tasks.push(taskStructure[k]);
     }
     return exports.map(results => {
-        var result = {};
+        var result = Array.isArray(taskStructure) ? [] : {};
         var i = 0;
         for(var k in taskStructure) if(Object.prototype.hasOwnProperty.call(taskStructure, k)) {
             result[k] = results[i];

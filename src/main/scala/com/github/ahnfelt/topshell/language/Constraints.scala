@@ -78,9 +78,14 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     }
                     unification.unify(TRecord(ts), s2)
                     List()
+                case TApply(TConstructor("List"), elementType) =>
+                    val t = freshTypeVariable()
+                    unification.unify(c1.map(TApply(_, t)).getOrElse(t), elementType)
+                    unification.unify(TApply(TConstructor("List"), c2.map(TApply(_, t)).getOrElse(t)), s2)
+                    List()
                 case TParameter(_) => List(constraint)
                 case TVariable(_) => List(constraint)
-                case _ => throw new RuntimeException("Not a record: " + s1)
+                case _ => throw new RuntimeException("Not a record or list: " + s1)
             }
             val cs = checkStructure(s1, c1, s2, c2)
             if(cs.isEmpty) cs else checkStructure(s2, c2, s1, c1)

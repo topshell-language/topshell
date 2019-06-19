@@ -128,6 +128,25 @@ exports.zipWith = f => a => b => {
     return result;
 };
 
+//: r1 -> List r2 | {List r1 <=> r2}
+exports.zipped = structure => {
+    var list = [];
+    var i = 0;
+    while(true) {
+        var o = Array.isArray(structure) ? [] : {};
+        var any = false;
+        for(var k in structure) if(Object.prototype.hasOwnProperty.call(structure, k)) {
+            var v = structure[k];
+            if(i >= v.length) return list;
+            o[k] = v[i];
+            any = true;
+        }
+        if(!any) return list;
+        list.push(o);
+        i++;
+    }
+};
+
 //: (a -> Bool) -> List a -> List a
 exports.takeWhile = f => a => {
     let result = [];
