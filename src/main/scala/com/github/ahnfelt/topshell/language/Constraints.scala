@@ -70,20 +70,23 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             def checkStructure(s1 : Type, c1 : Option[Type], s2 : Type, c2 : Option[Type]) : Option[List[Type]] = {
                 s1 match {
                     case TRecord(fields) =>
-                        val ts = fields.map { f =>
+                        val (newCs, newFields) = fields.map { f =>
                             if(f.scheme.parameters.nonEmpty) throw new RuntimeException("Not a simple record: " + s1)
                             if(f.scheme.constraints.nonEmpty) throw new RuntimeException("Not a simple record: " + s1)
                             val t = freshTypeVariable()
                             unification.unify(c1.map(TApply(_, t)).getOrElse(t), f.scheme.generalized)
+                            val replacement = Map[Type, Type](TParameter(p) -> unification.expand(t))
+                            cs.map(unification.expand).map(unification.replace(_, replacement)) ->
                             TypeBinding(f.name, Scheme(List(), List(), c2.map(TApply(_, t)).getOrElse(t)))
-                        }
-                        unification.unify(TRecord(ts), s2)
-                        Some(cs) // TODO: Replicate for each field, instantiate with t
+                        }.unzip
+                        unification.unify(TRecord(newFields), s2)
+                        Some(newCs.flatten.map(unification.expand))
                     case TApply(TConstructor("List"), elementType) =>
                         val t = freshTypeVariable()
                         unification.unify(c1.map(TApply(_, t)).getOrElse(t), elementType)
                         unification.unify(TApply(TConstructor("List"), c2.map(TApply(_, t)).getOrElse(t)), s2)
-                        Some(cs) // TODO: Instantiate with t
+                        val replacement = Map[Type, Type](TParameter(p) -> unification.expand(t))
+                        Some(cs.map(unification.expand).map(unification.replace(_, replacement)))
                     case TParameter(_) => None
                     case TVariable(_) => None
                     case _ => throw new RuntimeException("Not a record or list: " + s1)
