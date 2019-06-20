@@ -57,7 +57,7 @@ object Processor {
         val emitted = time("emit") {
             Emitter.emit(currentVersion, topImports, topSymbols)
         }
-        println(emitted)
+        //println(emitted)
 
         time("cache") {
             val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)

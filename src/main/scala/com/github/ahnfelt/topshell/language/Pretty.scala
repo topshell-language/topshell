@@ -89,12 +89,12 @@ object Pretty {
             variants.map { case (_, ts) => ts.map(freeParameterNames(_, expand)).fold(Set.empty)(_ ++ _) }.
                 fold(Set.empty)(_ ++ _)
         case TRecord(fields) =>
-            fields.map(f =>
-                (
-                    freeParameterNames(f.scheme.generalized, expand) ::
-                    f.scheme.constraints.map(freeParameterNames(_, expand))
-                ).fold(Set.empty)(_ ++ _) -- f.scheme.parameters.map(_.name).toSet
-            ).fold(Set.empty)(_ ++ _)
+            fields.map(f => freeParameterNamesInScheme(f.scheme, expand)).fold(Set.empty)(_ ++ _)
+    }
+
+    def freeParameterNamesInScheme(scheme : Scheme, expand : Int => Option[Type]) : Set[String] = {
+        (freeParameterNames(scheme.generalized, expand) :: scheme.constraints.map(freeParameterNames(_, expand))).
+            fold(Set.empty)(_ ++ _) -- scheme.parameters.map(_.name).toSet
     }
 
     def replace(search : Type, replacement : Map[Type, Type], expand : Int => Option[Type]) : Type = search match {

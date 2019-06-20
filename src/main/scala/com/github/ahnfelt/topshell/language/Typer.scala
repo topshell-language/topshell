@@ -49,6 +49,14 @@ class Typer {
         val result = symbols.zipWithIndex.map { case (s, i) => if(s.error.nonEmpty) s else {
             val expected1 = s.binding.scheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
             try {
+
+                for(scheme <- s.binding.scheme) {
+                    val ambiguous = Pretty.freeParameterNamesInScheme(scheme, unification.sub.get).toList
+                    if(ambiguous.nonEmpty) {
+                        throw new RuntimeException("Ambiguous " + ambiguous.mkString(", ") + " in: " + scheme)
+                    }
+                }
+
                 s.binding.scheme.foreach(constraints.checkAmbiguousScheme)
                 if(s.binding.scheme.isEmpty) schemes += s.binding.name -> Scheme(List(), List(), expected1)
                 withVariables(schemes.toList) {

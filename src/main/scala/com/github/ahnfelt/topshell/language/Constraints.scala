@@ -318,7 +318,6 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
     def checkAmbiguousScheme(annotation : Scheme) : Unit = {
         val determined = Pretty.determinedInScheme(annotation, true).toSet
         annotation.parameters.find(p => !determined(p.name)).foreach { p =>
-            println(Pretty.showScheme(annotation, true))
             throw new RuntimeException("Ambiguous " + p.name + " in: " + annotation)
         }
         checkAmbiguousSchemesInType(annotation.generalized)
