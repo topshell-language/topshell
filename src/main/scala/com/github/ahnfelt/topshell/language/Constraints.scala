@@ -66,29 +66,30 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 case _ =>
                     throw new RuntimeException("Non-variant: " + constraint)
             }
-        case StructureConstraint(s1, c1, s2, c2) =>
-            def checkStructure(s1 : Type, c1 : Option[Type], s2 : Type, c2 : Option[Type]) : List[Type] = s1 match {
-                case TRecord(fields) =>
-                    val ts = fields.map { f =>
-                        if(f.scheme.parameters.nonEmpty) throw new RuntimeException("Not a simple record: " + s1)
-                        if(f.scheme.constraints.nonEmpty) throw new RuntimeException("Not a simple record: " + s1)
+        case StructureConstraint(p, s1, c1, s2, c2, cs) =>
+            def checkStructure(s1 : Type, c1 : Option[Type], s2 : Type, c2 : Option[Type]) : Option[List[Type]] = {
+                s1 match {
+                    case TRecord(fields) =>
+                        val ts = fields.map { f =>
+                            if(f.scheme.parameters.nonEmpty) throw new RuntimeException("Not a simple record: " + s1)
+                            if(f.scheme.constraints.nonEmpty) throw new RuntimeException("Not a simple record: " + s1)
+                            val t = freshTypeVariable()
+                            unification.unify(c1.map(TApply(_, t)).getOrElse(t), f.scheme.generalized)
+                            TypeBinding(f.name, Scheme(List(), List(), c2.map(TApply(_, t)).getOrElse(t)))
+                        }
+                        unification.unify(TRecord(ts), s2)
+                        Some(cs) // TODO: Replicate for each field, instantiate with t
+                    case TApply(TConstructor("List"), elementType) =>
                         val t = freshTypeVariable()
-                        unification.unify(c1.map(TApply(_, t)).getOrElse(t), f.scheme.generalized)
-                        TypeBinding(f.name, Scheme(List(), List(), c2.map(TApply(_, t)).getOrElse(t)))
-                    }
-                    unification.unify(TRecord(ts), s2)
-                    List()
-                case TApply(TConstructor("List"), elementType) =>
-                    val t = freshTypeVariable()
-                    unification.unify(c1.map(TApply(_, t)).getOrElse(t), elementType)
-                    unification.unify(TApply(TConstructor("List"), c2.map(TApply(_, t)).getOrElse(t)), s2)
-                    List()
-                case TParameter(_) => List(constraint)
-                case TVariable(_) => List(constraint)
-                case _ => throw new RuntimeException("Not a record or list: " + s1)
+                        unification.unify(c1.map(TApply(_, t)).getOrElse(t), elementType)
+                        unification.unify(TApply(TConstructor("List"), c2.map(TApply(_, t)).getOrElse(t)), s2)
+                        Some(cs) // TODO: Instantiate with t
+                    case TParameter(_) => None
+                    case TVariable(_) => None
+                    case _ => throw new RuntimeException("Not a record or list: " + s1)
+                }
             }
-            val cs = checkStructure(s1, c1, s2, c2)
-            if(cs.isEmpty) cs else checkStructure(s2, c2, s1, c1)
+            checkStructure(s1, c1, s2, c2).orElse(checkStructure(s2, c2, s1, c1)).getOrElse(List(constraint))
         case TApply(TApply(TConstructor("=="), a), b) =>
             unification.unify(a, b)
             List()

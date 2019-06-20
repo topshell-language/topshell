@@ -128,7 +128,7 @@ exports.zipWith = f => a => b => {
     return result;
 };
 
-//: r1 -> List r2 | {List r1 <=> r2}
+//: r1 -> List r2 | {r1 : List x, r2 : x}
 exports.zipped = structure => {
     var list = [];
     var i = 0;

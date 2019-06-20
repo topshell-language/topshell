@@ -187,7 +187,7 @@ exports.both = task1 => task2 => {
     return exports.map(results => ({key: results[0], value: results[1]}))(exports.all([task1, task2]));
 };
 
-//: r1 -> Task r2 | {Task r1 <=> r2}
+//: r1 -> Task r2 | {r1 : Task x, r2 : x}
 exports.parallel = taskStructure => {
     var tasks = [];
     for(var k in taskStructure) if(Object.prototype.hasOwnProperty.call(taskStructure, k)) {

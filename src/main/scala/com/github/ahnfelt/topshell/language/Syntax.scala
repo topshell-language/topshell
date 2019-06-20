@@ -105,17 +105,28 @@ object Syntax {
 
     object StructureConstraint {
 
-        def apply(structure1 : Type, constructor1 : Option[Type], structure2 : Type, constructor2 : Option[Type]) = {
+        def apply(
+            parameter : String,
+            structure1 : Type,
+            constructor1 : Option[Type],
+            structure2 : Type,
+            constructor2 : Option[Type],
+            constraints : List[Type]
+        ) = {
             val c1 = constructor1.getOrElse(TSymbol("_"))
             val c2 = constructor2.getOrElse(TSymbol("_"))
-            TApply(TApply(TApply(TApply(TConstructor("{}"), structure1), c1), structure2), c2)
+            TRecord(List(TypeBinding("{!}", Scheme(List(TypeParameter(parameter, KStar())), constraints,
+                TApply(TApply(TApply(TApply(TConstructor("{!}"), structure1), c1), structure2), c2)
+            ))))
         }
 
         def unapply(constraint : Type) = constraint match {
-            case TApply(TApply(TApply(TApply(TConstructor("{}"), structure1), c1), structure2), c2) =>
+            case TRecord(List(TypeBinding("{!}", Scheme(List(TypeParameter(parameter, KStar())), constraints,
+                TApply(TApply(TApply(TApply(TConstructor("{!}"), structure1), c1), structure2), c2)
+            )))) =>
                 val constructor1 = Some(c1).filter(!_.isInstanceOf[TSymbol])
                 val constructor2 = Some(c2).filter(!_.isInstanceOf[TSymbol])
-                Some((structure1, constructor1, structure2, constructor2))
+                Some((parameter, structure1, constructor1, structure2, constructor2, constraints))
             case _ =>
                 None
         }

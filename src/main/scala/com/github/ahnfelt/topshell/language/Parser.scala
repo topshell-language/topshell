@@ -381,9 +381,7 @@ class Parser(file : String, tokens : Array[Token]) {
         var explicitParameters = List.empty[TypeParameter]
         while(explicit && ahead.raw == "=>") explicitParameters ::= parseTypeParameter()
         val generalized = parseType()
-        var constraints = List.empty[Type]
-        while(current.raw == "|") constraints = parseConstraint().reverse ++ constraints
-        constraints = constraints.reverse
+        val constraints = parseConstraints()
         val parameters =
             if(explicit) explicitParameters.reverse
             else Pretty.freeParameterNames(generalized, _ => None).toList.sorted.map(TypeParameter(_, KStar()))
@@ -476,6 +474,12 @@ class Parser(file : String, tokens : Array[Token]) {
         TRecord(bindings.reverse)
     }
 
+    def parseConstraints() : List[Type] = {
+        var constraints = List.empty[Type]
+        while(current.raw == "|") constraints = parseConstraint().reverse ++ constraints
+        constraints.reverse
+    }
+
     def parseConstraint() : List[Type] = {
         skip("operator", Some("|"))
         if(current.raw == "[") {
@@ -494,20 +498,26 @@ class Parser(file : String, tokens : Array[Token]) {
             result.reverse
         } else if(current.raw == "{") {
             val at = skip("bracket").at
+            val s1 = skip("lower").raw
+            skip("separator", Some(":"))
             val t1 = parseType()
-            val t2 = if(current.raw != "<=>") t1 else {
-                skip("operator", Some("<=>"))
-                parseType()
+            val (s2, t2) = if(current.raw != ",") s1 -> t1 else {
+                skip("separator", Some(","))
+                val s2 = skip("lower").raw
+                skip("separator", Some(":"))
+                s2 -> parseType()
             }
+            val constraints = parseConstraints()
             skip("bracket", Some("}"))
             def splitStructure(t : Type) = t match {
-                case TApply(c, TParameter(s)) => TParameter(s) -> Some(c)
-                case TParameter(s) => TParameter(s) -> None
+                case TApply(c, TParameter(s)) => Some(c) -> s
+                case TParameter(s) => None -> s
                 case _ => throw ParseException(at, "Expected structure, got: " + t)
             }
-            val (s1, c1) = splitStructure(t1)
-            val (s2, c2) = splitStructure(t2)
-            List(StructureConstraint(s1, c1, s2, c2))
+            val (c1, p1) = splitStructure(t1)
+            val (c2, p2) = splitStructure(t2)
+            if(p1 != p2) throw ParseException(at, "Structure parameter mismatch: " + p1 + " vs. " + p2)
+            List(StructureConstraint(p1, TParameter(s1), c1, TParameter(s2), c2, constraints))
         } else if(ahead.raw == "." || ahead.raw == ".?") {
             val record = skip("lower").raw
             val o = skip("separator").raw

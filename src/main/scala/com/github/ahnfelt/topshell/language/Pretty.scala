@@ -15,10 +15,12 @@ object Pretty {
             "[" + variants.map { case (n, t1) => n + t1.map(t2 => " " + showTypeEnclosed(t2)).mkString }.mkString(", ") + "]"
         case VariantConstraint(variantType, label, fieldTypes) =>
             "[" + variantType + ", " + label + fieldTypes.map(t2 => " " + showTypeEnclosed(t2)).mkString + "]"
-        case StructureConstraint(s1, c1, s2, c2) if s1 == s2 && c1 == c2 =>
-            "{" + showStructureConstraintPart(s1, c1) + "}"
-        case StructureConstraint(s1, c1, s2, c2) =>
-            "{" + showStructureConstraintPart(s1, c1) + " <=> " + showStructureConstraintPart(s2, c2) + "}"
+        case StructureConstraint(p, s1, c1, s2, c2, cs) if s1 == s2 && c1 == c2 =>
+            val x = cs.map(" | " + showType(_)).mkString
+            "{" + showStructureConstraintPart(p, s1, c1) + x + "}"
+        case StructureConstraint(p, s1, c1, s2, c2, cs) =>
+            val x = cs.map(" | " + showType(_)).mkString
+            "{" + showStructureConstraintPart(p, s1, c1) + ", " + showStructureConstraintPart(p, s2, c2) + x + "}"
         case TRecord(fields) =>
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
@@ -30,9 +32,8 @@ object Pretty {
         case TApply(constructor, argument) => constructor + " " + argument
     }
 
-    def showStructureConstraintPart(structure : Type, constructor : Option[Type]) = (structure, constructor) match {
-        case (s, None) => showType(s)
-        case (s, Some(c)) => showType(c) + " " + showTypeEnclosed(s)
+    def showStructureConstraintPart(parameter : String, structure : Type, constructor : Option[Type]) = {
+        showType(structure) + " : " + constructor.map(showType(_) + " ").getOrElse("") + parameter
     }
 
     def showTypeEnclosed(t : Type) : String = t match {
