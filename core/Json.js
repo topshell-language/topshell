@@ -18,6 +18,10 @@ exports.toMap = json => {
 };
 //: Map String Json -> Json
 exports.fromMap = map => { var r = {}; XMap.toList(map).forEach(p => r[p.key] = p.value); return r; };
+//: Json -> List Json
+exports.toList = json => json;
+//: List Json -> Json
+exports.fromList = list => list;
 //: Int -> Json -> [None, Some Json]
 exports.at = index => json =>
     index >= 0 && index < json.length ? self.tsh.some(json[index]) : self.tsh.none;
