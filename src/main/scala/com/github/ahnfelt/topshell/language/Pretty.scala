@@ -52,7 +52,7 @@ object Pretty {
     }
 
     def renameParameterNames(scheme : Scheme, expand : Int => Option[Type]) = {
-        val used = usedParameterNames(scheme.generalized, expand)
+        val used = usedParameterNamesInScheme(scheme, expand)
         val alpha = alphabet.filterNot(used)
         val pairs = scheme.parameters.map(_.name).zip(alpha).map { case (k, v) => TParameter(k) -> TParameter(v) }
         val replacement = pairs.toMap[Type, Type]
@@ -74,8 +74,13 @@ object Pretty {
         case TApply(constructor, argument) =>
             usedParameterNames(constructor, expand) ++ usedParameterNames(argument, expand)
         case TRecord(fields) =>
-            fields.map(f => f.scheme.parameters.map(_.name).toSet ++ usedParameterNames(f.scheme.generalized, expand)).
-                fold(Set.empty)(_ ++ _)
+            fields.map(f => usedParameterNamesInScheme(f.scheme, expand)).fold(Set.empty)(_ ++ _)
+    }
+
+    def usedParameterNamesInScheme(scheme : Scheme, expand : Int => Option[Type]) : Set[String] = {
+        scheme.parameters.map(_.name).toSet ++
+        usedParameterNames(scheme.generalized, expand) ++
+        scheme.constraints.map(usedParameterNames(_, expand)).fold(Set.empty)(_ ++ _)
     }
 
     def freeParameterNames(search : Type, expand : Int => Option[Type]) : Set[String] = search match {

@@ -516,8 +516,10 @@ class Parser(file : String, tokens : Array[Token]) {
             }
             val (c1, p1) = splitStructure(t1)
             val (c2, p2) = splitStructure(t2)
+            val c = StructureConstraint(p1, TParameter(s1), c1, TParameter(s2), c2, constraints)
             if(p1 != p2) throw ParseException(at, "Structure parameter mismatch: " + p1 + " vs. " + p2)
-            List(StructureConstraint(p1, TParameter(s1), c1, TParameter(s2), c2, constraints))
+            if(p1 == s1 || p1 == s2) throw ParseException(at, "Confusing use of " + p1 + " in: " + c)
+            List(c)
         } else if(ahead.raw == "." || ahead.raw == ".?") {
             val record = skip("lower").raw
             val o = skip("separator").raw
