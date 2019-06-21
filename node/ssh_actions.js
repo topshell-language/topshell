@@ -3,38 +3,38 @@ var child_process = require('child_process');
 
 module.exports = {
     'File.readText': (json, context, callback) => {
-        execFile(context.ssh, json.config, "cat", [json.path], "", false, (error, result) => {
+        execFile(context.ssh, json.config, "cat", ["--", json.path], "", false, (error, result) => {
             if(error == null) callback(void 0, result.out);
             else callback(error, result);
         });
     },
     'File.writeText': (json, context, callback) => {
         execFile(context.ssh, json.config, "dd", ["of=" + json.path], json.contents, false, (error, result) => {
-            if(error == null) callback(void 0, "");
+            if(error == null) callback(void 0, {});
             else callback(error, result);
         });
     },
     'File.appendText': (json, context, callback) => {
         execFile(context.ssh, json.config, "dd", ["conv=notrunc", "oflag=append", "of=" + json.path], json.contents, false, (error, result) => {
-            if(error == null) callback(void 0, "");
+            if(error == null) callback(void 0, {});
             else callback(error, result);
         });
     },
     'File.readBytes': (json, context, callback) => {
-        execFile(context.ssh, json.config, "cat", [json.path], "", true, (error, result) => {
+        execFile(context.ssh, json.config, "cat", ["--", json.path], "", true, (error, result) => {
             if(error == null) callback(void 0, result.out.toString('hex'));
             else callback(error, result);
         });
     },
     'File.writeBytes': (json, context, callback) => {
         execFile(context.ssh, json.config, "dd", ["of=" + json.path], Buffer.from(json.contents, 'hex'), false, (error, result) => {
-            if(error == null) callback(void 0, "");
+            if(error == null) callback(void 0, {});
             else callback(error, result);
         });
     },
     'File.appendBytes': (json, context, callback) => {
         execFile(context.ssh, json.config, "dd", ["conv=notrunc", "oflag=append", "of=" + json.path], Buffer.from(json.contents, 'hex'), false, (error, result) => {
-            if(error == null) callback(void 0, "");
+            if(error == null) callback(void 0, {});
             else callback(error, result);
         });
     },
@@ -44,8 +44,14 @@ module.exports = {
             else callback(error, result);
         });
     },
+    'File.copy': (json, context, callback) => {
+        execFile(context.ssh, json.config, "cp", ["-R", "--", json.path, json.target], "", false, (error, result) => {
+            if(error == null) callback(void 0, {});
+            else callback(error, result);
+        });
+    },
     'File.listStatus': (json, context, callback) => {
-        execFile(context.ssh, json.config, "ls", ["--almost-all", "--escape", "--quote", "--file-type", json.path], "", false, (error, result) => {
+        execFile(context.ssh, json.config, "ls", ["--almost-all", "--escape", "--quote", "--file-type", "--", json.path], "", false, (error, result) => {
             function parse(f) {
                 // TODO: JSON.parse isn't quite the right parser here
                 if(f.endsWith("\"")) return {name: JSON.parse(f), isFile: true, isDirectory: false};
@@ -56,7 +62,7 @@ module.exports = {
         });
     },
     'File.status': (json, context, callback) => {
-        execFile(context.ssh, json.config, "ls", ["--almost-all", "--escape", "--quote", "--file-type", "--directory", json.path], "", false, (error, result) => {
+        execFile(context.ssh, json.config, "ls", ["--almost-all", "--escape", "--quote", "--file-type", "--directory", "--", json.path], "", false, (error, result) => {
             function parse(f) {
                 // TODO: JSON.parse isn't quite the right parser here
                 if(f.endsWith("\"")) return {name: JSON.parse(f), isFile: true, isDirectory: false};

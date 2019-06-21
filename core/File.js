@@ -10,6 +10,8 @@ exports.readBytes = path => self.tsh.action("File.readBytes")({path: path}).map(
 exports.writeBytes = path => contents => self.tsh.action("File.writeBytes")({path: path, contents: self.tsh.toHex(contents)});
 //: String -> Bytes -> Task {}
 exports.appendBytes = path => contents => self.tsh.action("File.appendBytes")({path: path, contents: self.tsh.toHex(contents)});
+//: String -> String -> Task {}
+exports.copy = fromPath => toPath => self.tsh.action("File.copy")({path: fromPath, target: toPath});
 //: String -> Task (List String)
 exports.list = path => self.tsh.action("File.list")({path: path});
 //: String -> Task (List {name: String, isFile: Bool, isDirectory: Bool})

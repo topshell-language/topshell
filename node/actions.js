@@ -22,6 +22,9 @@ module.exports = {
     'File.appendBytes': (json, context, callback) => {
         fs.appendFile(json.path, Buffer.from(json.contents, 'hex'), callback);
     },
+    'File.copy': (json, context, callback) => {
+        fs.copyFile(json.path, json.target, callback);
+    },
     'File.list': (json, context, callback) => {
         fs.readdir(json.path, callback);
     },
