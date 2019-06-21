@@ -12,6 +12,12 @@ exports.writeBytes = path => contents => self.tsh.action("File.writeBytes")({pat
 exports.appendBytes = path => contents => self.tsh.action("File.appendBytes")({path: path, contents: self.tsh.toHex(contents)});
 //: String -> String -> Task {}
 exports.copy = fromPath => toPath => self.tsh.action("File.copy")({path: fromPath, target: toPath});
+//: String -> Task {}
+exports.delete = path => self.tsh.action("File.delete")({path: path});
+//: String -> Task {}
+exports.createDirectory = path => self.tsh.action("File.createDirectory")({path: path});
+//: String -> Task {}
+exports.deleteDirectory = path => self.tsh.action("File.deleteDirectory")({path: path});
 //: String -> Task (List String)
 exports.list = path => self.tsh.action("File.list")({path: path});
 //: String -> Task (List {name: String, isFile: Bool, isDirectory: Bool})

@@ -25,6 +25,15 @@ module.exports = {
     'File.copy': (json, context, callback) => {
         fs.copyFile(json.path, json.target, callback);
     },
+    'File.createDirectory': (json, context, callback) => {
+        fs.mkdir(json.path, callback);
+    },
+    'File.deleteDirectory': (json, context, callback) => {
+        fs.rmdir(json.path, callback);
+    },
+    'File.delete': (json, context, callback) => {
+        fs.unlink(json.path, callback);
+    },
     'File.list': (json, context, callback) => {
         fs.readdir(json.path, callback);
     },

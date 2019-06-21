@@ -38,15 +38,33 @@ module.exports = {
             else callback(error, result);
         });
     },
-    'File.list': (json, context, callback) => {
-        execFile(context.ssh, json.config, "ls", [json.path], "", false, (error, result) => {
-            if(error == null) callback(void 0, result.out.split("\n").filter(f => f.length !== 0));
-            else callback(error, result);
-        });
-    },
     'File.copy': (json, context, callback) => {
         execFile(context.ssh, json.config, "cp", ["-R", "--", json.path, json.target], "", false, (error, result) => {
             if(error == null) callback(void 0, {});
+            else callback(error, result);
+        });
+    },
+    'File.createDirectory': (json, context, callback) => {
+        execFile(context.ssh, json.config, "mkdir", ["--", json.path], "", false, (error, result) => {
+            if(error == null) callback(void 0, {});
+            else callback(error, result);
+        });
+    },
+    'File.deleteDirectory': (json, context, callback) => {
+        execFile(context.ssh, json.config, "rmdir", ["--", json.path], "", false, (error, result) => {
+            if(error == null) callback(void 0, {});
+            else callback(error, result);
+        });
+    },
+    'File.delete': (json, context, callback) => {
+        execFile(context.ssh, json.config, "rm", ["--", json.path], "", false, (error, result) => {
+            if(error == null) callback(void 0, {});
+            else callback(error, result);
+        });
+    },
+    'File.list': (json, context, callback) => {
+        execFile(context.ssh, json.config, "ls", [json.path], "", false, (error, result) => {
+            if(error == null) callback(void 0, result.out.split("\n").filter(f => f.length !== 0));
             else callback(error, result);
         });
     },
