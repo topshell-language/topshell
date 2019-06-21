@@ -49,7 +49,7 @@ exports.fetchText = exports._fetchThen(r => r.text());
 //: c -> Task Json | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetchJson = exports._fetchThen(r => r.json().then(j => Promise.resolve(j)));
 //: c -> Task Bytes | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
-exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
+exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8Array(b))));
 
 exports._processResponse = f => response => new self.tsh.Task((w, t, c) => {
     var canceled = false;
@@ -70,7 +70,7 @@ exports.text = exports._processResponse(r => r.text());
 //: Http -> Task Json
 exports.json = exports._processResponse(r => r.json().then(j => Promise.resolve(j)));
 //: Http -> Task Bytes
-exports.bytes = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8ClampedArray(b))));
+exports.bytes = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8Array(b))));
 
 //: String -> Http -> [None, Some String]
 exports.header = header => response => response.headers.get(header);

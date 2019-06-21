@@ -109,7 +109,7 @@ self.tsh.Regex = class extends self.tsh.AbstractView {
 self.tsh.toHtml = value => {
     if(value instanceof self.tsh.AbstractView) return value.toHtml();
     if(value instanceof Function) return {_tag: "span", children: ["function"]};
-    if(value instanceof Uint8ClampedArray) return {_tag: "span", children: ["bytes"]};
+    if(value instanceof Uint8Array) return {_tag: "span", children: ["bytes"]};
     if(value instanceof Response) return {_tag: "span", children: ["response"]};
     if(typeof value === 'string') return {_tag: "span", children: [JSON.stringify(value)]};
     if(typeof value === 'number') return {_tag: "span", children: [JSON.stringify(value)]};
@@ -207,7 +207,7 @@ self.tsh.bytesForHex = (function() {
 self.tsh.toHex = a => a.reduce((s, b) => s + self.tsh.hexForBytes[b], "");
 self.tsh.fromHex = s => {
     var l = s.length / 2;
-    var result = new Uint8ClampedArray(l);
+    var result = new Uint8Array(l);
     for(var i = 0; i < l; i += 1) {
         result[i] = self.tsh.bytesForHex[s[i * 2] + s[i * 2 + 1]];
     }
