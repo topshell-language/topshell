@@ -38,7 +38,7 @@ exports.catch = f => task => new self.tsh.Task((w, t, c) => {
 });
 
 //: (a -> Task b) -> Task a -> Task b
-exports.then = self.tsh.taskThen;
+exports.then = f => task => task.then(f);
 
 //: Task a
 exports.never = new self.tsh.Task((w, t, c) => {});
@@ -220,15 +220,7 @@ exports.sequence = list => {
 };
 
 //: (a -> b) -> Task a -> Task b
-exports.map = f => task => new self.tsh.Task((w, t, c) => {
-    return task._run(w, v => {
-        try {
-            t(f(v))
-        } catch(e) {
-            c(e)
-        }
-    }, c);
-});
+exports.map = f => task => task.map(f);
 
 //: Float -> Task {}
 exports.sleep = s => new self.tsh.Task((w, t, c) => {

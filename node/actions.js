@@ -13,6 +13,15 @@ module.exports = {
     'File.appendText': (json, context, callback) => {
         fs.appendFile(json.path, json.contents, 'utf8', callback);
     },
+    'File.readBytes': (json, context, callback) => {
+        fs.readFile(json.path, (err, data) => callback(err, data != null ? data.toString('hex') : data));
+    },
+    'File.writeBytes': (json, context, callback) => {
+        fs.writeFile(json.path, Buffer.from(json.contents, 'hex'), callback);
+    },
+    'File.appendBytes': (json, context, callback) => {
+        fs.appendFile(json.path, Buffer.from(json.contents, 'hex'), callback);
+    },
     'File.list': (json, context, callback) => {
         fs.readdir(json.path, callback);
     },

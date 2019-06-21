@@ -33,6 +33,38 @@ self.tsh.Task = class extends self.tsh.AbstractView {
         super();
         this._run = run;
     }
+    then(f) {
+         return new self.tsh.Task((w, t, c) => {
+            var cancel1 = null;
+            try {
+                var cancel2 = this._run(w, v => {
+                    try {
+                        if(cancel1 instanceof Function) cancel1();
+                        cancel1 = f(v)._run(w, t, c);
+                    } catch(e) {
+                        c(e)
+                    }
+                }, c);
+            } catch(e) {
+                c(e);
+            }
+            return () => {
+                if(cancel2 instanceof Function) cancel2();
+                if(cancel1 instanceof Function) cancel1();
+            };
+        });
+    }
+    map(f) {
+        return new self.tsh.Task((w, t, c) => {
+            return this._run(w, v => {
+                try {
+                    t(f(v))
+                } catch(e) {
+                    c(e)
+                }
+            }, c);
+        });
+    }
     toHtml() {
         return {_tag: "span", children: ["task"]};
     }
@@ -156,25 +188,31 @@ self.tsh.some = v => ({_: "Some", _1: v});
 self.tsh.isNone = v => v._ === "None";
 self.tsh.isSome = v => v._ === "Some";
 
-self.tsh.taskThen = f => task => new self.tsh.Task((w, t, c) => {
-    var cancel1 = null;
-    try {
-        var cancel2 = task._run(w, v => {
-            try {
-                if(cancel1 instanceof Function) cancel1();
-                cancel1 = f(v)._run(w, t, c);
-            } catch(e) {
-                c(e)
-            }
-        }, c);
-    } catch(e) {
-        c(e);
+self.tsh.hexForBytes = (function() {
+    var result = new Array(256);
+    for(var i = 0; i < 256; i++) {
+        result[i] = (i < 16 ? "0" : "") + i.toString(16);
     }
-    return () => {
-        if(cancel2 instanceof Function) cancel2();
-        if(cancel1 instanceof Function) cancel1();
-    };
-});
+    return result;
+})();
+self.tsh.bytesForHex = (function() {
+    var result = {};
+    for(var i = 0; i < 256; i++) {
+        result[self.tsh.hexForBytes[i]] = i;
+        result[self.tsh.hexForBytes[i].toUpperCase()] = i;
+    }
+    return result;
+})();
+
+self.tsh.toHex = a => a.reduce((s, b) => s + self.tsh.hexForBytes[b], "");
+self.tsh.fromHex = s => {
+    var l = s.length / 2;
+    var result = new Uint8ClampedArray(l);
+    for(var i = 0; i < l; i += 1) {
+        result[i] = self.tsh.bytesForHex[s[i * 2] + s[i * 2 + 1]];
+    }
+    return result;
+};
 
 self.tsh.then = (m, f) => {
     if(Array.isArray(m)) {
@@ -187,7 +225,7 @@ self.tsh.then = (m, f) => {
         }
         return result;
     } else if(m instanceof self.tsh.Task) {
-        return self.tsh.taskThen(f)(m);
+        return m.then(f);
     } else {
         console.error("Operator <- not supported for: " + m);
         throw "Operator <- not supported for: " + m;
