@@ -40,7 +40,7 @@ module.exports = {
     },
     'File.list': (json, context, callback) => {
         execFile(context.ssh, json.config, "ls", [json.path], "", false, (error, result) => {
-            if(error == null) callback(void 0, result.out.split("\n"));
+            if(error == null) callback(void 0, result.out.split("\n").filter(f => f.length !== 0));
             else callback(error, result);
         });
     },
