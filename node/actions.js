@@ -10,6 +10,9 @@ module.exports = {
     'File.writeText': (json, context, callback) => {
         fs.writeFile(json.path, json.contents, 'utf8', callback);
     },
+    'File.appendText': (json, context, callback) => {
+        fs.appendFile(json.path, json.contents, 'utf8', callback);
+    },
     'File.list': (json, context, callback) => {
         fs.readdir(json.path, callback);
     },

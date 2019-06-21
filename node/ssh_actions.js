@@ -14,6 +14,12 @@ module.exports = {
             else callback(error, result);
         });
     },
+    'File.appendText': (json, context, callback) => {
+        execFile(context.ssh, json.config, "dd", ["conv=notrunc", "oflag=append", "of=" + json.path], json.contents, (error, result) => {
+            if(error == null) callback(void 0, "");
+            else callback(error, result);
+        });
+    },
     'File.list': (json, context, callback) => {
         execFile(context.ssh, json.config, "ls", [json.path], "", (error, result) => {
             if(error == null) callback(void 0, result.out.split("\n"));
