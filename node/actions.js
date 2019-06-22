@@ -25,6 +25,9 @@ module.exports = {
     'File.copy': (json, context, callback) => {
         fs.copyFile(json.path, json.target, callback);
     },
+    'File.rename': (json, context, callback) => {
+        fs.rename(json.path, json.target, callback);
+    },
     'File.createDirectory': (json, context, callback) => {
         fs.mkdir(json.path, callback);
     },

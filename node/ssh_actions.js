@@ -44,6 +44,12 @@ module.exports = {
             else callback(error, result);
         });
     },
+    'File.rename': (json, context, callback) => {
+        execFile(context.ssh, json.config, "mv", ["--", json.path, json.target], "", false, (error, result) => {
+            if(error == null) callback(void 0, {});
+            else callback(error, result);
+        });
+    },
     'File.createDirectory': (json, context, callback) => {
         execFile(context.ssh, json.config, "mkdir", ["--", json.path], "", false, (error, result) => {
             if(error == null) callback(void 0, {});

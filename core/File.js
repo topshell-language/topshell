@@ -12,6 +12,8 @@ exports.writeBytes = path => contents => self.tsh.action("File.writeBytes")({pat
 exports.appendBytes = path => contents => self.tsh.action("File.appendBytes")({path: path, contents: self.tsh.toHex(contents)});
 //: String -> String -> Task {}
 exports.copy = fromPath => toPath => self.tsh.action("File.copy")({path: fromPath, target: toPath});
+//: String -> String -> Task {}
+exports.rename = fromPath => toPath => self.tsh.action("File.rename")({path: fromPath, target: toPath});
 //: String -> Task {}
 exports.delete = path => self.tsh.action("File.delete")({path: path});
 //: String -> Task {}
