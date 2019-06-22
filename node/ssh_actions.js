@@ -108,7 +108,7 @@ function execFile(ssh, config, path, arguments, stdin, binary, callback) {
     if(binary) config.encoding = 'buffer';
     let escape = a => "'" + a.replace(/'/g, "'\\''") + "'";
     let command = [path].concat(arguments).map(a => escape(a)).join(" ");
-    let newArguments = ["-oControlMaster=auto", "-oControlPersist=5m", "-oControlPath=/tmp/topshell-ssh-%C", "-oBatchMode=yes", "--", ssh.user + "@" + ssh.host, command];
+    let newArguments = ["-oControlMaster=auto", "-oControlPersist=5m", "-oControlPath=~/.ssh/.topshell-%C", "-oBatchMode=yes", "--", ssh.user + "@" + ssh.host, command];
     let child = child_process.execFile("ssh", newArguments, config, (error, stdout, stderr) => {
         if(binary) stderr = stderr.toString('utf8');
         if(config.check !== false) callback(error, {out: stdout, error: stderr});

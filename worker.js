@@ -239,6 +239,11 @@ self.tsh.action = actionName => parameter => new self.tsh.Task((w, t, c) => {
     var controller = new AbortController();
     options.signal = controller.signal;
     try {
+        console.log(actionName +
+            (parameter.path != null ? " " + parameter.path : "") +
+            (parameter.target != null ? " " + parameter.target : "") +
+            (parameter.command != null ? " " + parameter.command : "")
+        );
         fetch("/execute", options)
             .then(r => {
                 if(!r.ok) {
