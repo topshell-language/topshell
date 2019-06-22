@@ -242,7 +242,8 @@ self.tsh.action = actionName => parameter => new self.tsh.Task((w, t, c) => {
         console.log(actionName +
             (parameter.path != null ? " " + parameter.path : "") +
             (parameter.target != null ? " " + parameter.target : "") +
-            (parameter.command != null ? " " + parameter.command : "")
+            (parameter.command != null ? " " + parameter.command : "") +
+            (w.ssh != null ? " (" + w.ssh.user + "@" + w.ssh.host + ")" : "")
         );
         fetch("/execute", options)
             .then(r => {
