@@ -40,9 +40,17 @@ exports.select = selector => dom => {
 //: Dom -> String
 exports.text = dom => {
     if(Array.isArray(dom.dom)) {
-        return dom.dom.map(d => d.textContent).join("");
+        return dom.dom.map(d => d.nodeType !== 8 ? d.textContent : "").join("");
     } else {
-        return dom.dom.textContent;
+        return dom.dom.nodeType !== 8 ? dom.dom.textContent : "";
+    }
+};
+//: Dom -> String
+exports.comment = dom => {
+    if(Array.isArray(dom.dom)) {
+        return dom.dom.map(d => d.nodeType === 8 ? d.textContent : "").join("");
+    } else {
+        return dom.dom.nodeType === 8 ? dom.dom.textContent : "";
     }
 };
 //: String -> Dom -> [None, Some String]
