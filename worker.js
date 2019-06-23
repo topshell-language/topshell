@@ -1,5 +1,7 @@
 self.tsh = {};
 
+// echo "jsdom = require('jsdom')" > jsdom-export.js; browserify jsdom-export.js -o ../libraries/jsdom.js
+importScripts("libraries/jsdom.js");
 importScripts("../modules.js");
 
 self.tsh.symbols = {};
@@ -77,6 +79,16 @@ self.tsh.Lazy = class extends self.tsh.AbstractView {
     }
     toHtml() {
         return {_tag: "span", children: ["lazy"]};
+    }
+};
+
+self.tsh.Dom = class extends self.tsh.AbstractView {
+    constructor(dom) {
+        super();
+        this.dom = dom;
+    }
+    toHtml() {
+        return {_tag: "span", children: ["dom"]};
     }
 };
 
@@ -185,6 +197,7 @@ self.tsh.lookup = (r, f) => {
 
 self.tsh.none = {_: "None"};
 self.tsh.some = v => ({_: "Some", _1: v});
+self.tsh.maybe = v => v == null ? self.tsh.none : self.tsh.some(v);
 self.tsh.isNone = v => v._ === "None";
 self.tsh.isSome = v => v._ === "Some";
 
