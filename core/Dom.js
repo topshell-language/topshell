@@ -53,6 +53,18 @@ exports.comment = dom => {
         return dom.dom.nodeType === 8 ? dom.dom.textContent : "";
     }
 };
+//: Dom -> String
+exports.tagName = dom => {
+    if(Array.isArray(dom.dom)) {
+        for(var i = 0; i < dom.dom.length; i++) {
+            var a = dom.dom[i].tagName;
+            if(a != null) return a.toLowerCase();
+        }
+        return "";
+    } else {
+        return (dom.dom[i].tagName || "").toLowerCase();
+    }
+};
 //: String -> Dom -> [None, Some String]
 exports.attribute = name => dom => {
     if(Array.isArray(dom.dom)) {
