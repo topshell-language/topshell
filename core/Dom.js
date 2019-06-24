@@ -21,7 +21,11 @@ exports.fromList = list => new self.tsh.Dom(list.flatMap(d => d.list));
 //: Dom -> List Dom
 exports.toList = dom => dom.list.map(d => new self.tsh.Dom([d]));
 //: String -> Dom -> Dom
-exports.select = selector => dom => new self.tsh.Dom(dom.list.flatMap(d => Array.from(d.querySelectorAll(selector))));
+exports.select = selector => dom => {
+    var c = selector[0];
+    if(c === '+' || c === '~' || c === '>' || c === '|') selector = ":scope" + selector;
+    return new self.tsh.Dom(dom.list.flatMap(d => Array.from(d.querySelectorAll(selector))));
+};
 //: Dom -> String
 exports.text = dom => dom.list.map(d => d.nodeType !== 8 ? d.textContent : "").join("");
 //: Dom -> String
