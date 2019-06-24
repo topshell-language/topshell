@@ -1,6 +1,7 @@
 package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
+import com.github.ahnfelt.topshell.worker.Timer
 
 import scala.annotation.tailrec
 import scala.collection.mutable
@@ -194,8 +195,11 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         t1s.zip(t2s).foreach { case (t1, t2) => unification.unify(t1, t2) }
     }
 
+    private def simplifyConstraints(constraints : List[Type]) : List[Type] =
+        Timer.accumulate("simplifyConstraints") { doSimplifyConstraints(constraints) }
+
     @tailrec
-    private def simplifyConstraints(constraints : List[Type]) : List[Type] = {
+    private def doSimplifyConstraints(constraints : List[Type]) : List[Type] = {
         val expandedConstraints = constraints.map(unification.expand).distinct
         val fieldConstraints = mutable.Map[(Type, String), Type]()
         val variantConstraints = mutable.Map[(Type, String), List[Type]]()
@@ -228,7 +232,7 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 List(c)
         }
         if(newConstraints != constraints) {
-            simplifyConstraints(newConstraints)
+            doSimplifyConstraints(newConstraints)
         } else {
             newConstraints
         }

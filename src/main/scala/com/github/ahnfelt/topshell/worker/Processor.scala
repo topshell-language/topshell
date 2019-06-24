@@ -26,7 +26,7 @@ object Processor {
         }
     }
 
-    def process(code : String) : Unit = Timer.accumulate("process") {
+    def process(code : String) : Unit = Timer.time("process") {
         val currentVersion = Main.codeVersion
 
         val tokens = Timer.accumulate("tokenize") {

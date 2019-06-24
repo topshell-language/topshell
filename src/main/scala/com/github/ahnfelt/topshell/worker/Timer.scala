@@ -14,7 +14,7 @@ object Timer {
         result
     }
 
-    val accumulateMap = mutable.Map[String, Long]()
+    private val accumulateMap = mutable.Map[String, Long]()
     def accumulate[T](label : String)(body : => T) : T = {
         if(!enable) body else {
             val started = System.nanoTime()
