@@ -143,11 +143,13 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
     }
 
-    def expand(unexpanded : Type) : Type = Timer.accumulate("expand") { unexpanded match {
+    def expand(unexpanded : Type) : Type = Timer.accumulate("expand") { doExpand(unexpanded) }
+
+    private def doExpand(unexpanded : Type) : Type = unexpanded match {
         case TVariable(id) =>
             sub.get(id).map { t1 =>
                 occursCheck(id, t1)
-                val t2 = expand(t1)
+                val t2 = doExpand(t1)
                 bind(id, t2)
                 t2
             }.getOrElse(unexpanded)
@@ -158,15 +160,15 @@ class Unification(initialEnvironment : Map[Int, Type]) {
         case TSymbol(name) =>
             unexpanded
         case TVariant(variants) =>
-            TVariant(variants.map { case (n, t) => n -> t.map(expand) })
+            TVariant(variants.map { case (n, t) => n -> t.map(doExpand) })
         case TApply(constructor, argument) =>
-            TApply(expand(constructor), expand(argument))
+            TApply(doExpand(constructor), doExpand(argument))
         case TRecord(fields) =>
             TRecord(fields.map(f => f.copy(scheme = f.scheme.copy(
-                constraints = f.scheme.constraints.map(expand),
-                generalized = expand(f.scheme.generalized)
+                constraints = f.scheme.constraints.map(doExpand),
+                generalized = doExpand(f.scheme.generalized)
             ))))
-    }}
+    }
 
     def replace(search : Type, replacement : Map[Type, Type]) = Pretty.replace(search, replacement, sub.get)
 
