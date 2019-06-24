@@ -1,11 +1,10 @@
 package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
+import com.github.ahnfelt.topshell.worker.Timer
 
-import scala.annotation.tailrec
 import scala.collection.mutable
 import scala.scalajs.js
-import scala.scalajs.js.annotation.JSGlobal
 
 @js.native
 trait ModuleSymbol extends js.Any {
@@ -48,7 +47,7 @@ class Typer {
         var schemes = symbols.flatMap(s => s.binding.scheme.map(s.binding.name -> _).toList).toMap
         val result = symbols.zipWithIndex.map { case (s, i) => if(s.error.nonEmpty) s else {
             val expected1 = s.binding.scheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
-            try {
+            try { Timer.accumulate("check " + s.binding.name) {
 
                 for(scheme <- s.binding.scheme) {
                     val ambiguous = Pretty.freeParameterNamesInScheme(scheme, unification.sub.get).toList
@@ -74,7 +73,7 @@ class Typer {
                     schemes += (s.binding.name -> scheme)
                     s.copy(binding = s.binding.copy(value = v, scheme = Some(scheme)))
                 }
-            } catch {
+            }} catch {
                 case e : RuntimeException =>
                     e.printStackTrace()
                     val parseException = e match {

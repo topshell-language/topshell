@@ -26,40 +26,32 @@ object Processor {
         }
     }
 
-    def time[T](label : String)(body : => T) : T = {
-        //println("Begun " + label + "...")
-        val started = System.currentTimeMillis()
-        val result = body
-        //println("Finished " + label + ": " + (System.currentTimeMillis() - started) + " ms")
-        result
-    }
-
-    def process(code : String) : Unit = time("process") {
+    def process(code : String) : Unit = Timer.accumulate("process") {
         val currentVersion = Main.codeVersion
 
-        val tokens = time("tokenize") {
+        val tokens = Timer.accumulate("tokenize") {
             js.Dynamic.global.tsh.tokenize("Unnamed.tsh", code).asInstanceOf[js.Array[Token]]
         }
-        val (newImports, newSymbols) = time("parse") {
+        val (newImports, newSymbols) = Timer.accumulate("parse") {
             new Parser("Unnamed.tsh", tokens.toArray[Token]).parseTopLevel()
         }
-        val topImports = time("topImports") {
+        val topImports = Timer.accumulate("topImports") {
             UsedImports.completeImports(newSymbols, newImports)
         }
-        val untypedTopSymbols = time("check") {
+        val untypedTopSymbols = Timer.accumulate("check") {
             Checker.check(topImports, newSymbols)
         }
-        val topSymbols = time("type") {
+        val topSymbols = Timer.accumulate("type") {
             val coreModules =
                 js.Dynamic.global.tsh.coreModules.asInstanceOf[js.Dictionary[js.Array[ModuleSymbol]]].toMap
             new Typer().check(coreModules.mapValues(_.toList), topImports, untypedTopSymbols)
         }
-        val emitted = time("emit") {
+        val emitted = Timer.accumulate("emit") {
             Emitter.emit(currentVersion, topImports, topSymbols)
         }
         //println(emitted)
 
-        time("cache") {
+        Timer.accumulate("cache") {
             val names = topImports.map(_.name) ++ topSymbols.map(_.binding.name)
 
             val _g = DedicatedWorkerGlobalScope.self
@@ -73,15 +65,15 @@ object Processor {
             Block.globalBlocks = newBlocks.asInstanceOf[js.Array[Block]]
 
             val topBlockMap = (topSymbols ++ topImports).map(s => s.name -> s).toMap
-            time("cacheKey") { for(block <- Block.globalBlocks) {
+            Timer.accumulate("cacheKey") { for(block <- Block.globalBlocks) {
                 block.cacheKey = CacheKey.cacheKey(topBlockMap(block.name.dropRight(1)), topBlockMap, Set())
             } }
 
-            val usedOldBlocks = time("usedOldBlocks") { for {
+            val usedOldBlocks = Timer.accumulate("usedOldBlocks") { for {
                 (block, index) <- Block.globalBlocks.zipWithIndex
                 oldBlock <- oldBlocks.get(block.name)
                 if oldBlock.cacheKey == block.cacheKey
-            } yield time("usedOldBlocks.iteration") {
+            } yield Timer.accumulate("usedOldBlocks.iteration") {
                 Block.globalBlocks(index) = oldBlock
                 // Set done results in the new scope and redirect future results and reads to the new scope
                 oldBlock.state.toOption match {
@@ -90,7 +82,7 @@ object Processor {
                 }
                 oldBlock.asInstanceOf[js.Dynamic].setResult = block.asInstanceOf[js.Dynamic].setResult
                 oldBlock.asInstanceOf[js.Dynamic].compute = block.asInstanceOf[js.Dynamic].compute
-                time("usedOldBlocks.sendBlockStatus") { Block.sendBlockStatus(oldBlock) }
+                Timer.accumulate("usedOldBlocks.sendBlockStatus") { Block.sendBlockStatus(oldBlock) }
                 oldBlock.name
             } }
 
@@ -112,9 +104,11 @@ object Processor {
             DedicatedWorkerGlobalScope.self.postMessage(message)
         }
 
-        time("globalStepAll") {
+        Timer.accumulate("globalStepAll") {
             Block.globalStepAll()
         }
+
+        Timer.printAndClearAccumulated()
 
     }
 

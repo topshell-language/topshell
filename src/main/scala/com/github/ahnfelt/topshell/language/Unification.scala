@@ -1,6 +1,7 @@
 package com.github.ahnfelt.topshell.language
 
 import com.github.ahnfelt.topshell.language.Syntax._
+import com.github.ahnfelt.topshell.worker.Timer
 
 class Unification(initialEnvironment : Map[Int, Type]) {
 
@@ -23,7 +24,9 @@ class Unification(initialEnvironment : Map[Int, Type]) {
         sub += (id -> theType)
     }
 
-    def unify(type1 : Type, type2 : Type) : Unit = (type1, type2) match {
+    def unify(type1 : Type, type2 : Type) : Unit = doUnify(type1, type2)
+
+    private def doUnify(type1 : Type, type2 : Type) : Unit = (type1, type2) match {
 
         case (TVariable(id1), TVariable(id2)) =>
             if(id1 != id2) {
@@ -33,19 +36,19 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                     case (None, None) => bind(id2, type1)
                     case (None, Some(t2)) => bind(id1, t2)
                     case (Some(t1), None) => bind(id2, t1)
-                    case (Some(t1), Some(t2)) => unify(t1, t2)
+                    case (Some(t1), Some(t2)) => doUnify(t1, t2)
                 }
             }
 
         case (TVariable(id1), _) =>
             sub.get(id1) match {
-                case Some(value) => unify(value, type2)
+                case Some(value) => doUnify(value, type2)
                 case None => bind(id1, type2)
             }
 
         case (_, TVariable(id2)) =>
             sub.get(id2) match {
-                case Some(value) => unify(type1, value)
+                case Some(value) => doUnify(type1, value)
                 case None => bind(id2, type1)
             }
 
@@ -65,8 +68,8 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             }
 
         case (TApply(constructor1, argument1), TApply(constructor2, argument2)) =>
-            unify(constructor1, constructor2)
-            unify(argument1, argument2)
+            doUnify(constructor1, constructor2)
+            doUnify(argument1, argument2)
 
         case (TVariant(variants1), TVariant(variants2)) =>
             val sorted1 = variants1.sortBy(_._1)
@@ -81,7 +84,7 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                 sorted1.zip(sorted2).foreach { case ((x1, ts1), (x2, ts2)) =>
                     if(ts1.size < ts2.size) throw new RuntimeException("Too many arguments: " + x2 + ts2.map(" " + _).mkString)
                     if(ts1.size > ts2.size) throw new RuntimeException("Too few arguments: " + x2 + ts2.map(" " + _).mkString)
-                    ts1.zip(ts2).foreach { case (t1, t2) => unify(t1, t2) }
+                    ts1.zip(ts2).foreach { case (t1, t2) => doUnify(t1, t2) }
                 }
             }
 
@@ -128,19 +131,19 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                     // Assumes that constraints are sorted
                     val c1 = b1.scheme.constraints.map(Pretty.replace(_, replacement1, sub.get)).map(expand)
                     val c2 = b2.scheme.constraints.map(Pretty.replace(_, replacement2, sub.get)).map(expand)
-                    c1.zip(c2).foreach { case (a, b) => unify(a, b) }
+                    c1.zip(c2).foreach { case (a, b) => doUnify(a, b) }
                     val t1 = expand(Pretty.replace(b1.scheme.generalized, replacement1, sub.get))
                     val t2 = expand(Pretty.replace(b2.scheme.generalized, replacement2, sub.get))
-                    unify(t1, t2)
+                    doUnify(t1, t2)
                 }
             }
 
         case (_, _) =>
-            throw new RuntimeException("Incompatible types: " + expand(type2) + " vs. " + expand(type1))
+            throw new RuntimeException("Type mismatch: " + expand(type2) + " vs. " + expand(type1))
 
     }
 
-    def expand(unexpanded : Type) : Type = unexpanded match {
+    def expand(unexpanded : Type) : Type = Timer.accumulate("expand") { unexpanded match {
         case TVariable(id) =>
             sub.get(id).map { t1 =>
                 occursCheck(id, t1)
@@ -163,7 +166,7 @@ class Unification(initialEnvironment : Map[Int, Type]) {
                 constraints = f.scheme.constraints.map(expand),
                 generalized = expand(f.scheme.generalized)
             ))))
-    }
+    }}
 
     def replace(search : Type, replacement : Map[Type, Type]) = Pretty.replace(search, replacement, sub.get)
 
