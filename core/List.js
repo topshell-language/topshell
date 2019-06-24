@@ -96,6 +96,9 @@ exports.sort = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0
 //: Int -> a -> List a
 exports.repeat = n => v => new Array(n).fill(v);
 
+//: List (List a) -> List (List a)
+exports.transpose = a => a[0].map((_, i) => a.flatMap(row => i < row.length ? [row[i]] : []));
+
 //: List (List a) -> List a
 exports.flatten = l => {
     var result = [];
