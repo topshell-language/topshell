@@ -22,6 +22,9 @@ exports.union = f => m1 => m2 => XMap.union(f, m1, m2);
 //: (v -> v -> w) -> Map k v -> Map k v -> Map k w | Order k
 exports.intersect = f => m1 => m2 => XMap.intersect(f, m1, m2);
 
+//: v -> k -> Map k v -> v | Order k
+exports.fallback = v => k => m => XMap.getOrElse(v, k, m);
+
 //: k -> Map k v -> [None, Some v] | Order k
 exports.get = k => m => XMap.get(k, m);
 

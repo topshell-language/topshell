@@ -11,7 +11,7 @@ exports.isNone = self.tsh.isNone;
 exports.isSome = self.tsh.isSome;
 
 //: a -> [None, Some a] -> a
-exports.default = d => v => exports.isNone(v) ? d : v._1;
+exports.fallback = d => v => exports.isNone(v) ? d : v._1;
 
 //: [None, Some [None, Some a]] -> [None, Some a]
 exports.flatten = v => exports.isNone(v) ? v : v._1;

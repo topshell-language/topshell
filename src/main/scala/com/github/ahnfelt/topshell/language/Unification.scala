@@ -136,11 +136,7 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             }
 
         case (_, _) =>
-            throw new RuntimeException(
-                "Incompatible types. " +
-                    "Got: " + expand(type2) + ", " +
-                    "expected: " + expand(type1)
-            )
+            throw new RuntimeException("Incompatible types: " + expand(type2) + " vs. " + expand(type1))
 
     }
 

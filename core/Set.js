@@ -4,7 +4,7 @@ exports.of = a => XSet.of(a);
 //: (k -> v) -> Set k -> Map k v | Order k
 exports.toMap = f => s => XSet.toMap(f, s);
 
-//: Set v -> List {key: k, value: v} | Order v
+//: Set v -> List v | Order v
 exports.toList = m => XSet.toList(m);
 
 //: v -> Set v -> Set v | Order v
@@ -12,6 +12,9 @@ exports.add = v => m => XSet.add(k, v, m);
 
 //: v -> Set v -> Set v | Order v
 exports.remove = k => m => XSet.remove(k, m);
+
+//: List (Set v) -> Set v | Order v
+exports.unions = a => a.reduce((x, y) => XSet.union(x, y), XSet.empty);
 
 //: Set v -> Set v -> Set v | Order v
 exports.union = m1 => m2 => XSet.union(m1, m2);

@@ -74,6 +74,11 @@ object XMap {
     }
 
     @JSExport
+    def getOrElse(value : Any, key : Any, map : XMap) : Any = {
+        map.getOrElse(key, value)
+    }
+
+    @JSExport
     def has(key : Any, map : XMap) : Boolean = {
         map.contains(key)
     }
