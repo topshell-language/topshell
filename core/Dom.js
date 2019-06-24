@@ -1,143 +1,92 @@
 //: String -> Dom
 exports.fromHtmlDocument = html => {
-    return new self.tsh.Dom(new jsdom.JSDOM(html).window.document.documentElement);
+    return new self.tsh.Dom([new jsdom.JSDOM(html).window.document.documentElement]);
 };
 //: String -> Dom
 exports.fromHtml = html => {
     var nodes = jsdom.JSDOM.fragment(html);
     var result = Array.from(nodes.childNodes);
-    return new self.tsh.Dom(result.length === 1 ? result[0] : result);
+    return new self.tsh.Dom(result);
 };
 //: Dom -> String
 exports.toHtml = dom => {
     var result = "";
-    if(Array.isArray(dom.dom)) {
-        for(var i = 0; i < dom.dom.length; i++) {
-            result += dom.dom[i].outerHTML || "";
-        }
-    } else {
-        result = dom.dom.outerHTML || "";
+    for(var i = 0; i < dom.list.length; i++) {
+        result += dom.list[i].outerHTML || "";
     }
     return result;
 };
 //: List Dom -> Dom
-exports.fromList = list => new self.tsh.Dom(list.flatMap(d => Array.isArray(d.dom) ? d.dom : [d.dom]));
+exports.fromList = list => new self.tsh.Dom(list.flatMap(d => d.list));
 //: Dom -> List Dom
-exports.toList = dom => {
-    if(Array.isArray(dom.dom)) return dom.dom.map(d => new self.tsh.Dom(d));
-    else return [dom];
-};
+exports.toList = dom => dom.list.map(d => new self.tsh.Dom([d]));
 //: String -> Dom -> Dom
-exports.select = selector => dom => {
-    var result;
-    if(Array.isArray(dom.dom)) {
-        result = dom.dom.flatMap(d => Array.from(d.querySelectorAll(selector)));
-    } else {
-        result = Array.from(dom.dom.querySelectorAll(selector));
-    }
-    return new self.tsh.Dom(result.length === 1 ? result[0] : result);
-};
+exports.select = selector => dom => new self.tsh.Dom(dom.list.flatMap(d => Array.from(d.querySelectorAll(selector))));
 //: Dom -> String
-exports.text = dom => {
-    if(Array.isArray(dom.dom)) {
-        return dom.dom.map(d => d.nodeType !== 8 ? d.textContent : "").join("");
-    } else {
-        return dom.dom.nodeType !== 8 ? dom.dom.textContent : "";
-    }
-};
+exports.text = dom => dom.list.map(d => d.nodeType !== 8 ? d.textContent : "").join("");
 //: Dom -> String
-exports.comment = dom => {
-    if(Array.isArray(dom.dom)) {
-        return dom.dom.map(d => d.nodeType === 8 ? d.textContent : "").join("");
-    } else {
-        return dom.dom.nodeType === 8 ? dom.dom.textContent : "";
-    }
-};
+exports.comment = dom => dom.list.map(d => d.nodeType === 8 ? d.textContent : "").join("");
 //: Dom -> String
 exports.tagName = dom => {
-    if(Array.isArray(dom.dom)) {
-        for(var i = 0; i < dom.dom.length; i++) {
-            var a = dom.dom[i].tagName;
-            if(a != null) return a.toLowerCase();
-        }
-        return "";
-    } else {
-        return (dom.dom[i].tagName || "").toLowerCase();
+    for(var i = 0; i < dom.list.length; i++) {
+        var a = dom.list[i].tagName;
+        if(a != null) return a.toLowerCase();
     }
+    return "";
 };
 //: String -> Dom -> [None, Some String]
 exports.attribute = name => dom => {
-    if(Array.isArray(dom.dom)) {
-        for(var i = 0; i < dom.dom.length; i++) {
-            var a = exports.attribute(name)(dom.dom[i].getAttribute != null ? dom.dom[i].getAttribute(name) : null);
-            if(a != null) return self.tsh.some(a);
-        }
-        return self.tsh.none();
-    } else {
-        return self.tsh.maybe(dom.dom.getAttribute != null ? dom.dom.getAttribute(name) : null);
+    for(var i = 0; i < dom.list.length; i++) {
+        var a = dom.list[i].getAttribute != null ? dom.list[i].getAttribute(name) : null;
+        if(a != null) return self.tsh.some(a);
     }
+    return self.tsh.none;
 };
 //: Dom -> List {key: String, value: String}
 exports.attributes = dom => {
-    if(Array.isArray(dom.dom)) {
-        return dom.dom.flatMap(d => d.attributes != null ?
-            Array.from(d.attributes).map(a => ({key: a.name, value: a.value})) : []);
-    } else {
-        return dom.dom.attributes != null ?
-            Array.from(dom.dom.attributes).map(a => ({key: a.name, value: a.value})) : [];
-    }
+    return dom.list.flatMap(d =>
+        d.attributes != null ? Array.from(d.attributes).map(a => ({key: a.name, value: a.value})) : []
+    );
 };
 //: Dom -> Dom
-exports.children = dom => {
-    var result;
-    if(Array.isArray(dom.dom)) {
-        result = dom.dom.flatMap(d => d.childNodes != null ? Array.from(d.childNodes) : []);
-    } else {
-        result = dom.dom.childNodes != null ? Array.from(dom.dom.childNodes) : [];
-    }
-    return new self.tsh.Dom(result.length === 1 ? result[0] : result);
-};
+exports.children = dom => new self.tsh.Dom(dom.list.flatMap(d => d.childNodes != null ? Array.from(d.childNodes) : []));
 //: (Dom -> Bool) -> Dom -> Dom
-exports.filter = f => dom => {
-    var result;
-    if(Array.isArray(dom.dom)) {
-        result = dom.dom.filter(d => f(new self.tsh.Dom(d)));
-    } else {
-        result = f(dom) ? dom : [];
-    }
-    return new self.tsh.Dom(result.length === 1 ? result[0] : result);
-};
+exports.filter = f => dom => new self.tsh.Dom(dom.list.filter(d => f(new self.tsh.Dom([d]))));
 //: (Dom -> Dom) -> Dom -> Dom
-exports.map = f => dom => {
-    var result;
-    if(Array.isArray(dom.dom)) {
-        result = dom.dom.flatMap(d => { var r = f(new self.tsh.Dom(d)); return Array.isArray(r.dom) ? r.dom : [r.dom]});
-    } else {
-        result = f(dom).dom;
-    }
-    return new self.tsh.Dom(result.length === 1 ? result[0] : result);
-};
+exports.map = f => dom => new self.tsh.Dom(dom.list.flatMap(d => f(new self.tsh.Dom([d])).list));
+//: Int -> Dom -> Dom
+exports.take = i => dom => new self.tsh.Dom(dom.list.slice(0, i));
+//: Int -> Dom -> Dom
+exports.drop = i => dom => new self.tsh.Dom(dom.list.slice(i));
+//: Int -> Dom -> Dom
+exports.takeLast = i => dom => new self.tsh.Dom(dom.list.slice(-i));
+//: Int -> Dom -> Dom
+exports.dropLast = i => dom => new self.tsh.Dom(dom.list.slice(0, -i));
 //: Dom -> Boolean
 exports.isText = dom => {
-    return dom.dom.nodeType === 3;
+    return dom.list.length === 1 && dom.list[0].nodeType === 3;
 };
 //: Dom -> Boolean
 exports.isElement = dom => {
-    return dom.dom.nodeType === 1;
+    return dom.list.length === 1 && dom.list[0].nodeType === 1;
 };
 //: Dom -> Boolean
 exports.isCData = dom => {
-    return dom.dom.nodeType === 4;
+    return dom.list.length === 1 && dom.list[0].nodeType === 4;
 };
 //: Dom -> Boolean
 exports.isComment = dom => {
-    return dom.dom.nodeType === 8;
+    return dom.list.length === 1 && dom.list[0].nodeType === 8;
 };
 //: Dom -> Boolean
 exports.isList = dom => {
-    return Array.isArray(dom.dom);
+    return dom.list.length !== 1;
+};
+//: Dom -> Boolean
+exports.isEmpty = dom => {
+    return dom.list.length === 0;
 };
 //: Dom -> Int
 exports.size = dom => {
-    return Array.isArray(dom.dom) ? dom.dom.length : 1;
+    return dom.list.length;
 };

@@ -83,9 +83,10 @@ self.tsh.Lazy = class extends self.tsh.AbstractView {
 };
 
 self.tsh.Dom = class extends self.tsh.AbstractView {
-    constructor(dom) {
+    constructor(list) {
         super();
-        this.dom = dom;
+        if(!Array.isArray(list)) throw "Expected a List Dom, but got " + list;
+        this.list = list;
     }
     toHtml() {
         return {_tag: "span", children: ["dom"]};
