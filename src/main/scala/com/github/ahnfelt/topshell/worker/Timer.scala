@@ -14,14 +14,14 @@ object Timer {
         result
     }
 
-    private val accumulateMap = mutable.Map[String, Long]()
+    private val accumulateMap = mutable.Map[String, (Long, Long)]()
     def accumulate[T](label : String)(body : => T) : T = {
         if(!enable) body else {
             val started = System.nanoTime()
             val result = body
             val elapsed = System.nanoTime() - started
-            val total = accumulateMap.getOrElseUpdate(label, 0L) + elapsed
-            accumulateMap(label) = total
+            val (oldElapsed, oldCount) = accumulateMap.getOrElseUpdate(label, 0L -> 0L)
+            accumulateMap(label) = (oldElapsed + elapsed, oldCount + 1)
             result
         }
     }
@@ -29,7 +29,9 @@ object Timer {
     def printAndClearAccumulated() : Unit = if(enable) {
         println()
         println("ACCUMULATED TIMERS:")
-        for((label, total) <- accumulateMap.toList.sorted) println(label + ": " + total / (1000 * 1000) + " ms")
+        for((label, (elapsed, count)) <- accumulateMap.toList.sorted) {
+            println(label + ": " + elapsed / (1000 * 1000) + " ms, " + count + " calls")
+        }
         accumulateMap.clear()
         println()
     }

@@ -11,20 +11,20 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
     def reset() = sub = initialEnvironment
 
-    def occursCheck(id : Int, theType : Type) : Unit = {
+    def occursCheck(id : Int, theType : Type) : Unit = Timer.accumulate("occurs") {
         if(Pretty.freeInType(theType).contains(id)) {
             throw new RuntimeException("Infinite type: " + TVariable(id) + " == " + theType)
         }
     }
 
-    def bind(id : Int, theType : Type) : Unit = if(TVariable(id) != theType) {
+    def bind(id : Int, theType : Type) : Unit = Timer.accumulate("bind") { if(TVariable(id) != theType) {
         occursCheck(id, theType)
         val replacement = Map[Type, Type](TVariable(id) -> theType)
         sub = sub.mapValues(replace(_, replacement))
         sub += (id -> theType)
-    }
+    }}
 
-    def unify(type1 : Type, type2 : Type) : Unit = doUnify(type1, type2)
+    def unify(type1 : Type, type2 : Type) : Unit = Timer.accumulate("unify") { doUnify(type1, type2) }
 
     private def doUnify(type1 : Type, type2 : Type) : Unit = (type1, type2) match {
 
@@ -170,6 +170,8 @@ class Unification(initialEnvironment : Map[Int, Type]) {
             ))))
     }
 
-    def replace(search : Type, replacement : Map[Type, Type]) = Pretty.replace(search, replacement, sub.get)
+    def replace(search : Type, replacement : Map[Type, Type]) = Timer.accumulate("replace") {
+        Pretty.replace(search, replacement, sub.get)
+    }
 
 }
