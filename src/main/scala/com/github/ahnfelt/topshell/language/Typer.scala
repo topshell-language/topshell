@@ -46,6 +46,9 @@ class Typer {
         }
         var schemes = symbols.flatMap(s => s.binding.scheme.map(s.binding.name -> _).toList).toMap
         val result = symbols.zipWithIndex.map { case (s, i) => if(s.error.nonEmpty) s else {
+
+            unification.reset()
+
             val expected1 = s.binding.scheme.map(_.generalized).getOrElse(constraints.freshTypeVariable())
             try { Timer.accumulate("check " + s.binding.name) {
 
