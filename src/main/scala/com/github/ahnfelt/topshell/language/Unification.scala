@@ -9,7 +9,7 @@ class Unification(initialEnvironment : Map[Int, Type]) {
 
     def copy() = new Unification(sub)
 
-    def reset() = sub = initialEnvironment
+    def reset() : Unit = sub = initialEnvironment
 
     def occursCheck(id : Int, theType : Type) : Unit = Timer.accumulate("occurs") {
         if(Pretty.freeInType(theType).contains(id)) {

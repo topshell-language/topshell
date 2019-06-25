@@ -22,6 +22,12 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
         constraints ::= constraint
     }
 
+    def reset() : Unit = {
+        unification.reset()
+        previousTypeVariable = initialTypeVariable
+        constraints = initialConstraints
+    }
+
     private def simplifyConstraint(constraint : Type) : List[Type] = constraint match {
         case FieldConstraint(record, label, t, optional) =>
             record match {
