@@ -82,23 +82,25 @@ object Syntax {
 
     object VariantConstraint {
 
-        def apply(variantType : Type, label : String, fieldTypes : List[Type]) = {
-            val applied = fieldTypes.foldLeft[Type](TSymbol(label))(TApply)
-            TApply(TApply(TConstructor("[]"), applied), variantType)
+        def apply(label : String, variantType : Type) = {
+            TApply(TApply(TConstructor("[]"), TSymbol(label)), variantType)
         }
 
         def unapply(constraint : Type) = constraint match {
-            case TApply(TApply(TConstructor("[]"), applied), variantType) =>
-                def extract(a : Type, arguments : List[Type]) : Option[(String, List[Type])] = a match {
-                    case TApply(x, y) => extract(x, y :: arguments)
-                    case TSymbol(l) => Some(l -> arguments)
-                    case _ => None
-                }
-                extract(applied, List()).map { case (label, ts) =>
-                    (variantType, label, ts)
-                }
+            case TApply(TApply(TConstructor("[]"), TSymbol(label)), variantType) =>
+                Some((label, variantType))
             case _ =>
                 None
+        }
+
+        def fieldTypes(variantType : Type) : List[Type] = variantType match {
+            case TApply(TApply(TConstructor("->"), t1), t2) => t1 :: fieldTypes(t2)
+            case _ => List.empty
+        }
+
+        def resultType(variantType : Type) : Type = variantType match {
+            case TApply(TApply(TConstructor("->"), _), t2) => resultType(t2)
+            case _ => variantType
         }
 
     }
@@ -132,6 +134,9 @@ object Syntax {
         }
 
     }
+
+    def functionType(arguments : List[Type], result : Type) : Type =
+        arguments.foldRight(result)((x, y) => TApply(TApply(TConstructor("->"), x), y))
 
     val unaryOperators = Seq(
         Seq("-")                    -> "a -> a | Number a",

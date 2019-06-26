@@ -55,15 +55,15 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 case _ =>
                     throw new RuntimeException("Non-record field access: " + record + "." + label)
             }
-        case VariantConstraint(variantType, name, fieldType) =>
-            variantType match {
+        case VariantConstraint(name, constructorType) =>
+            VariantConstraint.resultType(constructorType) match {
                 case TVariant(variants) =>
                     variants.find(_._1 == name).map { case (n, t) =>
-                        checkVariantArgumentConstraint(fieldType, t, constraint)
+                        checkVariantArgumentConstraint(VariantConstraint.fieldTypes(constructorType), t, constraint)
                         List()
                     }.getOrElse {
                         throw new RuntimeException(
-                            "Variant " + name + " not found in " + variantType
+                            "Variant " + name + " not found in " + constructorType
                         )
                     }
                 case TParameter(_) =>
@@ -226,12 +226,13 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     fieldConstraints.put((record, label), t)
                     List(c)
                 }
-            case c@VariantConstraint(variant, label, t) =>
-                variantConstraints.get((variant, label)).map { t0 =>
-                    checkVariantArgumentConstraint(t0, t, c)
+            case c@VariantConstraint(label, constructorType) =>
+                val variant = VariantConstraint.resultType(constructorType)
+                variantConstraints.get((variant, label)).map { t =>
+                    checkVariantArgumentConstraint(t, VariantConstraint.fieldTypes(constructorType), c)
                     List()
                 }.getOrElse {
-                    variantConstraints.put((variant, label), t)
+                    variantConstraints.put((variant, label), VariantConstraint.fieldTypes(constructorType))
                     List(c)
                 }
             case c =>
@@ -245,9 +246,17 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
     }
 
     def filterAmbiguousVariants(allConstraints : List[Type], determinedConstraints : List[Type]) : List[Type] = {
-        val determined = determinedConstraints.collect { case VariantConstraint(TVariable(x), _, _) => x }.toSet
+        val determined = determinedConstraints.collect {
+            case VariantConstraint(_, t) => VariantConstraint.resultType(t) match {
+                case TVariable(x) => Some(x)
+                case _ => None
+            }
+        }.flatten.toSet
         allConstraints.filter {
-            case VariantConstraint(TVariable(x), _, _) => determined(x)
+            case VariantConstraint(_, t) => VariantConstraint.resultType(t) match {
+                case TVariable(x) => determined(x)
+                case _ => true
+            }
             case _ => true
         }
     }

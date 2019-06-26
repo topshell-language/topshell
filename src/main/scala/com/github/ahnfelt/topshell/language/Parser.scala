@@ -482,20 +482,11 @@ class Parser(file : String, tokens : Array[Token]) {
 
     def parseConstraint() : List[Type] = {
         skip("operator", Some("|"))
-        if(current.raw == "[") {
-            skip("bracket")
-            val variant = skip("lower").raw
-            skip("separator", Some(","))
-            var result = List[Type]()
-            while(current.raw != "]") {
-                val name = skip("upper").raw
-                var arguments = List[Type]()
-                while(isAtomStartToken(current)) arguments ::= parseTypeAtom()
-                result ::= VariantConstraint(TParameter(variant), name, arguments.reverse)
-                if(current.raw == ",") skip("separator", Some(","))
-            }
-            skip("bracket", Some("]"))
-            result.reverse
+        if(current.kind == "upper" && ahead.raw == ":") {
+            val variant = skip("upper").raw
+            skip("separator", Some(":"))
+            val variantType = parseType()
+            List(VariantConstraint(variant, variantType))
         } else if(current.raw == "{") {
             val at = skip("bracket").at
             val s1 = skip("lower").raw

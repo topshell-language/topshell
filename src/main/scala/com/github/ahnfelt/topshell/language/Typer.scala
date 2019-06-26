@@ -195,7 +195,7 @@ class Typer {
                         val t = constraints.freshTypeVariable()
                         t -> checkTerm(e, t)
                     }
-                    constraints.add(Syntax.VariantConstraint(expected, name, as.map(_._1)))
+                    constraints.add(Syntax.VariantConstraint(name, functionType(as.map(_._1), expected)))
                     EVariant(at, name, as.map(_._2))
             }
 
@@ -206,7 +206,7 @@ class Typer {
             var variants = List.empty[(String, List[Type])]
             val cases2 = cases.map { case c@VariantCase(_, variant, arguments, body) =>
                 val ts = arguments.map(_ -> constraints.freshTypeVariable())
-                if(defaultCase.nonEmpty) constraints.add(VariantConstraint(t1, variant, ts.map(_._2)))
+                if(defaultCase.nonEmpty) constraints.add(VariantConstraint(variant, functionType(ts.map(_._2), t1)))
                 else variants ::= variant -> ts.map(_._2)
                 val xs = ts.collect { case (Some(x), t) => x -> Scheme(List(), List(), t) }
                 c.copy(body = withVariables(xs) { checkTerm(c.body, t2) })

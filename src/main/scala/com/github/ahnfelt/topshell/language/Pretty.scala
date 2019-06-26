@@ -13,8 +13,8 @@ object Pretty {
         case TSymbol(name) => JSON.stringify(name)
         case TVariant(variants) =>
             "[" + variants.map { case (n, t1) => n + t1.map(t2 => " " + showTypeEnclosed(t2)).mkString }.mkString(", ") + "]"
-        case VariantConstraint(variantType, label, fieldTypes) =>
-            "[" + variantType + ", " + label + fieldTypes.map(t2 => " " + showTypeEnclosed(t2)).mkString + "]"
+        case VariantConstraint(label, variantType) =>
+            label + " : " + variantType
         case StructureConstraint(p, s1, c1, s2, c2, cs) if s1 == s2 && c1 == c2 =>
             val x = cs.map(" | " + showType(_)).mkString
             "{" + showStructureConstraintPart(p, s1, c1) + x + "}"
@@ -147,7 +147,7 @@ object Pretty {
     // But still infer: g : a -> b | a.y: c | c.z: b = x -> x.y.z
     def determinedInConstraint(constraint : Type, parameters : Boolean) : List[String] = constraint match {
         case FieldConstraint(_, _, t, _) => determinedInType(t, parameters)
-        case VariantConstraint(_, _, ts) => ts.flatMap(determinedInType(_, parameters))
+        case VariantConstraint(_, t) => VariantConstraint.fieldTypes(t).flatMap(determinedInType(_, parameters))
         // case StructureConstraint ?
         case _ => List()
     }
