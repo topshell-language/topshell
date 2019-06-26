@@ -39,6 +39,7 @@ case class EditorComponent(codeFile : P[CodeFile]) extends Component[EditorMessa
             "autofocus" -> true,
             "dragDrop" -> false,
             "value" -> get[CodeFile](codeFile).code.get,
+            "hintOptions" -> js.Dictionary("completeSingle" -> false),
             "extraKeys" -> js.Dictionary[js.Function1[CodeMirror, Unit]](
                 "Tab" -> {editor => editor.execCommand("indentMore")},
                 "Shift-Tab" -> {editor => editor.execCommand("indentLess")},
