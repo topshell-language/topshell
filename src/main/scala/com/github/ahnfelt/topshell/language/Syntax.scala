@@ -5,7 +5,8 @@ import scala.scalajs.js
 object Syntax {
 
     case class Location(file : String, line : Int, column : Int) {
-        override def toString = "in " + file + " " + toShortString
+        override def toString = "_"
+        def toSuffix = "in " + file + " " + toShortString
         def toShortString = "at line " + line + ", column " + column
     }
 

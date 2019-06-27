@@ -153,11 +153,9 @@ class Parser(file : String, tokens : Array[Token]) {
         if(current.raw != "?") condition else {
             val at = skip("separator", Some("?")).at
             val thenBody = parseNonSemicolonTerm()
-            val elseBody = if(current.raw == ";") {
-                skip("separator", Some(";"))
-                Some(parseTerm())
-            } else None
-            EIf(at, condition, thenBody, elseBody)
+            skip("separator", Some(";"))
+            val elseBody = parseTerm()
+            EIf(at, condition, thenBody, Some(elseBody))
         }
     }
 
@@ -227,6 +225,34 @@ class Parser(file : String, tokens : Array[Token]) {
     }
 
     private def parseAtom() : Term = (current.kind, current.raw) match {
+        case (_, "(") if ahead.raw == "|" =>
+            skip("bracket", Some("("))
+            var cases : List[EIf] = List.empty
+            var defaultCase : Option[Term] = None
+            while(current.raw == "|" && defaultCase.isEmpty) {
+                val c = skip("operator", Some("|"))
+                if(current.raw.startsWith("_")) {
+                    skip(if(current.kind == "definition") "definition" else "lower")
+                    skip("separator", Some("=>"))
+                    val body = parseTerm()
+                    defaultCase = Some(body)
+                } else {
+                    val condition = parseTerm()
+                    skip("separator", Some("=>"))
+                    val body = parseTerm()
+                    cases ::= EIf(c.at, condition, body, None)
+                }
+            }
+            skip("bracket", Some(")"))
+            defaultCase match {
+                case Some(otherwise) =>
+                    cases.reverse.foldRight(otherwise) { (e1, e2) => e1.copy(elseBody = Some(e2)) }
+                case None =>
+                    val last = cases.head.copy(elseBody = defaultCase)
+                    cases.tail.map(e =>
+                        e.copy(thenBody = EVariant(e.at, "Some", List(e.thenBody)))
+                    ).reverse.foldRight(last) { (e1, e2) => e1.copy(elseBody = Some(e2)) }
+            }
         case (_, "(") =>
             skip("bracket", Some("("))
             val result =
@@ -277,12 +303,12 @@ class Parser(file : String, tokens : Array[Token]) {
                 val c = skip("operator", Some("|"))
                 if(current.raw.startsWith("_")) {
                     skip(if(current.kind == "definition") "definition" else "lower")
-                    skip("separator", Some("->"))
+                    skip("separator", Some("=>"))
                     val body = parseTerm()
                     defaultCase = Some(DefaultCase(c.at, None, body))
                 } else if(current.kind == "lower" || current.kind == "definition") {
                     val name = skip(if(current.kind == "definition") "definition" else "lower").raw
-                    skip("separator", Some("->"))
+                    skip("separator", Some("=>"))
                     val body = parseTerm()
                     defaultCase = Some(DefaultCase(c.at, Some(name), body))
                 } else {
@@ -293,7 +319,7 @@ class Parser(file : String, tokens : Array[Token]) {
                         if(v.startsWith("_")) arguments ::= None
                         else arguments ::= Some(v)
                     }
-                    skip("separator", Some("->"))
+                    skip("separator", Some("=>"))
                     val body = parseTerm()
                     cases ::= VariantCase(c.at, name, arguments.reverse, body)
                 }
@@ -501,7 +527,7 @@ class Parser(file : String, tokens : Array[Token]) {
             val constraints = parseConstraints()
             skip("bracket", Some("}"))
             def splitStructure(t : Type) = t match {
-                case TApply(c, TParameter(s)) => Some(c) -> s
+                case TApply(constructor, TParameter(s)) => Some(constructor) -> s
                 case TParameter(s) => None -> s
                 case _ => throw ParseException(at, "Expected structure, got: " + t)
             }
