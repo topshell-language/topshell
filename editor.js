@@ -57,6 +57,7 @@
                 }
 
                 if (ch == '.') {
+                    if(source.eat(/[.]/)) return "keyword";
                     source.match(fieldRE);
                     return "attribute";
                 }
