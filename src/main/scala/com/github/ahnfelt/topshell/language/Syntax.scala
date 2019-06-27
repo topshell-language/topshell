@@ -34,7 +34,7 @@ object Syntax {
     case class EApply(at : Location, function : Term, argument : Term) extends Term
     case class ELet(at : Location, bindings : List[Binding], body : Term) extends Term
     case class EBind(at : Location, binding : Binding, body : Term) extends Term
-    case class EList(at : Location, elements : List[Term], rest : Option[Term]) extends Term
+    case class EList(at : Location, items : List[ListItem]) extends Term
     case class EVariant(at : Location, name : String, arguments : List[Term]) extends Term
     case class ERecord(at : Location, fields : List[Binding], rest : Option[Term]) extends Term
     case class EField(at : Location, record : Term, field : String, optional : Boolean) extends Term
@@ -43,6 +43,7 @@ object Syntax {
     case class EBinary(at : Location, operator : String, left : Term, right : Term) extends Term
     case class EMatch(at : Location, cases : List[VariantCase], defaultCase : Option[DefaultCase]) extends Term
 
+    case class ListItem(at : Location, condition : Option[Term], spread : Boolean, value : Term)
     case class VariantCase(at : Location, variant : String, arguments : List[Option[String]], body : Term)
     case class DefaultCase(at : Location, variable : Option[String], body : Term)
 

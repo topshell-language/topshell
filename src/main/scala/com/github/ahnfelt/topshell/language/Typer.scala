@@ -171,13 +171,16 @@ class Typer {
             val s = Scheme(List(), List(), TApply(t1, t2))
             EBind(at, Binding(binding.at, binding.name, Some(s), v), b)
 
-        case EList(at, elements, rest) =>
+        case EList(at, items) =>
             val t1 = constraints.freshTypeVariable()
-            val es = elements.map(checkTerm(_, t1))
             val t2 = TApply(TConstructor("List"), t1)
-            val r = rest.map(checkTerm(_, t2))
+            val is = items.map { item =>
+                val c = item.condition.map(checkTerm(_, TConstructor("Bool")))
+                val e = checkTerm(item.value, if(item.spread) t2 else t1)
+                item.copy(condition = c, value = e)
+            }
             unification.unify(expected, t2)
-            EList(at, es, r)
+            EList(at, is)
 
         case EVariant(at, name, arguments) =>
             expected match {

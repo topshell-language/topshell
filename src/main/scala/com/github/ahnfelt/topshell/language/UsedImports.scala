@@ -30,9 +30,10 @@ object UsedImports {
         case EBind(at, binding, body) =>
             usedImports(binding.value) ++
             usedImports(body)
-        case EList(at, elements, rest) =>
-            val list = for(element <- elements) yield usedImports(element)
-            list.foldLeft(rest.map(usedImports).getOrElse(Map.empty))(_ ++ _)
+        case EList(at, items) =>
+            val list = for(item <- items) yield
+                item.condition.map(usedImports).getOrElse(Map.empty) ++ usedImports(item.value)
+            list.foldLeft(Map.empty[String, Location])(_ ++ _)
         case EVariant(at, name, arguments) =>
             arguments.map(usedImports).foldLeft(Map.empty[String, Location])(_ ++ _)
         case EMatch(at, cases, defaultCase) =>

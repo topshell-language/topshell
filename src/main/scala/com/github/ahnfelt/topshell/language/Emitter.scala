@@ -75,8 +75,8 @@ object Emitter {
             Math.max(at.line, Math.max((0 :: bindings.map(bindingLastLine)).max, lastLine(body)))
         case EBind(at, binding, body) =>
             Math.max(at.line, Math.max(bindingLastLine(binding), lastLine(body)))
-        case EList(at, elements, rest) =>
-            Math.max(at.line, Math.max((0 :: elements.map(lastLine)).max, rest.map(lastLine).getOrElse(0)))
+        case EList(at, items) =>
+            Math.max(at.line, (0 :: items.map(_.value).map(lastLine)).max)
         case EVariant(at, name, argument) =>
             at.line
         case EMatch(at, cases, defaultCase) =>
@@ -120,9 +120,19 @@ object Emitter {
         case ELet(at, bindings, body) => "(function() {\n" + emitBody(term) + "})()"
         case EBind(at, binding, body) =>
             "_h.then(" + emitTerm(binding.value) + ", function(" + binding.name + "_) {\n" + emitBody(body) + "})\n"
-        case EList(at, elements, rest) =>
-            val list = "[" + elements.map(emitTerm).mkString(", ") + "]"
-            rest.map(r => "(" + list + ".concat(" + emitTerm(r) + "))").getOrElse(list)
+        case EList(at, items) =>
+            val allNormal = items.forall { case ListItem(_, None, false, _) => true; case _ => false }
+            if(allNormal) "[" + items.map(_.value).map(emitTerm).mkString(", ") + "]" else {
+                val itemCodes = for(ListItem(_, condition, spread, value) <- items) yield {
+                    val valueCode = emitTerm(value)
+                    val spreadCode = if(spread) valueCode else "[" + valueCode + "]"
+                    condition match {
+                        case None => spreadCode
+                        case Some(c) => emitTerm(c) + " ? " + spreadCode + " : []"
+                    }
+                }
+                "[" + itemCodes.mkString(", ") + "].flat()"
+            }
         case EVariant(at, name, arguments) =>
             "{_: " + JSON.stringify(name) + arguments.zipWithIndex.map { case (a, i) =>
                 ", _" + (i + 1) + ": " + emitTerm(a)

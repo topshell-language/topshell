@@ -43,9 +43,11 @@ object Checker {
         case EBind(at, binding, body) =>
             checkTerm(binding.value, visible) ++
             (checkTerm(body, visible + binding.name) - binding.name)
-        case EList(at, elements, rest) =>
-            (for(element <- elements) yield checkTerm(element, visible)).toSet.flatten ++
-            (for(element <- rest) yield checkTerm(element, visible)).toSet.flatten
+        case EList(at, items) =>
+            (for(ListItem(_, condition, _, value) <- items) yield {
+                condition.map(checkTerm(_, visible)).toSet.flatten ++
+                checkTerm(value, visible)
+            }).toSet.flatten
         case EVariant(at, name, argument) =>
             Set.empty
         case EMatch(at, cases, defaultCase) =>

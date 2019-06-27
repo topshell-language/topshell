@@ -283,18 +283,24 @@ class Parser(file : String, tokens : Array[Token]) {
             result
         case (_, "[") =>
             val at = skip("bracket", Some("[")).at
-            var elements : List[Term] = List.empty
-            var rest : Option[Term] = None
-            while(current.raw != "]" && rest.isEmpty) {
-                elements ::= parseTerm()
-                if(current.raw != "]") skip("separator", Some(","))
-                if(current.raw == "..") {
-                    skip("separator", Some(".."))
-                    rest = Some(parseTerm())
+            var items : List[ListItem] = List.empty
+            while(current.raw != "]") {
+                val itemAt = current.at
+                val condition = if(current.raw != "|") None else Some {
+                    skip("operator", Some("|"))
+                    val c = parseTerm()
+                    skip("separator", Some("=>"))
+                    c
                 }
+                val spread = if(current.raw != "..") false else {
+                    skip("separator", Some(".."))
+                    true
+                }
+                items ::= ListItem(itemAt, condition, spread, parseTerm())
+                if(current.raw != "]") skip("separator", Some(","))
             }
             skip("bracket", Some("]"))
-            EList(at, elements.reverse, rest)
+            EList(at, items.reverse)
         case (_, "{") if ahead.raw == "|" =>
             val at = skip("bracket", Some("{")).at
             var cases : List[VariantCase] = List.empty

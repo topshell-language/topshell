@@ -20,7 +20,11 @@ object CacheKey {
         case i : TopImport => i.copy(at = zeroLocation)
     }
 
-    private def withoutLocation(b : Binding) : Binding = b.copy(at = zeroLocation, value = withoutLocation(b.value))
+    private def withoutLocation(b : Binding) : Binding =
+        b.copy(at = zeroLocation, value = withoutLocation(b.value))
+
+    private def withoutLocation(i : ListItem) : ListItem =
+        i.copy(at = zeroLocation, condition = i.condition.map(withoutLocation), value = withoutLocation(i.value))
 
     private def withoutLocation(t : Term) : Term = t match {
         case e : EString => e.copy(at = zeroLocation)
@@ -35,8 +39,8 @@ object CacheKey {
             ELet(zeroLocation, bindings.map(withoutLocation), withoutLocation(body))
         case EBind(_, binding, body) =>
             EBind(zeroLocation, withoutLocation(binding), withoutLocation(body))
-        case EList(_, elements, rest) =>
-            EList(zeroLocation, elements.map(withoutLocation), rest.map(withoutLocation))
+        case EList(_, items) =>
+            EList(zeroLocation, items.map(withoutLocation))
         case EVariant(_, name, argument) =>
             EVariant(zeroLocation, name, argument.map(withoutLocation))
         case EMatch(_, cases, defaultCase) =>
