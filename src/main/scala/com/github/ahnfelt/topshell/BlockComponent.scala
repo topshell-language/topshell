@@ -65,12 +65,6 @@ case class BlockComponent(symbol : P[String], symbolType : P[Option[String]], st
                 } else if(tagName == ">view") {
                     length += 1
                     renderValue(v("html"), maxLength)
-                } else if(tagName == ">attribute") {
-                    length += 5
-                    A("" + v("key"), "" + v("value"))
-                } else if(tagName == ">style") {
-                    length += 5
-                    S("" + v("key"), "" + v("value"))
                 } else if(tagName == ">attributes") {
                     val c = v("children").asInstanceOf[js.Array[js.Dynamic]]
                     length += 5 * c.length
