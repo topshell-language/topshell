@@ -286,17 +286,16 @@ class Parser(file : String, tokens : Array[Token]) {
             var items : List[ListItem] = List.empty
             while(current.raw != "]") {
                 val itemAt = current.at
-                val condition = if(current.raw != "|") None else Some {
-                    skip("operator", Some("|"))
-                    val c = parseTerm()
-                    skip("separator", Some("=>"))
-                    c
-                }
-                val spread = if(current.raw != "..") false else {
-                    skip("separator", Some(".."))
+                val spread = if(current.raw != "...") false else {
+                    skip("separator", Some("..."))
                     true
                 }
-                items ::= ListItem(itemAt, condition, spread, parseTerm())
+                val value = parseTerm()
+                val condition = if(current.raw != "|") None else Some {
+                    skip("operator", Some("|"))
+                    parseTerm()
+                }
+                items ::= ListItem(itemAt, condition, spread, value)
                 if(current.raw != "]") skip("separator", Some(","))
             }
             skip("bracket", Some("]"))
@@ -349,8 +348,8 @@ class Parser(file : String, tokens : Array[Token]) {
                 }
                 bindings ::= Binding(at, name, None, value)
                 if(current.raw != "}") skip("separator", Some(","))
-                if(current.raw == "..") {
-                    skip("separator", Some(".."))
+                if(current.raw == "...") {
+                    skip("separator", Some("..."))
                     rest = Some(parseTerm())
                 }
             }
@@ -362,7 +361,7 @@ class Parser(file : String, tokens : Array[Token]) {
         case ("upper", _) =>
             val c = skip("upper")
             if(current.raw == ".") EVariable(c.at, c.raw)
-            else if(current.raw == "..") { skip("separator"); EVariable(c.at, c.raw) }
+            else if(current.raw == "...") { skip("separator"); EVariable(c.at, c.raw) }
             else {
                 var arguments = List[Term]()
                 while(isAtomStartToken(current)) arguments ::= parseDot()

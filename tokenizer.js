@@ -129,7 +129,7 @@ self.tsh.tokenize = (file, code) => {
                 op === "=" || op === "<-" || op === "->" ||
                 op === "," || op === ";" ||
                 op === "." || op === ".?" ||
-                op === ".." || op === ":" || op === "::" || op === "=>" || op === "?" ?
+                op === "..." || op === ":" || op === "::" || op === "=>" || op === "?" ?
                     "separator" : "operator";
             tokens.push(token(operatorKind, start, i));
 
