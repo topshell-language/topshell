@@ -22,6 +22,9 @@ exports.map = f => v => exports.isNone(v) ? v : exports.some(f(v._1));
 //: (a -> [None, Some b]) -> [None, Some a] -> [None, Some b]
 exports.flatMap = f => v => exports.isNone(v) ? v : f(v._1);
 
+//: (a -> List b) -> [None, Some a] -> List b
+exports.list = f => v => exports.isNone(v) ? [] : f(v._1);
+
 //: [None, Some a] -> List a
 exports.toList = v => exports.isNone(v) ? [] : [v._1];
 
