@@ -71,6 +71,14 @@ case class BlockComponent(symbol : P[String], symbolType : P[Option[String]], st
                 } else if(tagName == ">style") {
                     length += 5
                     S("" + v("key"), "" + v("value"))
+                } else if(tagName == ">attributes") {
+                    val c = v("children").asInstanceOf[js.Array[js.Dynamic]]
+                    length += 5 * c.length
+                    Tags(for(p <- c) yield A("" + p.key, "" + p.value))
+                } else if(tagName == ">styles") {
+                    val c = v("children").asInstanceOf[js.Array[js.Dynamic]]
+                    length += 5 * c.length
+                    Tags(for(p <- c) yield S("" + p.key, "" + p.value))
                 } else if(tagName == ">status") {
                     length += 30
                     E.span(TextCss, S.color(Palette.textHint), v("key") match {

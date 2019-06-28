@@ -12,12 +12,12 @@ exports.text = function(text) {
     return new self.tsh.Tag({_tag: ">text", text: "" + text});
 };
 
-//: String -> String -> Html
-exports.attribute = function(key) { return function(value) {
-    return new self.tsh.Tag({_tag: ">attribute", key: "" + key, value: "" + value, });
-}};
+//: List {key: String, value: String} -> Html
+exports.attributes = function(pairs) {
+    return new self.tsh.Tag({_tag: ">attributes", children: pairs});
+};
 
-//: String -> String -> Html
-exports.style = function(key) { return function(value) {
-    return new self.tsh.Tag({_tag: ">style", key: "" + key, value: "" + value, });
-}};
+//: List {key: String, value: String} -> Html
+exports.styles = function(pairs) {
+    return new self.tsh.Tag({_tag: ">styles", children: pairs});
+};
