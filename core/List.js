@@ -113,17 +113,8 @@ exports.flatten = l => {
 //: (a -> List b) -> List a -> List b
 exports.flatMap = exports.then;
 
-//: List a -> List b -> List {key: a, value: b}
-exports.zip = a => b => {
-    let result = [];
-    for(var i = 0; i < a.length && i < b.length; i++) {
-        result.push({key: a[i], value: b[i]});
-    }
-    return result;
-};
-
 //: (a -> b -> c) -> List a -> List b -> List c
-exports.zipWith = f => a => b => {
+exports.zip = f => a => b => {
     let result = [];
     for(var i = 0; i < a.length && i < b.length; i++) {
         result.push(f(a[i])(b[i]));
