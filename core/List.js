@@ -59,9 +59,9 @@ exports.take = function(i) { return function(r) { return r.slice(0, i); }; };
 //: Int -> List a -> List a
 exports.drop = function(i) { return function(r) { return r.slice(i); }; };
 //: Int -> List a -> List a
-exports.takeLast = function(i) { return function(r) { return r.slice(-i); }; };
+exports.takeLast = function(i) { return function(r) { return i === 0 ? [] : r.slice(-i); }; };
 //: Int -> List a -> List a
-exports.dropLast = function(i) { return function(r) { return r.slice(0, -i); }; };
+exports.dropLast = function(i) { return function(r) { return i === 0 ? r : r.slice(0, -i); }; };
 
 //: (a -> Bool) -> List a -> List a
 exports.filter = function(f) { return function(r) { return r.filter(f); }; };
@@ -146,6 +146,16 @@ exports.takeWhile = f => a => {
     let result = [];
     for(var i = 0; i < a.length; i++) {
         if(!f(a[i])) return result;
+        result.push(a[i]);
+    }
+    return result;
+};
+
+//: (a -> Bool) -> List a -> List a
+exports.takeLastWhile = f => a => {
+    let result = [];
+    for(var j = a.length - 1; j >= 0 && f(a[j]); j--) {}
+    for(var i = j + 1; i < a.length; i++) {
         result.push(a[i]);
     }
     return result;
