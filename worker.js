@@ -172,14 +172,29 @@ self.tsh.toHtml = value => {
                 if(!simple) result.push(")");
             }
         } else {
-            result.push("{");
-            for(var k in value) if(Object.prototype.hasOwnProperty.call(value, k)) {
-                if(result.length > 1) result.push(", ");
-                var l = k.match(/^[a-z][a-zA-Z0-9]*$/g) ? k : JSON.stringify(k);
-                result.push(l + ": ");
-                result.push(self.tsh.toHtml(value[k]));
+            var isPair = false;
+            if(Object.prototype.hasOwnProperty.call(value, "key") && Object.prototype.hasOwnProperty.call(value, "value")) {
+                isPair = true;
+                for(var p in value) if(Object.prototype.hasOwnProperty.call(value, p)) {
+                    if(p !== "key" && p !== "value") isPair = false;
+                }
             }
-            result.push("}");
+            if(isPair) {
+                result.push(self.tsh.toHtml(value.key));
+                result.push(" ~> ");
+                if(value.value instanceof Object) result.push("(");
+                result.push(self.tsh.toHtml(value.value));
+                if(value.value instanceof Object) result.push(")");
+            } else {
+                result.push("{");
+                for(var k in value) if(Object.prototype.hasOwnProperty.call(value, k)) {
+                    if(result.length > 1) result.push(", ");
+                    var l = k.match(/^[a-z][a-zA-Z0-9]*$/g) ? k : JSON.stringify(k);
+                    result.push(l + ": ");
+                    result.push(self.tsh.toHtml(value[k]));
+                }
+                result.push("}");
+            }
         }
     }
     return {_tag: "span", children: result};
