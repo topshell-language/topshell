@@ -11,7 +11,7 @@ exports.flatMap = f => task => task.then(f);
 exports.flatten = task => task.then(task => task);
 
 //: r1 -> Task r2 | {r1 : Task x} {r2 : x}
-exports.concurrent = structure => new self.tsh.Task(world => {
+exports.parallel = structure => new self.tsh.Task(world => {
     var tasks = [];
     for(var k in structure) if(Object.prototype.hasOwnProperty.call(structure, k)) {
         tasks.push(structure[k].run(world));
