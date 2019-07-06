@@ -1,3 +1,5 @@
+# TopShell
+
 > **Tired of Bash?** 
 > 
 > TopShell is a statically typed, purely functional, reactive environment with visualization capabilities that can be used in many of the same situations.
