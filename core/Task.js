@@ -10,20 +10,20 @@ exports.flatMap = f => task => task.then(f);
 //: Task (Task a) -> Task a
 exports.flatten = task => task.then(task => task);
 
-//: r1 -> Task r2 | {r1 : Task x} {r2 : x}
+//: r1 -> Task r2 | {r1 : Task x, r2 : x}
 exports.parallel = structure => new self.tsh.Task(world => {
     var tasks = [];
     for(var k in structure) if(Object.prototype.hasOwnProperty.call(structure, k)) {
         tasks.push(structure[k].run(world));
     }
-    return Promise.all(tasks).map(results => {
+    return Promise.all(tasks).then(results => {
         var result = Array.isArray(structure) ? [] : {};
         var i = 0;
         for(var k in structure) if(Object.prototype.hasOwnProperty.call(structure, k)) {
             result[k] = results[i].result;
             i++;
         }
-        return result;
+        return {result: result};
     });
 });
 
