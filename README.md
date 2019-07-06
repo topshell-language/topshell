@@ -212,7 +212,7 @@ Note: Pattern matching is currently very limited.
 
 ## Sum types and sum type constraints
 
-In the above, the inferred type for is `fallback: a -> [None, Some a] -> a`. On the other hand, `Some 42` has type `a | Some : Int -> a`, which says that `Some` must be a constructor that takes an `Int` as a parameter. `[None, Some Int]` happens to be a type that satisfies this constraint. 
+In the above, the inferred type is `fallback : a -> [None, Some a] -> a`. On the other hand, `Some 42` has type `a | Some : Int -> a`, which says that `Some` must be a constructor that takes an `Int` as a parameter. `[None, Some Int]` happens to be a type that satisfies this constraint. 
 
 
 # If
