@@ -65,7 +65,7 @@ peopleWithImages |> View.table
 
 ## Stream example
 
-* Reqeuest the time each second.
+* Make a stream that produces the time each second.
 * Draw an animated clock with SVG.
 
 ```haskell
