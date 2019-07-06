@@ -524,33 +524,35 @@ self.tsh.then = (m, f) => {
     }
 };
 
-self.tsh.action = actionName => parameter => new self.tsh.Task2((t, c, w) => {
-    var action = {action: actionName, data: parameter, context: w};
+self.tsh.action = actionName => parameter => new self.tsh.Task2(async world => {
+    var action = {action: actionName, data: parameter, context: world};
     var options = {method: "POST", body: JSON.stringify(action)};
-    options.signal = w.abortSignal;
-    try {
-        console.log(actionName +
-            (parameter.path != null ? " " + parameter.path : "") +
-            (parameter.target != null ? " " + parameter.target : "") +
-            (parameter.command != null ? " " + parameter.command : "") +
-            (w.ssh != null ? " (" + w.ssh.user + "@" + w.ssh.host + ")" : "")
-        );
-        fetch("/execute", options)
-            .then(r => {
-                if(!r.ok) {
-                    if(!w.abortSignal.aborted) return r.text().then(
-                        problem => {if(!w.abortSignal.aborted) c(new Error(problem))},
-                        _ => {if(!w.abortSignal.aborted) c(new Error("Action error " + r.status + ": " + options.body))}
-                    );
-                } else {
-                    return Promise.resolve(r)
-                        .then(r => {if(!w.abortSignal.aborted) return r.json()})
-                        .then(j => {if(!w.abortSignal.aborted) return j.data})
-                        .then(v => {if(!w.abortSignal.aborted) t(v)}, e => {if(!w.abortSignal.aborted) c(e)})
-                }
-            })
-    } catch(e) {
-        c(e)
+    function checkAborted() {
+        if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+    }
+    checkAborted();
+    if(world.abortSignal) options.signal = world.abortSignal;
+    console.log(actionName +
+        (parameter.path != null ? " " + parameter.path : "") +
+        (parameter.target != null ? " " + parameter.target : "") +
+        (parameter.command != null ? " " + parameter.command : "") +
+        (world.ssh != null ? " (" + world.ssh.user + "@" + world.ssh.host + ")" : "")
+    );
+    let result = await fetch("/execute", options);
+    checkAborted();
+    if(!result.ok) {
+        let problem;
+        try {
+            problem = await result.text();
+        } catch(_) {
+            problem = "Action error " + result.status + ": " + options.body;
+        }
+        checkAborted();
+        throw new Error(problem);
+    } else {
+        let json = await result.json();
+        checkAborted();
+        return {result: json.data};
     }
 });
 
