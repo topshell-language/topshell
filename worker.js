@@ -30,31 +30,31 @@ self.tsh.Tag = class extends self.tsh.AbstractView {
     }
 };
 
-self.tsh.Task2 = class extends self.tsh.AbstractView {
+self.tsh.Task = class extends self.tsh.AbstractView {
     constructor(run) {
         super();
         this.run = run;
     }
     then(body) {
-        return new self.tsh.Task2(async world => {
+        return new self.tsh.Task(async world => {
             let v1 = (await this.run(world)).result;
             let v2 = (await body(v1).run(world)).result;
             return {result: v2};
         });
     }
     map(body) {
-        return new self.tsh.Task2(async world => {
+        return new self.tsh.Task(async world => {
             let v = (await this.run(world)).result;
             return {result: body(v)};
         });
     }
     catch(body) {
-        return new self.tsh.Task2(async world => {
+        return new self.tsh.Task(async world => {
             try {
                 let v1 = (await this.run(world)).result;
                 return {result: v1};
             } catch(e) {
-                if(e === self.tsh.Task2.abortedError) throw e;
+                if(e === self.tsh.Task.abortedError) throw e;
                 let v2 = (await body(e).run(world)).result;
                 return {result: v2};
             }
@@ -64,9 +64,9 @@ self.tsh.Task2 = class extends self.tsh.AbstractView {
         return {_tag: "span", children: ["task"]};
     }
 };
-self.tsh.Task2.abortedError = new class {};
-self.tsh.Task2.simple = function(body) {
-    return new self.tsh.Task2(world => new Promise((resolvePromise, rejectPromise) =>
+self.tsh.Task.abortedError = new class {};
+self.tsh.Task.simple = function(body) {
+    return new self.tsh.Task(world => new Promise((resolvePromise, rejectPromise) =>
         body(x => resolvePromise({result: x}), rejectPromise, world)
     ));
 };
@@ -151,7 +151,7 @@ self.tsh.Stream = class extends self.tsh.AbstractView {
     }
     fold(x, f) {
         let open = this.open;
-        return new self.tsh.Task2(async world => {
+        return new self.tsh.Task(async world => {
             let outer = open(world);
             var r = x;
             let o = await outer.next();
@@ -305,7 +305,7 @@ self.tsh.Stream = class extends self.tsh.AbstractView {
                     yield o.value;
                 }
             } catch(e) {
-                if(e === self.tsh.Task2.abortedError) throw e;
+                if(e === self.tsh.Task.abortedError) throw e;
                 let outer = f(e).open(world);
                 while(true) {
                     let o = await outer.next();
@@ -514,7 +514,7 @@ self.tsh.then = (m, f) => {
             }
         }
         return result;
-    } else if(m instanceof self.tsh.Task2) {
+    } else if(m instanceof self.tsh.Task) {
         return m.then(f);
     } else if(m instanceof self.tsh.Stream) {
         return m.then(f);
@@ -524,11 +524,11 @@ self.tsh.then = (m, f) => {
     }
 };
 
-self.tsh.action = actionName => parameter => new self.tsh.Task2(async world => {
+self.tsh.action = actionName => parameter => new self.tsh.Task(async world => {
     var action = {action: actionName, data: parameter, context: world};
     var options = {method: "POST", body: JSON.stringify(action)};
     function checkAborted() {
-        if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+        if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task.abortedError;
     }
     checkAborted();
     if(world.abortSignal) options.signal = world.abortSignal;
@@ -556,7 +556,7 @@ self.tsh.action = actionName => parameter => new self.tsh.Task2(async world => {
     }
 });
 
-self.tsh.loadImport = url => new self.tsh.Task2.simple((t, e, w) => {
+self.tsh.loadImport = url => new self.tsh.Task.simple((t, e, w) => {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.onload = function() {

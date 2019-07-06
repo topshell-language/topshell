@@ -1,4 +1,4 @@
-exports._fetchThen = f => configuration => new self.tsh.Task2(async world => {
+exports._fetchThen = f => configuration => new self.tsh.Task(async world => {
     var options = Object.assign({}, configuration);
     var url = configuration.url;
     if(options.mode === "proxy") {
@@ -15,10 +15,10 @@ exports._fetchThen = f => configuration => new self.tsh.Task2(async world => {
     }
     if(world.abortSignal) options.signal = world.abortSignal;
     let response = await fetch(url, options);
-    if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+    if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task.abortedError;
     if(response.ok || options.check === false) {
         let result = await f(response);
-        if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+        if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task.abortedError;
         return {result: result};
     } else {
         throw new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url);
@@ -35,9 +35,9 @@ exports.fetchJson = exports._fetchThen(r => r.json());
 //: c -> Task Bytes | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => new Uint8Array(b)));
 
-exports._processResponse = f => response => new self.tsh.Task2(async world => {
+exports._processResponse = f => response => new self.tsh.Task(async world => {
     let result = await f(response);
-    if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+    if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task.abortedError;
     return {result: result};
 });
 
