@@ -201,8 +201,8 @@ fallback = default -> {
     | Some x => x
 }
 
-fallback (Some 42)    // 42
-fallback None         // 0
+fallback 0 (Some 42)    // 42
+fallback 0 None         // 0
 ```
 
 The `{| ... => ... }` syntax creates a lambda function that pattern matches on its argument. Each `|` begins a new pattern, followed by `=>` and then the corresponding expression, which may use captured variables from the pattern.
