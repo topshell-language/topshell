@@ -48,18 +48,62 @@ _ <- File.appendText "/etc/hosts" (
 * Show it in a graphical table with image avatars.
 
 ```haskell
-html <- Http.fetchJson {url: "https://reqres.in/api/users?page=2"}
+json <- Http.fetchJson {url: "https://reqres.in/api/users?page=2"}
 
 people : List {id: Int, "first_name": String, "last_name": String, avatar: String} = 
-    Json.toAny html.data
+    Json.toAny json.data
 
-htmlImage = url -> Html.tag "img" [Html.attribute "src" url]
+htmlImage = url -> Html.tag "img" [Html.attributes ["src" ~> url]]
 
 peopleWithImages = people |> List.map (
     p -> {image: htmlImage p.avatar, name: p."first_name" + " " + p."last_name"}
 )
 
 peopleWithImages |> View.table
+```
+
+
+## Stream example
+
+* Reqeuest the time each second.
+* Draw an animated clock with SVG.
+
+```haskell
+time <- Stream.forever 0.0 (_ -> Task.sleep 1.0; Task.now)
+
+t = time / 60
+a = t * Float.pi * 2.0
+
+x = Float.cos a
+y = Float.sin a
+
+Html.tag "svg" [
+    Html.attributes [
+        "viewBox" ~> "-1 -1 2 2"
+    ],
+    Html.tag "circle" [
+        Html.styles [
+            "fill" ~> "#e0e0e0"
+        ],
+        Html.attributes [
+            "cx" ~> "0", 
+            "cy" ~> "0", 
+            "r" ~> "1"
+        ]
+    ],
+    Html.tag "line" [
+        Html.styles [
+            "stroke" ~> "cornflowerblue", 
+            "stroke-width" ~> "0.1"
+        ],
+        Html.attributes [
+            "x1" ~> "0", 
+            "y1" ~> "0", 
+            "x2" ~> String.ofFloat x, 
+            "y2" ~> String.ofFloat y
+        ]
+    ],
+]
 ```
 
 
@@ -131,6 +175,9 @@ Records also support spread syntax, eg. {z: 9.0, ...r} creates a new record that
 Record labels may be unquoted `[a-z][a-zA-Z0-9]*`, or if they contain other characters, enclosed in double quotes, eg. `{"my field": 42}`.
 
 As a shorthand for `r -> r.l`, you can write `(.l)` for any label `l`.
+
+For pairs on the form `{key: ..., value: ...}` you can use the shorthand `... ~> ...`.
+
 
 ## Record types and field constraints
 
