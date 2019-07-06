@@ -1,9 +1,9 @@
 //: String -> Dom
-exports.fromHtmlDocument = html => {
+exports.ofHtmlDocument = html => {
     return new self.tsh.Dom([new jsdom.JSDOM(html).window.document.documentElement]);
 };
 //: String -> Dom
-exports.fromHtml = html => {
+exports.ofHtml = html => {
     var nodes = jsdom.JSDOM.fragment(html);
     var result = Array.from(nodes.childNodes);
     return new self.tsh.Dom(result);
@@ -17,7 +17,7 @@ exports.toHtml = dom => {
     return result;
 };
 //: List Dom -> Dom
-exports.fromList = list => new self.tsh.Dom(list.flatMap(d => d.list));
+exports.ofList = list => new self.tsh.Dom(list.flatMap(d => d.list));
 //: Dom -> List Dom
 exports.toList = dom => dom.list.map(d => new self.tsh.Dom([d]));
 //: String -> Dom -> Dom

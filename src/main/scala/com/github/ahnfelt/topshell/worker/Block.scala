@@ -109,11 +109,11 @@ object Block {
                     try {
                         val result = block.compute.get.apply(())
                         if(block.effect) {
-                            if(js.isUndefined(result._run)) {
-                                block.state = Error("Not a task")
-                            } else {
-                                block.state = Runnable(result)
-                            }
+                            block.state =
+                                if(js.Array.isArray(result)) Runnable(js.Dynamic.global.tsh.Stream.ofList(result))
+                                else if(!js.isUndefined(result.run)) Runnable(js.Dynamic.global.tsh.Stream.once(result))
+                                else if(!js.isUndefined(result.open)) Runnable(result)
+                                else Error("Not a top-level effect")
                         } else {
                             block.setResult(result)
                             block.state = Done(result)
@@ -122,32 +122,51 @@ object Block {
                     } catch {
                         case e : Exception => block.state = Error(e.getMessage)
                     }
+                    true
+                } else {
+                    remaining.toSet != awaiting.toSet
                 }
-                remaining.toSet != awaiting.toSet
 
             case Computing() =>
                 false
 
-            case Runnable(task) if start(block.name) || block.module =>
+            case Runnable(stream) if start(block.name) || block.module =>
                 var started = false
-                block.cancel = task._run(
-                    js.Dictionary(),
-                    { v : js.Dynamic =>
-                        block.setResult(v)
-                        block.state = Done(v)
-                        pendDependants(block, globalBlocks) // TODO
-                        if(started) sendBlockStatus(block)
-                        if(started) globalStepAll()
-                    },
-                    { e : js.Dynamic =>
-                        val message = "" + e
-                        block.state = Error(message)
-                        pendDependants(block, globalBlocks) // TODO
-                        if(started) sendBlockStatus(block)
+                val abortController = scalajs.js.Dynamic.newInstance(scalajs.js.Dynamic.global.AbortController)()
+                block.cancel = {() => abortController.abort(); ()} : js.Function0[Unit]
+                val iterator = stream.open(js.Dictionary("abortSignal" -> abortController.signal))
+                def isAborted : Boolean = abortController.signal.aborted.asInstanceOf[Boolean]
+                var last = 0L
+                def poll() : Unit = {
+                    if(isAborted) return
+                    val now = System.currentTimeMillis()
+                    val delta = now - last
+                    if(delta < 100) {
+                        scalajs.js.timers.setTimeout(100 - delta) { poll() }
+                        return
                     }
-                ).asInstanceOf[js.UndefOr[js.Function0[Unit]]]
+                    last = now
+                    iterator.next().`then`(
+                        { v : js.Dynamic => if(!v.done.asInstanceOf[Boolean] && !isAborted) {
+                            block.setResult(v.value.result)
+                            block.state = Done(v.value.result)
+                            pendDependants(block, globalBlocks) // TODO
+                            if(started) sendBlockStatus(block)
+                            if(started) globalStepAll()
+                            poll()
+                        }},
+                        { e : js.Dynamic => if(!isAborted) {
+                            val message = "" + e
+                            block.state = Error(message)
+                            abortController.abort()
+                            pendDependants(block, globalBlocks) // TODO
+                            if(started) sendBlockStatus(block)
+                        }}
+                    )
+                }
                 started = true
-                if(block.state.isInstanceOf[Runnable]) block.state = Running(block.cancel)
+                block.state = Running(block.cancel)
+                poll()
                 true
 
             case Runnable(_) =>

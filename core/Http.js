@@ -1,8 +1,5 @@
-exports._fetchThen = f => configuration => new self.tsh.Task((w, t, c) => {
-    var options = {};
-    for(var k in configuration) if(Object.prototype.hasOwnProperty.call(configuration, k)) {
-        options[k] = configuration[k];
-    }
+exports._fetchThen = f => configuration => new self.tsh.Task2(async world => {
+    var options = Object.assign({}, configuration);
     var url = configuration.url;
     if(options.mode === "proxy") {
         options.credentials = "omit"; // Don't send cookies etc. to third parties
@@ -16,61 +13,40 @@ exports._fetchThen = f => configuration => new self.tsh.Task((w, t, c) => {
             options.headers[headers[i].key] = headers[i].value;
         }
     }
-    var canceled = false;
-    var controller = new AbortController();
-    options.signal = controller.signal;
-    try {
-        fetch(url, options).then(response => {
-            if(!canceled) {
-                if(response.ok || options.check === false) {
-                    try { return f(response).then(v => Promise.resolve(t(v))); } catch(e) { c(e) }
-                } else {
-                    c(new Error("HTTP error " + response.status + " on " +
-                        (options.method || "GET") + " " + url));
-                }
-            }
-        }, e => {
-            if(!canceled) c(e)
-        });
-    } catch(e) {
-        c(e)
-    }
-    return () => {
-        canceled = true;
-        controller.abort();
+    if(world.abortSignal) options.signal = world.abortSignal;
+    let response = await fetch(url, options);
+    if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+    if(response.ok || options.check === false) {
+        let result = await f(response);
+        if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+        return {result: result};
+    } else {
+        throw new Error("HTTP error " + response.status + " on " + (options.method || "GET") + " " + url);
     }
 });
 
 //: c -> Task Http | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
-exports.fetch = exports._fetchThen(r => Promise.resolve(r));
+exports.fetch = exports._fetchThen(r => r);
 
 //: c -> Task String | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
 exports.fetchText = exports._fetchThen(r => r.text());
 //: c -> Task Json | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
-exports.fetchJson = exports._fetchThen(r => r.json().then(j => Promise.resolve(j)));
+exports.fetchJson = exports._fetchThen(r => r.json());
 //: c -> Task Bytes | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
-exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8Array(b))));
+exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => new Uint8Array(b)));
 
-exports._processResponse = f => response => new self.tsh.Task((w, t, c) => {
-    var canceled = false;
-    try {
-        f(response).then(v => {
-            if(!canceled) t(v)
-        }, e => {
-            if(!canceled) c(e)
-        })
-    } catch(e) {
-        c(e)
-    }
-    return () => canceled = true;
+exports._processResponse = f => response => new self.tsh.Task2(async world => {
+    let result = await f(response);
+    if(world.abortSignal && world.abortSignal.aborted) throw self.tsh.Task2.abortedError;
+    return {result: result};
 });
 
 //: Http -> Task String
 exports.text = exports._processResponse(r => r.text());
 //: Http -> Task Json
-exports.json = exports._processResponse(r => r.json().then(j => Promise.resolve(j)));
+exports.json = exports._processResponse(r => r.json().then(j => j));
 //: Http -> Task Bytes
-exports.bytes = exports._processResponse(r => r.arrayBuffer().then(b => Promise.resolve(new Uint8Array(b))));
+exports.bytes = exports._processResponse(r => r.arrayBuffer().then(b => new Uint8Array(b)));
 
 //: String -> Http -> [None, Some String]
 exports.header = header => response => response.headers.get(header);

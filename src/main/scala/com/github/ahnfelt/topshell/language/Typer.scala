@@ -65,8 +65,10 @@ class Typer {
                     val v = checkTerm(s.binding.value, expected1)
                     val expected3 = if(!s.bind) expected1 else {
                         val expected2 = constraints.freshTypeVariable()
-                        unification.unify(TApply(TConstructor("Task"), expected2), expected1)
-                        expected2
+                        val expected3 = constraints.freshTypeVariable()
+                        constraints.add(TApply(TConstructor("Monad"), expected2))
+                        unification.unify(TApply(expected2, expected3), expected1)
+                        expected3
                     }
                     val otherFree = freeInEnvironment(Some(s.binding.name))
                     val actual = constraints.generalize(expected3, otherFree, topLevel = true)

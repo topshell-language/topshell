@@ -1,13 +1,13 @@
 //: List Int -> Bytes
-exports.fromList = bytes => new Uint8Array(bytes);
+exports.ofList = bytes => new Uint8Array(bytes);
 //: Bytes -> List Int
 exports.toList = bytes => Array.from(bytes);
 //: String -> Bytes
-exports.fromHex = self.tsh.fromHex;
+exports.ofHex = self.tsh.fromHex;
 //: Bytes -> String
 exports.toHex = self.tsh.toHex;
 //: String -> Bytes
-exports.fromString = text => new TextEncoder("utf-8").encode(text);
+exports.ofString = text => new TextEncoder("utf-8").encode(text);
 //: Bytes -> String
 exports.toString = bytes => new TextDecoder().decode(bytes);
 //: Bytes -> Int

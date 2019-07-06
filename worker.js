@@ -30,47 +30,308 @@ self.tsh.Tag = class extends self.tsh.AbstractView {
     }
 };
 
-self.tsh.Task = class extends self.tsh.AbstractView {
+self.tsh.Task2 = class extends self.tsh.AbstractView {
     constructor(run) {
         super();
-        this._run = run;
+        this.run = run;
     }
-    then(f) {
-         return new self.tsh.Task((w, t, c) => {
-            var cancel1 = null;
-            try {
-                var cancel2 = this._run(w, v => {
-                    try {
-                        if(cancel1 instanceof Function) cancel1();
-                        cancel1 = f(v)._run(w, t, c);
-                    } catch(e) {
-                        c(e)
-                    }
-                }, c);
-            } catch(e) {
-                c(e);
-            }
-            return () => {
-                if(cancel2 instanceof Function) cancel2();
-                if(cancel1 instanceof Function) cancel1();
-            };
+    then(body) {
+        return new self.tsh.Task2(async world => {
+            let v1 = (await this.run(world)).result;
+            let v2 = (await body(v1).run(world)).result;
+            return {result: v2};
         });
     }
-    map(f) {
-        return new self.tsh.Task((w, t, c) => {
-            return this._run(w, v => {
-                try {
-                    t(f(v))
-                } catch(e) {
-                    c(e)
-                }
-            }, c);
+    map(body) {
+        return new self.tsh.Task2(async world => {
+            let v = (await this.run(world)).result;
+            return {result: body(v)};
+        });
+    }
+    catch(body) {
+        return new self.tsh.Task2(async world => {
+            try {
+                let v1 = (await this.run(world)).result;
+                return {result: v1};
+            } catch(e) {
+                if(e === self.tsh.Task2.abortedError) throw e;
+                let v2 = (await body(e).run(world)).result;
+                return {result: v2};
+            }
         });
     }
     toHtml() {
         return {_tag: "span", children: ["task"]};
     }
 };
+self.tsh.Task2.abortedError = new class {};
+self.tsh.Task2.simple = function(body) {
+    return new self.tsh.Task2(world => new Promise((resolvePromise, rejectPromise) =>
+        body(x => resolvePromise({result: x}), rejectPromise, world)
+    ));
+};
+
+self.tsh.Stream = class extends self.tsh.AbstractView {
+    constructor(open) {
+        super();
+        this.open = open;
+    }
+    then(body) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            let o = await outer.next();
+            while(!o.done) {
+                let inner = body(o.value.result).open(world);
+                let i = await inner.next();
+                while(!i.done) {
+                    yield {result: i.value.result};
+                    i = await inner.next();
+                }
+                o = await outer.next();
+            }
+        });
+    }
+    map(body) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            let o = await outer.next();
+            while(!o.done) {
+                yield {result: body(o.value.result)};
+                o = await outer.next();
+            }
+        });
+    }
+    zip(f, stream) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let s1 = open(world);
+            let s2 = stream.open(world);
+            let n1 = await s1.next();
+            let n2 = await s2.next();
+            while(!n1.done && !n2.done) {
+                yield {result: f(n1.value.result)(n2.value.result)};
+                n1 = await s1.next();
+                n2 = await s2.next();
+            }
+        });
+    }
+    latest(f, stream) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let s1 = open(world);
+            let s2 = stream.open(world);
+            let n1 = null;
+            let n2 = null;
+            let p1 = s1.next().then(n => { p1 = null; n1 = n });
+            let p2 = s2.next().then(n => { p2 = null; n2 = n });
+            await p1;
+            await p2;
+            while(!n1.done && !n2.done) {
+                yield {result: f(n1.value.result)(n2.value.result)};
+                if(p1 === null) p1 = s1.next().then(n => { p1 = null; n1 = n });
+                if(p2 === null) p2 = s2.next().then(n => { p2 = null; n2 = n });
+                await Promise.race([p1, p2]);
+            }
+        });
+    }
+    scan(x, f) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            var r = {result: x};
+            let o = await outer.next();
+            while(!o.done) {
+                r = {result: f(r.result)(o.value.result)};
+                yield r;
+                o = await outer.next();
+            }
+        });
+    }
+    fold(x, f) {
+        let open = this.open;
+        return new self.tsh.Task2(async world => {
+            let outer = open(world);
+            var r = x;
+            let o = await outer.next();
+            while(!o.done) {
+                r = f(r)(o.value.result);
+                o = await outer.next();
+            }
+            return {result: r};
+        });
+    }
+    merge(stream) {
+        let open = this.open;
+        return new self.tsh.Stream(function(world) {
+            let s1 = open(world);
+            let s2 = stream.open(world);
+            let p1 = null;
+            let p2 = null;
+            return {next() {
+                if(p1 === null && s1 !== null) p1 = s1.next().then(n => { p1 = null; if(n.done) s1 = null; return n });
+                if(p2 === null && s2 !== null) p2 = s2.next().then(n => { p2 = null; if(n.done) s2 = null; return n });
+                let promises = [p1, p2].filter(p => p !== null);
+                return promises.length === 0 ? {done: true} : Promise.race(promises).then(n => {
+                    if(n.done) {
+                        if(p1 !== null) return p1;
+                        if(p2 !== null) return p2;
+                    }
+                    return n;
+                });
+            }};
+        });
+    }
+    take(count) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            for(let i = 0; i < count; i++) {
+                let o = await outer.next();
+                if(o.done) return;
+                yield o.value;
+            }
+        });
+    }
+    drop(count) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            for(let i = 0; i < count; i++) {
+                let o = await outer.next();
+                if(o.done) return;
+            }
+            while(true) {
+                let o = await outer.next();
+                if(o.done) return;
+                yield o.value;
+            }
+        });
+    }
+    takeWhile(condition) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            while(true) {
+                let o = await outer.next();
+                if(o.done || !condition(o.value.result)) return;
+                yield o.value;
+            }
+        });
+    }
+    dropWhile(condition) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            let triggered = false;
+            while(true) {
+                let o = await outer.next();
+                if(o.done) return;
+                if(triggered || !condition(o.value.result)) {
+                    triggered = true;
+                    yield o.value;
+                }
+            }
+        });
+    }
+    batch(size) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            let list = [];
+            while(true) {
+                let o = await outer.next();
+                if(o.done) {
+                    yield {result: list};
+                    return;
+                }
+                list.push(o.value.result);
+                if(list.length >= size) {
+                    yield {result: list};
+                    list = [];
+                }
+            }
+        });
+    }
+    buffer(initial, aggregate, condition) {
+        let open = this.open;
+        return new self.tsh.Stream(world => {
+            let outer = open(world);
+            let isInitial = true;
+            let state = initial;
+            let done = false;
+            let going = false;
+            let promise = null;
+            function go() {
+                going = true;
+                if(!done && (isInitial || !condition(state))) {
+                    promise = outer.next().then(x => {
+                        if(x.done) done = true; else {
+                            isInitial = false;
+                            state = aggregate(state)(x.value.result);
+                            go();
+                        }
+                        return x;
+                    });
+                } else {
+                    going = false;
+                }
+            }
+            go();
+            function next() {
+                if(!isInitial) {
+                    let result = state;
+                    isInitial = true;
+                    state = initial;
+                    if(!going) go();
+                    return Promise.resolve({done: false, value: {result: result}})
+                }
+                if(done) return Promise.resolve({done: true});
+                if(!going) go();
+                return promise.then(next);
+            }
+            return {next: next};
+        });
+    }
+    catch(f) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            try {
+                let outer = open(world);
+                while(true) {
+                    let o = await outer.next();
+                    if(o.done) return;
+                    yield o.value;
+                }
+            } catch(e) {
+                if(e === self.tsh.Task2.abortedError) throw e;
+                let outer = f(e).open(world);
+                while(true) {
+                    let o = await outer.next();
+                    if(o.done) return;
+                    yield o.value;
+                }
+            }
+        });
+    }
+    toHtml() {
+        return {_tag: "span", children: ["stream"]};
+    }
+};
+self.tsh.Stream.forever = (x, f) => new self.tsh.Stream(async function*(world) {
+    var r = {result: x};
+    while(true) {
+        r = await f(r.result).run(world);
+        yield r
+    }
+});
+self.tsh.Stream.once = task => new self.tsh.Stream(async function*(world) {
+    yield await task.run(world);
+});
+self.tsh.Stream.ofList = a => new self.tsh.Stream(async function*(world) {
+    for(var i = 0; i < a.length; i++) yield {result: a[i]};
+});
 
 self.tsh.Lazy = class extends self.tsh.AbstractView {
     constructor(compute) {
@@ -253,7 +514,9 @@ self.tsh.then = (m, f) => {
             }
         }
         return result;
-    } else if(m instanceof self.tsh.Task) {
+    } else if(m instanceof self.tsh.Task2) {
+        return m.then(f);
+    } else if(m instanceof self.tsh.Stream) {
         return m.then(f);
     } else {
         console.error("Operator <- not supported for: " + m);
@@ -261,12 +524,10 @@ self.tsh.then = (m, f) => {
     }
 };
 
-self.tsh.action = actionName => parameter => new self.tsh.Task((w, t, c) => {
+self.tsh.action = actionName => parameter => new self.tsh.Task2((t, c, w) => {
     var action = {action: actionName, data: parameter, context: w};
     var options = {method: "POST", body: JSON.stringify(action)};
-    var canceled = false;
-    var controller = new AbortController();
-    options.signal = controller.signal;
+    options.signal = w.abortSignal;
     try {
         console.log(actionName +
             (parameter.path != null ? " " + parameter.path : "") +
@@ -277,27 +538,23 @@ self.tsh.action = actionName => parameter => new self.tsh.Task((w, t, c) => {
         fetch("/execute", options)
             .then(r => {
                 if(!r.ok) {
-                    if(!canceled) return r.text().then(
-                        problem => {if(!canceled) c(new Error(problem))},
-                        _ => {if(!canceled) c(new Error("Action error " + r.status + ": " + options.body))}
+                    if(!w.abortSignal.aborted) return r.text().then(
+                        problem => {if(!w.abortSignal.aborted) c(new Error(problem))},
+                        _ => {if(!w.abortSignal.aborted) c(new Error("Action error " + r.status + ": " + options.body))}
                     );
                 } else {
                     return Promise.resolve(r)
-                        .then(r => {if(!canceled) return r.json()})
-                        .then(j => {if(!canceled) return j.data})
-                        .then(v => {if(!canceled) t(v)}, e => {if(!canceled) c(e)})
+                        .then(r => {if(!w.abortSignal.aborted) return r.json()})
+                        .then(j => {if(!w.abortSignal.aborted) return j.data})
+                        .then(v => {if(!w.abortSignal.aborted) t(v)}, e => {if(!w.abortSignal.aborted) c(e)})
                 }
             })
     } catch(e) {
         c(e)
     }
-    return () => {
-        canceled = true;
-        controller.abort();
-    }
 });
 
-self.tsh.loadImport = url => new self.tsh.Task((w, t, e) => {
+self.tsh.loadImport = url => new self.tsh.Task2.simple((t, e, w) => {
     var xhr = new XMLHttpRequest();
     xhr.open('GET', url);
     xhr.onload = function() {

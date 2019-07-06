@@ -21,7 +21,7 @@ object XMap {
     }
 
     @JSExport
-    def fromList(f : Fun[Any, Fun[Any, Any]], list : js.Array[js.Dynamic]) : XMap = {
+    def ofList(f : Fun[Any, Fun[Any, Any]], list : js.Array[js.Dynamic]) : XMap = {
         list.foldLeft(TreeMap.empty[Any, Any]) { (m, p) =>
             m + (p.key -> m.get(p.key).map(v => f(v)(p.value)).getOrElse(p.value))
         }

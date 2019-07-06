@@ -1,5 +1,5 @@
 //: List Int -> String
-exports.fromCodePoints = c => String.fromCodePoint.apply(String, c);
+exports.ofCodePoints = c => String.fromCodePoint.apply(String, c);
 //: String -> List Int
 exports.toCodePoints = s => Array.from(s).map(c => c.codePointAt(0));
 //: String -> List String -> String
@@ -41,14 +41,14 @@ exports.toLower = s => s.toLowerCase();
 //: String -> Float
 exports.toFloat = i => parseFloat(i);
 //: Float -> String
-exports.fromFloat = i => "" + i;
+exports.ofFloat = i => "" + i;
 //: String -> Int
 exports.toInt = i => parseInt(i, 10);
 //: Int -> String
-exports.fromInt = i => "" + i;
+exports.ofInt = i => "" + i;
 //: Int -> String -> Int
 exports.toIntBase = b => i => parseInt(i, b);
 //: Int -> Int -> String
-exports.fromIntBase = b => i => i.toString(b);
+exports.ofIntBase = b => i => i.toString(b);
 //: String -> List String
 exports.lines = s => s.split("\n");

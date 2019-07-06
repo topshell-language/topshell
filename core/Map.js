@@ -2,7 +2,7 @@
 exports.of = a => XMap.of(a);
 
 //: (v -> v -> v) -> List {key: k, value: v} -> Map k v | Order k
-exports.fromList = f => l => XMap.fromList(f, l);
+exports.ofList = f => l => XMap.ofList(f, l);
 
 //: Map k v -> List {key: k, value: v} | Order k
 exports.toList = m => XMap.toList(m);

@@ -109,6 +109,8 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     List()
                 case TConstructor("Task") =>
                     List()
+                case TConstructor("Stream") =>
+                    List()
                 case TParameter(_) =>
                     List(constraint)
                 case TVariable(_) =>

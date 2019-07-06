@@ -7,7 +7,7 @@ exports.pretty = indentation => json => JSON.stringify(json, null, indentation);
 //: Json -> a
 exports.toAny = json => json;
 //: a -> Json
-exports.fromAny = json => json;
+exports.ofAny = json => json;
 //: Json -> Map String Json
 exports.toMap = json => {
     var result = XMap.empty;
@@ -17,11 +17,11 @@ exports.toMap = json => {
     return result;
 };
 //: Map String Json -> Json
-exports.fromMap = map => { var r = {}; XMap.toList(map).forEach(p => r[p.key] = p.value); return r; };
+exports.ofMap = map => { var r = {}; XMap.toList(map).forEach(p => r[p.key] = p.value); return r; };
 //: Json -> List Json
 exports.toList = json => json;
 //: List Json -> Json
-exports.fromList = list => list;
+exports.ofList = list => list;
 //: Int -> Json -> [None, Some Json]
 exports.at = index => json =>
     index >= 0 && index < json.length ? self.tsh.some(json[index]) : self.tsh.none;

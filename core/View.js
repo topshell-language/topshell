@@ -7,7 +7,7 @@ exports.tableBy = columns => exports.by(rows => {
     let cell = r => c => ({_tag: "td", children: [self.tsh.toHtml(c.value(r))]});
     let row = r => ({_tag: "tr", children: columns.map(cell(r))});
     return new self.tsh.Tag({_tag: "table", children: [
-        {_tag: ">attribute", key: "border", value: "1"},
+        {_tag: ">attributes", children: [{key: "border", value: "1"}]},
         {_tag: "thead", children: {_tag: "tr", children: columns.map(header)}},
         {_tag: "tbody", children: rows.map(row)},
     ]});
@@ -28,7 +28,7 @@ exports.table = exports.by(rows => {
     ]});
     let row = r => ({_tag: "tr", children: columns.map(cell(r))});
     return new self.tsh.Tag({_tag: "table", children: [
-        {_tag: ">attribute", key: "border", value: "1"},
+        {_tag: ">attributes", children: [{key: "border", value: "1"}]},
         {_tag: "thead", children: {_tag: "tr", children: columns.map(header)}},
         {_tag: "tbody", children: rows.map(row)},
     ]});
@@ -36,8 +36,8 @@ exports.table = exports.by(rows => {
 
 //: List Float -> View
 exports.bars = exports.by(data => {
-    let attribute = (k, v) => ({_tag: ">attribute", key: k, value: v});
-    let style = (k, v) => ({_tag: ">style", key: k, value: v});
+    let attribute = (k, v) => ({_tag: ">attributes", children: [{key: k, value: v}]});
+    let style = (k, v) => ({_tag: ">styles", children: [{key: k, value: v}]});
     let max = Math.max(...data);
     return new self.tsh.Tag({_tag: "div", children: data.map(d => ({
         _tag: "div", children: [
@@ -53,7 +53,7 @@ exports.bars = exports.by(data => {
 
 //: String -> View
 exports.text = exports.by(data => {
-    let style = (k, v) => ({_tag: ">style", key: k, value: v});
+    let style = (k, v) => ({_tag: ">styles", children: [{key: k, value: v}]});
     return new self.tsh.Tag({_tag: "div", children: [
         style("white-space", "pre-wrap"),
         {_tag: ">text", text: "" + data}
@@ -62,7 +62,7 @@ exports.text = exports.by(data => {
 
 //: a -> View
 exports.tree = exports.by(data => {
-    let style = (k, v) => ({_tag: ">style", key: k, value: v});
+    let style = (k, v) => ({_tag: ">styles", children: [{key: k, value: v}]});
     if(Array.isArray(data) && data.length > 0) {
         return new self.tsh.Tag({_tag: "span", children: [
             {_tag: ">text", text: "["},
@@ -107,17 +107,17 @@ exports.matrix = exports.by(data => {
         rows.push(row);
     }
     let cell = c => ({_tag: "td", children: [
-        {_tag: ">style", key: "padding", value: "5px 10px"},
-        {_tag: ">style", key: "border", value: "1px solid #333"},
+        {_tag: ">styles", children: [{key: "padding", value: "5px 10px"}, {key: "border", value: "1px solid #333"}]},
         self.tsh.toHtml(c)
     ]});
     let toRow = r => ({_tag: "tr", children: r.map(cell)});
     return new self.tsh.Tag({_tag: "table", children: [
-        {_tag: ">attribute", key: "border", value: "0"},
-        {_tag: ">attribute", key: "cellspacing", value: "0"},
-        {_tag: ">attribute", key: "cellpadding", value: "0"},
-        {_tag: ">style", key: "text-align", value: "center"},
-        {_tag: ">style", key: "border-collapse", value: "collapse"},
+        {_tag: ">attributes", children: [
+            {key: "border", value: "0"}, {key: "cellspacing", value: "0"}, {key: "cellpadding", value: "0"}
+        ]},
+        {_tag: ">styles", children: [
+            {key: "text-align", value: "center"}, {key: "border-collapse", value: "collapse"}
+        ]},
         {_tag: "tbody", children: rows.map(toRow)},
     ]});
 });
