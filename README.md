@@ -5,8 +5,8 @@
 Work with SSH, files, HTTP, and more in a two-pane, reactive environment.
 
 * A purely functional scripting language with type inference
-* Asynchronous I/O and reactive streaming, ie. live updates
-* Graphical visualization
+* Asynchronous I/O and reactive streaming with live updates
+* Easy graphical visualization
 
 
 # Live demo
