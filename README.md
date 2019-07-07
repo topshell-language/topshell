@@ -1,4 +1,4 @@
-**TopShell is a functional language through which you can SSH into a server, grap a file, fill in some data from the internet and then create a live graphical plot of the result that changes whenever the file is written to.** 
+*TopShell is a functional language through which you can SSH into a server, grap a file, fill in some data from the internet and then create a live graphical plot of the result that changes whenever the file is written to.*
 
 * Purely functional with type inference
 * Asynchronous I/O and reactive streaming
