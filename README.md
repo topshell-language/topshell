@@ -3,9 +3,10 @@
 *A reactive environment that replaces the terminal.*
 
 * Asynchronous I/O and reactive streaming with live updates
-* Includes SSH, file, process, HTTP, JSON & HTML functionality
 * A purely functional scripting language with type inference
 * Graphical data visualization without leaving the editor
+
+Includes modules for working with SSH, files, processes, HTTP, etc.
 
 
 # Live demo
