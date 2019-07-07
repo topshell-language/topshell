@@ -70,7 +70,15 @@ peopleWithImages |> View.table
 * Draw an animated clock with SVG.
 
 ```haskell
-time <- Stream.forever 0.0 (_ -> Task.sleep 1.0; Task.now)
+interval = duration ->
+    Stream.forever 0.0 t1 -> 
+        t2 <- Task.now, 
+        delta = t2 - t1,
+        delta >= duration ? Task.of t2 ; 
+        Task.sleep (duration - delta);
+        Task.now
+
+time <- interval 1.0
 
 t = time / 60
 a = t * Float.pi * 2.0
