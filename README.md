@@ -121,7 +121,7 @@ Html.tag "svg" [
 42              // Int
 7.3             // Float
 [1, 2]          // List Int
-{x: 7, y: 15}   // {x: Int, y: 15}
+{x: 7, y: 15}   // {x: Int, y: Int}
 Some 42         // eg. [None, Some Int]
 x -> x          // a -> a
 ```
@@ -212,7 +212,7 @@ fallback 0 (Some 42)    // 42
 fallback 0 None         // 0
 ```
 
-The `{| ... => ... }` syntax creates a lambda function that pattern matches on its argument. Each `|` begins a new pattern, followed by `=>` and then the corresponding expression, which may use captured variables from the pattern.
+The `{| ... => ... }` syntax creates a lambda function that pattern matches on its argument. Each `|` begins a new pattern, followed by `=>` and then the corresponding expression, which may use captured variables from the pattern. Use `_` as a wildcard.
 
 Note: Pattern matching is currently very limited.
 
