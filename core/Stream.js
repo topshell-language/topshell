@@ -69,3 +69,20 @@ exports.last = exports.fold(self.tsh.none)(_ => x => self.tsh.some(x));
 exports.untilNone = s => s.takeWhile(o => self.tsh.isSome(o)).map(o => o._1);
 //: Stream (List a) -> Stream a
 exports.untilEmpty = s => s.takeWhile(l => l.length !== 0).then(self.tsh.Stream.ofList);
+
+//: Float -> Stream Float
+exports.interval = duration => new self.tsh.Stream(async function*(world) {
+    let t1 = 0;
+    while(true) {
+        let t2 = Date.now() * 0.001;
+        let delta = t2 - t1;
+        if(delta >= duration) {
+            t1 = t2;
+            yield {result: t1};
+        } else {
+            await new Promise(resolve => setTimeout(resolve, (duration - delta) * 1000));
+            t1 = Date.now() * 0.001;
+            yield {result: t1};
+        }
+    }
+});
