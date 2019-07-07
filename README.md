@@ -1,8 +1,6 @@
-> **Tired of Bash?** 
+> **Done with Bash?** 
 > 
 > TopShell is a statically typed, purely functional, reactive environment with visualization capabilities that can be used in many of the same situations.
-
-![Screenshot](https://user-images.githubusercontent.com/78472/60761176-9126c180-a043-11e9-9f3e-0d352b3350d6.png)
 
 # [Online playground](http://show.ahnfelt.net/topshell/)
 
@@ -70,7 +68,15 @@ peopleWithImages |> View.table
 * Draw an animated clock with SVG.
 
 ```haskell
-time <- Stream.forever 0.0 (_ -> Task.sleep 1.0; Task.now)
+interval = duration ->
+    Stream.forever 0.0 t1 -> 
+        t2 <- Task.now, 
+        delta = t2 - t1,
+        delta >= duration ? Task.of t2 ; 
+        Task.sleep (duration - delta);
+        Task.now
+
+time <- interval 1.0
 
 t = time / 60
 a = t * Float.pi * 2.0
@@ -224,6 +230,18 @@ The if-then-else construct is `condition ? thenBody ; elseBody`, eg.
 safeDivision = x -> y ->
     y == 0.0 ? None ;
     Some (x / y)
+```
+
+It's typically used the way that `if(condition) return value;` is used in imperative languages, eg. to return early if a condition is true. For example, if we define a stream that emits the time each second, we'd want to skip sleeping if enough time has already passed:
+
+```haskell
+interval = duration ->
+    Stream.forever 0.0 t1 -> 
+        t2 <- Task.now, 
+        delta = t2 - t1,
+        delta >= duration ? Task.of t2 ; 
+        Task.sleep (duration - delta);
+        Task.now
 ```
 
 
