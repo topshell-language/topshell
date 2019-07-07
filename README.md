@@ -232,9 +232,7 @@ safeDivision = x -> y ->
     Some (x / y)
 ```
 
-It's typically used the way that `if(condition) return value;` is used in imperative languages, eg. to check something and then return early if true.
-
-For example, if we define a stream that emits the time each second, we'd want to return early if enough time has already passed:
+It's typically used the way that `if(condition) return value;` is used in imperative languages, eg. to return early if a condition is true. For example, if we define a stream that emits the time each second, we'd want to skip sleeping if enough time has already passed:
 
 ```haskell
 interval = duration ->
