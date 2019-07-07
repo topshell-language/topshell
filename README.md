@@ -6,7 +6,7 @@
 * A purely functional scripting language with type inference
 * Graphical data visualization without leaving the editor
 
-Includes modules for working with SSH, files, processes, HTTP, etc.
+Includes modules for working with SSH, files, processes, HTTP and more.
 
 
 # Live demo
