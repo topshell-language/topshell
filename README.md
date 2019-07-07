@@ -4,7 +4,7 @@
 * Asynchronous I/O and reactive streaming
 * Visualization capabilities
 
-And in many situations, you can use it in place of the terminal!
+**And in many situations, you can use it in place of the terminal!**
 
 
 # [Online playground](http://show.ahnfelt.net/topshell/)
