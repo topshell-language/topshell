@@ -1,12 +1,11 @@
 # TopShell
 
-*&raquo; Instead of reaching for the terminal. &laquo;*
+*&raquo; A reactive environment that replaces the terminal. &laquo;*
 
-Work with SSH, files, HTTP, and more in a two-pane, reactive environment.
-
-* A purely functional scripting language with type inference
 * Asynchronous I/O and reactive streaming with live updates
-* Easy graphical visualization
+* Includes SSH, file, process, HTTP, JSON & HTML functionality
+* A purely functional scripting language with type inference
+* Easy graphical visualization without leaving TopShell
 
 
 # Live demo
