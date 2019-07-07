@@ -2,8 +2,6 @@
 > 
 > TopShell is a statically typed, purely functional, reactive environment with visualization capabilities that can be used in many of the same situations.
 
-![Screenshot](https://user-images.githubusercontent.com/78472/60761176-9126c180-a043-11e9-9f3e-0d352b3350d6.png)
-
 # [Online playground](http://show.ahnfelt.net/topshell/)
 
 * Press Ctrl+Enter to run a top level binding.
