@@ -3,7 +3,7 @@
 *A reactive environment that replaces the terminal.*
 
 * Asynchronous I/O and reactive streaming with live updates
-* A purely functional scripting language with type inference
+* Purely functional scripting with type inference and autocompletion
 * Graphical data visualization without leaving the editor
 
 Includes modules for working with SSH, files, processes, HTTP and more.
