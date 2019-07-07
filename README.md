@@ -1,6 +1,6 @@
 # TopShell
 
-*&raquo; A reactive environment that replaces the terminal. &laquo;*
+*A reactive environment that replaces the terminal.*
 
 * Asynchronous I/O and reactive streaming with live updates
 * Includes SSH, file, process, HTTP, JSON & HTML functionality
