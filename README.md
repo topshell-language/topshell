@@ -5,7 +5,7 @@
 * Asynchronous I/O and reactive streaming with live updates
 * Includes SSH, file, process, HTTP, JSON & HTML functionality
 * A purely functional scripting language with type inference
-* Graphical data visualization without leaving the environment
+* Graphical data visualization without leaving the editor
 
 
 # Live demo
