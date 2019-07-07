@@ -272,3 +272,8 @@ Matrix @ "https://www.example.com/topshell/Matrix.js"
 ```
 
 Imported files such as `Matrix.js` must be annotated with TopShell types. Please see the modules in `core/...` for examples.
+
+
+# Getting help
+
+You're encouraged to [create an issue](https://github.com/Ahnfelt/topshell/issues/new) if you have a question about TopShell.
