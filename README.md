@@ -5,8 +5,7 @@
 * Asynchronous I/O and reactive streaming with live updates
 * Purely functional scripting with type inference and autocompletion
 * Graphical data visualization without leaving the editor
-
-Includes modules for working with SSH, files, processes, HTTP and more.
+* Includes modules for working with SSH, files, processes, HTTP and more.
 
 
 # Live demo
