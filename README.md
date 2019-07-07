@@ -5,7 +5,7 @@
 * Asynchronous I/O and reactive streaming with live updates
 * Includes SSH, file, process, HTTP, JSON & HTML functionality
 * A purely functional scripting language with type inference
-* Easy graphical visualization without leaving TopShell
+* Graphical visualization without leaving TopShell
 
 
 # Live demo
