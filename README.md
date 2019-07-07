@@ -9,7 +9,9 @@
 **And in many situations, you can use it in place of the terminal!**
 
 
-# [Online playground](http://show.ahnfelt.net/topshell/)
+# Live demo
+
+**[Open the playground](http://show.ahnfelt.net/topshell/)**
 
 * Press Ctrl+Enter to run a top level binding.
 * Press Ctrl+E to switch files. 
