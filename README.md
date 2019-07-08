@@ -73,7 +73,7 @@ peopleWithImages |> View.table
 
 ## Stream example
 
-* Make a stream that produces the time each second.
+* Make a stream that produces the current time each second.
 * Draw an animated clock with SVG.
 
 ```haskell
@@ -254,15 +254,6 @@ interval = duration ->
 ```
 
 
-# The top level
-
-Each expression, import or definition in the TopShell top level is ends either when encountering a new unindented non-space, non-closing-brace character, or when the file ends.
-
-The top level is reactive - top level binds `x <- e` convert their right hand side to a `Stream` and definitions that depend on `x` will automatically be updated whenever the stream produces a new value.
-
-Lets will automatically be evaluated, but binds needs to be started manually by placing the cursor on the line of the bind and pressing `Ctrl+Enter`. This is because it may be a task that eg. writes to a file.
-
-
 # Importing modules
 
 When a module function is used, eg. `List.map f l`, the compiler first checks if `List` has been explicitly imported. If not, it implicitly imports a module from the standard library of the corresponding name, eg. `core/List.js`.
@@ -274,6 +265,15 @@ Matrix @ "https://www.example.com/topshell/Matrix.js"
 ```
 
 Imported files such as `Matrix.js` must be annotated with TopShell types. Please see the modules in `core/...` for examples.
+
+
+# The top level
+
+Each expression, import or definition in the TopShell top level is ends either when encountering a new unindented non-space, non-closing-brace character, or when the file ends.
+
+The top level is reactive - top level binds `x <- e` convert their right hand side to a `Stream` and definitions that depend on `x` will automatically be updated whenever the stream produces a new value. Top level binds are consumed at a pace of 1 element per 100ms (or less, if the stream is slower).
+
+Lets will automatically be evaluated, but binds needs to be started manually by placing the cursor on the line of the bind and pressing `Ctrl+Enter`. This is because it may be a task that eg. writes to a file.
 
 
 # Getting help
