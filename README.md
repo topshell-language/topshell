@@ -12,11 +12,15 @@
 
 **[Open the playground](http://show.ahnfelt.net/topshell/)**
 
-* Press Ctrl+Enter to run a top level binding.
-* Press Ctrl+Space for autocompletion.
-* Press Ctrl+E to switch files. 
-* The online playground is restricted: no file I/O, no SSH, no HTTP proxying. 
-* The very top line and the very bottom line of the UI is not yet implemented.
+Press Ctrl+Enter to run a top level binding.
+
+Press Ctrl+Space for autocompletion.
+
+Press Ctrl+E to switch files. 
+
+The online playground is restricted: no file I/O, no SSH, no HTTP proxying. 
+
+The very top line and the very bottom line of the UI is not yet implemented.
 
 
 # Examples
