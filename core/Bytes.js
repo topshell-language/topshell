@@ -3,7 +3,7 @@ exports.ofList = bytes => new Uint8Array(bytes);
 //: Bytes -> List Int
 exports.toList = bytes => Array.from(bytes);
 //: String -> Bytes
-exports.ofHex = self.tsh.fromHex;
+exports.ofHex = self.tsh.ofHex;
 //: Bytes -> String
 exports.toHex = self.tsh.toHex;
 //: String -> Bytes

@@ -10,6 +10,8 @@ exports.readBytes = path => self.tsh.action("File.readBytes")({path: path}).map(
 exports.writeBytes = path => contents => self.tsh.action("File.writeBytes")({path: path, contents: self.tsh.toHex(contents)});
 //: String -> Bytes -> Task {}
 exports.appendBytes = path => contents => self.tsh.action("File.appendBytes")({path: path, contents: self.tsh.toHex(contents)});
+//: Int -> Int -> String -> Task Bytes
+exports.readByteRange = from => size => path => self.tsh.action("File.readByteRange")({path: path, from: from, size: size}).map(self.tsh.ofHex);
 //: String -> String -> Task {}
 exports.copy = fromPath => toPath => self.tsh.action("File.copy")({path: fromPath, target: toPath});
 //: String -> String -> Task {}
@@ -26,3 +28,12 @@ exports.list = path => self.tsh.action("File.list")({path: path});
 exports.listStatus = path => self.tsh.action("File.listStatus")({path: path});
 //: String -> Task {name: String, isFile: Bool, isDirectory: Bool}
 exports.status = path => self.tsh.action("File.status")({path: path});
+//: Int -> String -> Stream Bytes
+exports.streamBytes = from => path => {
+    let buffer = 1024 * 1024;
+    return self.tsh.Stream.forever({from: from, bytes: null}, r => {
+        return exports.readByteRange(r.from)(buffer)(path).map(bytes =>
+            ({from: r.from + bytes.byteLength, bytes: bytes})
+        )
+    }).map(r => r.bytes).takeWhile(r => r.byteLength !== 0)
+};

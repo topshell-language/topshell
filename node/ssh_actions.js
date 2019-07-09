@@ -26,6 +26,16 @@ module.exports = {
             else callback(error, result);
         });
     },
+    'File.readByteRange': (json, context, callback) => {
+        let block = 64 * 1024;
+        let skip = Math.max(0, Math.floor(json.from / block));
+        let left = json.from - skip * block;
+        let count = Math.max(0, Math.ceil((json.size + left) / block));
+        execFile(context.ssh, json.config, "dd", ["if=" + json.path, "ibs=" + block, "skip=" + skip, "count=" + count], "", true, (error, result) => {
+            if(error == null) callback(void 0, result.out.slice(left).slice(0, json.size).toString('hex'));
+            else callback(error, result);
+        });
+    },
     'File.writeBytes': (json, context, callback) => {
         execFile(context.ssh, json.config, "dd", ["of=" + json.path], Buffer.from(json.contents, 'hex'), false, (error, result) => {
             if(error == null) callback(void 0, {});
@@ -113,12 +123,13 @@ let execFileSshArguments =
     ["-oControlMaster=auto", "-oControlPersist=5m", "-oControlPath=~/.ssh/.topshell-%C", "-oBatchMode=yes", "--"];
 
 function execFile(ssh, config, path, arguments, stdin, binary, callback) {
-    config = config || {};
+    config = Object.assign({}, config || {}, {maxBuffer: 1024 * 1024});
     if(binary) config.encoding = 'buffer';
     let escape = a => "'" + a.replace(/'/g, "'\\''") + "'";
-    let command = [path].concat(arguments).map(a => escape(a)).join(" ");
-    let newArguments = execFileSshArguments.concat([ssh.user + "@" + ssh.host, command]);
-    let child = child_process.execFile("ssh", newArguments, config, (error, stdout, stderr) => {
+    let command = ssh ? [path].concat(arguments).map(a => escape(a)).join(" ") : null;
+    let baseCommand = ssh ? "ssh" : path;
+    let newArguments = ssh ? execFileSshArguments.concat([ssh.user + "@" + ssh.host, command]) : arguments;
+    let child = child_process.execFile(baseCommand, newArguments, config, (error, stdout, stderr) => {
         if(binary) stderr = stderr.toString('utf8');
         if(config.check !== false) callback(error, {out: stdout, error: stderr});
         else callback(void 0, {out: stdout, error: stderr, problem: error.message, code: error.code, killed: error.killed, signal: error.signal});

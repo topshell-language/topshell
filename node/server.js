@@ -29,7 +29,8 @@ if(proxy) {
 }
 
 var handler = (json, callback) => {
-    var action = json.context.ssh && ssh_actions[json.action] ? ssh_actions[json.action] : actions[json.action];
+    var isSsh = json.context.ssh && ssh_actions[json.action];
+    var action = isSsh || json.action === 'File.readByteRange' ? ssh_actions[json.action] : actions[json.action];
     if(action) {
         try {
             action(json.data, json.context, (err, data) => callback(err,

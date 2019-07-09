@@ -495,7 +495,7 @@ self.tsh.bytesForHex = (function() {
 })();
 
 self.tsh.toHex = a => a.reduce((s, b) => s + self.tsh.hexForBytes[b], "");
-self.tsh.fromHex = s => {
+self.tsh.ofHex = s => {
     var l = s.length / 2;
     var result = new Uint8Array(l);
     for(var i = 0; i < l; i += 1) {
@@ -533,6 +533,8 @@ self.tsh.action = actionName => parameter => new self.tsh.Task(async world => {
     checkAborted();
     if(world.abortSignal) options.signal = world.abortSignal;
     console.log(actionName +
+        (parameter.from != null ? " " + parameter.from : "") +
+        (parameter.size != null ? " " + parameter.size : "") +
         (parameter.path != null ? " " + parameter.path : "") +
         (parameter.target != null ? " " + parameter.target : "") +
         (parameter.command != null ? " " + parameter.command : "") +
