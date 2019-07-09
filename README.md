@@ -1,13 +1,26 @@
-> **Done with Bash?** 
-> 
-> TopShell is a statically typed, purely functional, reactive environment with visualization capabilities that can be used in many of the same situations.
+# TopShell
 
-# [Online playground](http://show.ahnfelt.net/topshell/)
+*A reactive environment that replaces the terminal.*
 
-* Press Ctrl+Enter to run a top level binding.
-* Press Ctrl+E to switch files. 
-* The online playground is restricted: no file I/O, no SSH, no HTTP proxying. 
-* The very top line and the very bottom line of the UI is not yet implemented.
+* Asynchronous I/O and reactive streaming with live updates
+* Purely functional scripting with type inference and autocompletion
+* Animated, graphical data visualization without leaving the editor
+* Includes modules for working with SSH, files, processes, HTTP and more
+
+
+# Live demo
+
+**[Open the playground](http://show.ahnfelt.net/topshell/)**
+
+Press Ctrl+Enter to run a top level binding.
+
+Press Ctrl+Space for autocompletion.
+
+Press Ctrl+E to switch files. 
+
+The online playground is restricted: no file I/O, no SSH, no HTTP proxying. 
+
+The very top line and the very bottom line of the UI is not yet implemented.
 
 
 # Examples
@@ -64,7 +77,7 @@ peopleWithImages |> View.table
 
 ## Stream example
 
-* Make a stream that produces the time each second.
+* Make a stream that produces the current time each second.
 * Draw an animated clock with SVG.
 
 ```haskell
@@ -121,7 +134,7 @@ Html.tag "svg" [
 42              // Int
 7.3             // Float
 [1, 2]          // List Int
-{x: 7, y: 15}   // {x: Int, y: 15}
+{x: 7, y: 15}   // {x: Int, y: Int}
 Some 42         // eg. [None, Some Int]
 x -> x          // a -> a
 ```
@@ -212,7 +225,7 @@ fallback 0 (Some 42)    // 42
 fallback 0 None         // 0
 ```
 
-The `{| ... => ... }` syntax creates a lambda function that pattern matches on its argument. Each `|` begins a new pattern, followed by `=>` and then the corresponding expression, which may use captured variables from the pattern.
+The `{| ... => ... }` syntax creates a lambda function that pattern matches on its argument. Each `|` begins a new pattern, followed by `=>` and then the corresponding expression, which may use captured variables from the pattern. Use `_` as a wildcard.
 
 Note: Pattern matching is currently very limited.
 
@@ -245,15 +258,6 @@ interval = duration ->
 ```
 
 
-# The top level
-
-Each expression, import or definition in the TopShell top level is ends either when encountering a new unindented non-space, non-closing-brace character, or when the file ends.
-
-The top level is reactive - top level binds `x <- e` convert their right hand side to a `Stream` and definitions that depend on `x` will automatically be updated whenever the stream produces a new value.
-
-Lets will automatically be evaluated, but binds needs to be started manually by placing the cursor on the line of the bind and pressing `Ctrl+Enter`. This is because it may be a task that eg. writes to a file.
-
-
 # Importing modules
 
 When a module function is used, eg. `List.map f l`, the compiler first checks if `List` has been explicitly imported. If not, it implicitly imports a module from the standard library of the corresponding name, eg. `core/List.js`.
@@ -265,3 +269,17 @@ Matrix @ "https://www.example.com/topshell/Matrix.js"
 ```
 
 Imported files such as `Matrix.js` must be annotated with TopShell types. Please see the modules in `core/...` for examples.
+
+
+# The top level
+
+Each expression, import or definition in the TopShell top level is ends either when encountering a new unindented non-space, non-closing-brace character, or when the file ends.
+
+The top level is reactive - top level binds `x <- e` convert their right hand side to a `Stream` and definitions that depend on `x` will automatically be updated whenever the stream produces a new value. Top level binds are consumed at a pace of 1 element per 100ms (or less, if the stream is slower).
+
+Lets will automatically be evaluated, but binds needs to be started manually by placing the cursor on the line of the bind and pressing `Ctrl+Enter`. This is because it may be a task that eg. writes to a file.
+
+
+# Getting help
+
+You're encouraged to [create an issue](https://github.com/Ahnfelt/topshell/issues/new) if you have a question about TopShell.
