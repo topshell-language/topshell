@@ -190,7 +190,7 @@ magnitude = v -> Float.sqrt (v.x * v.x + v.y * v.y)
 magnitude {x: 5.0, y: 7.0}    // 8.602
 ```
 
-Records also support spread syntax, eg. {z: 9.0, ...r} creates a new record that's a copy of `r`, but with the `z` field added or replaced.
+Records also support spread syntax, eg. `{z: 9.0, ...r}` creates a new record that's a copy of `r`, but with the `z` field added or replaced.
 
 Record labels may be unquoted `[a-z][a-zA-Z0-9]*`, or if they contain other characters, enclosed in double quotes, eg. `{"my field": 42}`.
 
