@@ -25,7 +25,7 @@ The very top line and the very bottom line of the UI is not yet implemented.
 
 # Examples
 
-## SSH example:
+## SSH example
 
 * Read a list of IP addresses from a local file.
 * SSH into all of them, in parallel, to discover their local hostname.
@@ -196,7 +196,11 @@ Record labels may be unquoted `[a-z][a-zA-Z0-9]*`, or if they contain other char
 
 As a shorthand for `r -> r.l`, you can write `(.l)` for any label `l`.
 
-For pairs on the form `{key: ..., value: ...}` you can use the shorthand `... ~> ...`.
+As a shorthand for eg. `{name: name, age: age}`, you can use record punning `{name, age}`.
+
+As a shorthand for eg. `n -> a -> {name: n, age: a}`, you can use `{-> name, age}`.
+
+For pairs on the form `{key: k, value: v}`, you can use the shorthand `k ~> v`.
 
 
 ## Record types and field constraints
@@ -208,6 +212,15 @@ magnitude : a -> Float | a.x: Float | a.y: Float
 ```
 
 Meaning "magnitude is a function that takes in any type `a` and returns `Float`, as long as `a` has two fields `x` and `y` of type `Float`". When `magnitude` is later applied to `{x: 5.0, y: 7.0}`, the constraints are checked against the concrete record type `{x: Float, y: Float}`, and since it satisfies both constraints, it type checks.
+
+
+## Modules are records
+
+Modules in TopShell are simply records. This is possible because record fields can have type parameters. 
+
+To get the record value from an imported module, use three dots after the module name, eg. `List...`.
+
+The `List` module has type `{map: a => b => (a -> b) -> List a -> List b, ...}`, where `...` is the rest of the functions. The fat arrow `=>` is explicit syntax for a type parameter. 
 
 
 # Sum types and pattern matching
