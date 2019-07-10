@@ -84,11 +84,11 @@ exports.head = function(r) { return r.length > 0 ? self.tsh.some(r[0]) : self.ts
 //: List a -> List a
 exports.tail = function(r) { return r.slice(1); };
 
-//: (a -> b -> a) -> a -> List b -> a
-exports.foldLeft = f => z => a => a.reduce((x, y) => f(x)(y), z);
+//: a -> (a -> b -> a) -> List b -> a
+exports.foldLeft = z => f => a => a.reduce((x, y) => f(x)(y), z);
 
-//: (a -> b -> a) -> a -> List b -> a
-exports.foldRight = f => z => a => a.reduceRight((x, y) => f(x)(y), z);
+//: a -> (a -> b -> a) -> List b -> a
+exports.foldRight = z => f => a => a.reduceRight((x, y) => f(x)(y), z);
 
 //: (a -> a -> Bool) -> List a -> List a
 exports.sort = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
