@@ -331,6 +331,19 @@ class Parser(file : String, tokens : Array[Token]) {
             }
             skip("bracket", Some("}"))
             EMatch(at, cases.reverse, defaultCase)
+        case (_, "{") if ahead.raw == "->" =>
+            val at = skip("bracket").at
+            skip("separator", Some("->")).at
+            var fields = List[Binding]()
+            while(current.raw != "}") {
+                val field = skip("lower")
+                fields ::= Binding(field.at, field.raw, None, EVariable(at, field.raw))
+                if(current.raw != "}") skip("separator", Some(","))
+            }
+            skip("bracket", Some("}"))
+            fields = fields.reverse
+            val record = ERecord(at, fields, None)
+            fields.foldRight[Term](record)((f, e) => EFunction(f.at, f.name, e))
         case (_, "{") =>
             val at = skip("bracket", Some("{")).at
             var bindings : List[Binding] = List.empty
