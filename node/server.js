@@ -34,7 +34,7 @@ var handler = (json, callback) => {
     if(action) {
         try {
             action(json.data, json.context, (err, data) => callback(err,
-                JSON.stringify({data: data === undefined ? null : data})
+                Buffer.isBuffer(data) ? data : JSON.stringify({data: data === undefined ? null : data})
             ));
         } catch(e) {
             callback(e);
@@ -62,7 +62,9 @@ var server = http.createServer((request, response) => {
         utils.readJsonRequest(request, json => {
             handler(json, (err, result) => {
                 var problem = err ? (err.message ? err.message : "" + err) : "";
+                let bin = Buffer.isBuffer(result);
                 if(err) utils.sendResponse(response, problem, 500, {'Content-Type': 'text/plain'});
+                else if(bin) utils.sendResponse(response, result, 200, {'Content-Type': 'application/octet-stream'});
                 else utils.sendResponse(response, result, 200, {'Content-Type': 'application/json'});
             });
         });

@@ -546,11 +546,15 @@ self.tsh.action = actionName => parameter => new self.tsh.Task(async world => {
         let problem;
         try {
             problem = await result.text();
-        } catch(_) {
+        } catch (_) {
             problem = "Action error " + result.status + ": " + options.body;
         }
         checkAborted();
         throw new Error(problem);
+    } else if(result.headers.get('Content-Type') === "application/octet-stream") {
+        let bytes = new Uint8Array(await result.arrayBuffer());
+        checkAborted();
+        return {result: bytes};
     } else {
         let json = await result.json();
         checkAborted();

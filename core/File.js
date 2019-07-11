@@ -11,7 +11,7 @@ exports.writeBytes = path => contents => self.tsh.action("File.writeBytes")({pat
 //: String -> Bytes -> Task {}
 exports.appendBytes = path => contents => self.tsh.action("File.appendBytes")({path: path, contents: self.tsh.toHex(contents)});
 //: Int -> Int -> String -> Task Bytes
-exports.readByteRange = from => size => path => self.tsh.action("File.readByteRange")({path: path, from: from, size: size}).map(self.tsh.ofHex);
+exports.readByteRange = from => size => path => self.tsh.action("File.readByteRange")({path: path, from: from, size: size});
 //: String -> String -> Task {}
 exports.copy = fromPath => toPath => self.tsh.action("File.copy")({path: fromPath, target: toPath});
 //: String -> String -> Task {}
