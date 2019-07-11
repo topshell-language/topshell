@@ -5,7 +5,7 @@ exports.writeText = path => contents => self.tsh.action("File.writeText")({path:
 //: String -> String -> Task {}
 exports.appendText = path => contents => self.tsh.action("File.appendText")({path: path, contents: contents});
 //: String -> Task Bytes
-exports.readBytes = path => self.tsh.action("File.readBytes")({path: path}).map(self.tsh.ofHex);
+exports.readBytes = path => self.tsh.action("File.readBytes")({path: path});
 //: String -> Bytes -> Task {}
 exports.writeBytes = path => contents => self.tsh.action("File.writeBytes")({path: path, contents: self.tsh.toHex(contents)});
 //: String -> Bytes -> Task {}

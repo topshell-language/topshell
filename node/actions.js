@@ -14,7 +14,7 @@ module.exports = {
         fs.appendFile(json.path, json.contents, 'utf8', callback);
     },
     'File.readBytes': (json, context, callback) => {
-        fs.readFile(json.path, (err, data) => callback(err, data != null ? data.toString('hex') : data));
+        fs.readFile(json.path, (err, data) => callback(err, data));
     },
     'File.writeBytes': (json, context, callback) => {
         fs.writeFile(json.path, Buffer.from(json.contents, 'hex'), callback);

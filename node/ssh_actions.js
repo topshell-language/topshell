@@ -22,7 +22,7 @@ module.exports = {
     },
     'File.readBytes': (json, context, callback) => {
         execFile(context.ssh, json.config, "cat", ["--", json.path], "", true, (error, result) => {
-            if(error == null) callback(void 0, result.out.toString('hex'));
+            if(error == null) callback(void 0, result.out);
             else callback(error, result);
         });
     },
