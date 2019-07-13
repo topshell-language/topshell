@@ -236,7 +236,7 @@ json <- Http.fetchJson {url: "https://www.example.com/data.json", mode: "proxy"}
 
 Since the `url` field is present, the `mode` field doesn't have the wrong type, and none of the left out fields are required, the above compiles.
 
-Optional fields are accessed with the `.?` operator, eg. `r.?optionalField`, and they return `Maybe a`, where `a` is the field type.
+Optional fields are accessed with the `.?` operator, eg. `r.?optionalField`, and they return `[None, Some a]`, where `a` is the field type.
 
 
 ## Modules are records
