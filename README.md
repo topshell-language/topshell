@@ -7,6 +7,8 @@
 * Animated, graphical data visualization without leaving the editor
 * Includes modules for working with SSH, files, processes, HTTP and more
 
+[Download now](https://github.com/Ahnfelt/topshell/releases) - no installation required.
+
 
 # Live demo
 
@@ -21,15 +23,6 @@ Press Ctrl+E to switch files.
 The online playground is restricted: no file I/O, no SSH, no HTTP proxying. 
 
 The very top line and the very bottom line of the UI is not yet implemented.
-
-
-# Download
-
-The TopShell server is a single binary you can download from here:
-
-https://github.com/Ahnfelt/topshell/releases
-
-No installation is required. By default it will serve TopShell on http://localhost:7070/topshell/index.html - you can also give the server a command line argument like this: `host:port`.
 
 
 # Examples
