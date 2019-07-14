@@ -214,6 +214,31 @@ magnitude : a -> Float | a.x: Float | a.y: Float
 Meaning "magnitude is a function that takes in any type `a` and returns `Float`, as long as `a` has two fields `x` and `y` of type `Float`". When `magnitude` is later applied to `{x: 5.0, y: 7.0}`, the constraints are checked against the concrete record type `{x: Float, y: Float}`, and since it satisfies both constraints, it type checks.
 
 
+## Optional fields
+
+The `Http.fetchJson` function has the following signature:
+
+```haskell
+Http.fetchJson : c -> Task Json
+    | c.url : String 
+    | c.?method : String 
+    | c.?mode : String 
+    | c.?body : String 
+    | c.?check : Bool 
+    | c.?headers : List {key: String, value: String}
+```
+
+This means that `c` is a record with a field called `url` of type `String`, and optionally one or more of the fields `method`, `mode`, `body`, `check` and `headers`. A common invocation is:
+
+```haskell
+json <- Http.fetchJson {url: "https://www.example.com/data.json", mode: "proxy"}
+```
+
+Since the `url` field is present, the `mode` field doesn't have the wrong type, and none of the left out fields are required, the above compiles.
+
+Optional fields are accessed with the `.?` operator, eg. `r.?optionalField`, and they return `[None, Some a]`, where `a` is the field type.
+
+
 ## Modules are records
 
 Modules in TopShell are simply records. This is possible because record fields can have type parameters. 
