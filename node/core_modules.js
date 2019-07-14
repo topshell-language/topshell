@@ -3,7 +3,7 @@ var path = require('path');
 
 module.exports = {
     findCoreModules: function(callback) {
-        var corePath = path.join("..", "core");
+        var corePath = path.join(__dirname, "../core");
         fs.readdir(corePath, (outerError, files) => {
             if(outerError) callback(outerError, null); else {
                 var jsFiles = files.filter(file => file.endsWith(".js"));

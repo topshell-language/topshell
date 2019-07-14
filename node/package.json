@@ -19,5 +19,19 @@
   "homepage": "https://github.com/Ahnfelt/topshell#readme",
   "dependencies": {
     "http-proxy": "1.17.0"
+  },
+  "devDependencies": {
+    "pkg": "4.4.0"
+  },
+  "bin": {
+    "topshell": "server.js"
+  },
+  "pkg": {
+    "assets": [
+      "../*.*",
+      "../core/*.*",
+      "../libraries/*.*",
+      "../target/scala-2.12/topshell-opt.js"
+    ]
   }
 }

@@ -1,6 +1,8 @@
 var http = require('http');
 var url = require('url');
 var fs = require('fs');
+var path = require('path');
+var process = require('process');
 var utils = require('./utilities');
 var actions = require('./actions');
 var ssh_actions = require('./ssh_actions');
@@ -77,13 +79,15 @@ var server = http.createServer((request, response) => {
         });
 
     } else if(parts.pathname.startsWith(base) && request.method === 'GET') {
-        var path = parts.pathname.slice(base.length);
-        if(path.includes("..")) throw 'Illegal path: ' + path;
-        path = "../" + path;
-        var fastOptPath = '../target/scala-2.12/topshell-fastopt.js';
-        if(path === '../target/scala-2.12/topshell-opt.js' && fs.existsSync(fastOptPath)) path = fastOptPath;
-        var stream = fs.createReadStream(path);
-        if(path.endsWith(".js")) response.setHeader("Content-Type", "application/javascript");
+        var file = parts.pathname.slice(base.length);
+        if(file.includes("..")) throw 'Illegal path: ' + file;
+        file = "../" + file;
+        var fastOptRelativePath = '../target/scala-2.12/topshell-fastopt.js';
+        var fastOptPath = path.join(__dirname, fastOptRelativePath);
+        if(file === '../target/scala-2.12/topshell-opt.js' && fs.existsSync(fastOptPath)) file = fastOptPath;
+        file = path.join(__dirname, file);
+        var stream = fs.createReadStream(file);
+        if(file.endsWith(".js")) response.setHeader("Content-Type", "application/javascript");
         stream.on('error', function() {
             response.writeHead(404);
             response.end();
@@ -94,8 +98,11 @@ var server = http.createServer((request, response) => {
     }
 });
 
-var port = 7070;
+if(process.argv.length > 3) throw 'Expected one or zero command line arguments';
+if(process.argv.length === 3 && !process.argv[2].includes(":")) throw 'Expected a host:port command line argument';
+var host = process.argv.length === 3 ? process.argv[2].split(":")[0] : 'localhost';
+var port = process.argv.length === 3 ? process.argv[2].split(":")[1] : 7070;
 
-server.listen(port);
+server.listen(port, host);
 
-console.log("http://localhost:" + port + "/topshell/index.html");
+console.log("http://" + host + ":" + port + "/topshell/index.html");
