@@ -84,7 +84,7 @@ var server = http.createServer((request, response) => {
         file = "../" + file;
         var fastOptRelativePath = '../target/scala-2.12/topshell-fastopt.js';
         var fastOptPath = path.join(__dirname, fastOptRelativePath);
-        if(file === '../target/scala-2.12/topshell-opt.js' && fs.existsSync(fastOptPath)) file = fastOptPath;
+        if(file === '../target/scala-2.12/topshell-opt.js' && fs.existsSync(fastOptPath)) file = fastOptRelativePath;
         file = path.join(__dirname, file);
         var stream = fs.createReadStream(file);
         if(file.endsWith(".js")) response.setHeader("Content-Type", "application/javascript");
