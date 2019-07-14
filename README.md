@@ -7,7 +7,7 @@
 * Animated, graphical data visualization without leaving the editor
 * Includes modules for working with SSH, files, processes, HTTP and more
 
-[Download now](https://github.com/Ahnfelt/topshell/releases) - no installation required.
+**[Download now](https://github.com/Ahnfelt/topshell/releases)** (no installation required).
 
 
 # Live demo
