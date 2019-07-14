@@ -31,7 +31,7 @@ module.exports = {
         let skip = Math.max(0, Math.floor(json.from / block));
         let left = json.from - skip * block;
         let count = Math.max(0, Math.ceil((json.size + left) / block));
-        execFile(context.ssh, json.config, "dd", ["if=" + json.path, "ibs=" + block, "skip=" + skip, "count=" + count], "", true, (error, result) => {
+        execFile(context.ssh, json.config, "dd", ["if=" + json.path, "bs=" + block, "skip=" + skip, "count=" + count], "", true, (error, result) => {
             if(error == null) callback(void 0, result.out.slice(left).slice(0, json.size));
             else callback(error, result);
         });
