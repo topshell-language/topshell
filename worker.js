@@ -551,6 +551,9 @@ self.tsh.action = actionName => parameter => new self.tsh.Task(async world => {
         }
         checkAborted();
         throw new Error(problem);
+    } else if(actionName === "File.streamBytes") {
+        checkAborted();
+        return {result: result.body.getReader()};
     } else if(result.headers.get('Content-Type') === "application/octet-stream") {
         let bytes = new Uint8Array(await result.arrayBuffer());
         checkAborted();

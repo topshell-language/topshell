@@ -30,6 +30,9 @@ module.exports = {
             buffers.push(buffer);
         });
     },
+    'File.streamBytes': (json, context, callback) => {
+        callback(undefined, fs.createReadStream(json.path, {start: json.from}));
+    },
     'File.writeBytes': (json, context, callback) => {
         fs.writeFile(json.path, Buffer.from(json.contents, 'hex'), callback);
     },

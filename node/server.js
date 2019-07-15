@@ -35,9 +35,7 @@ var handler = (json, callback) => {
     var action = isSsh ? ssh_actions[json.action] : actions[json.action];
     if(action) {
         try {
-            action(json.data, json.context, (err, data) => callback(err,
-                Buffer.isBuffer(data) ? data : JSON.stringify({data: data === undefined ? null : data})
-            ));
+            action(json.data, json.context, (err, data) => callback(err, data));
         } catch(e) {
             callback(e);
         }
@@ -64,10 +62,17 @@ var server = http.createServer((request, response) => {
         utils.readJsonRequest(request, json => {
             handler(json, (err, result) => {
                 var problem = err ? (err.message ? err.message : "" + err) : "";
-                let bin = Buffer.isBuffer(result);
-                if(err) utils.sendResponse(response, problem, 500, {'Content-Type': 'text/plain'});
-                else if(bin) utils.sendResponse(response, result, 200, {'Content-Type': 'application/octet-stream'});
-                else utils.sendResponse(response, result, 200, {'Content-Type': 'application/json'});
+                if(err) {
+                    utils.sendResponse(response, problem, 500, {'Content-Type': 'text/plain'});
+                } else if(Buffer.isBuffer(result)) {
+                    utils.sendResponse(response, result, 200, {'Content-Type': 'application/octet-stream'});
+                } else if(typeof result.pipe === "function") {
+                    response.setHeader("Content-Type", 'application/octet-stream');
+                    result.pipe(response);
+                } else {
+                    let json = JSON.stringify({data: data === undefined ? null : data});
+                    utils.sendResponse(response, json, 200, {'Content-Type': 'application/json'});
+                }
             });
         });
 
