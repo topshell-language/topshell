@@ -16,6 +16,20 @@ module.exports = {
     'File.readBytes': (json, context, callback) => {
         fs.readFile(json.path, (err, data) => callback(err, data));
     },
+    'File.readByteRange': (json, context, callback) => {
+        var stream = fs.createReadStream(json.path, {start: json.from, end: json.from + json.size - 1});
+        var buffers = [];
+        stream.on('error', function() {
+            callback('Could not read file');
+        });
+        stream.on('end', function() {
+            var buffer = Buffer.concat(buffers);
+            callback(undefined, buffer);
+        });
+        stream.on('data', function(buffer) {
+            buffers.push(buffer);
+        });
+    },
     'File.writeBytes': (json, context, callback) => {
         fs.writeFile(json.path, Buffer.from(json.contents, 'hex'), callback);
     },
