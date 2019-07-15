@@ -31,7 +31,11 @@ module.exports = {
         });
     },
     'File.streamBytes': (json, context, callback) => {
-        callback(undefined, fs.createReadStream(json.path, {start: json.from}));
+        let stream = fs.createReadStream(json.path, {start: json.from});
+        stream.on('error', function() {
+            callback('Could not read file');
+        });
+        callback(undefined, stream);
     },
     'File.writeBytes': (json, context, callback) => {
         fs.writeFile(json.path, Buffer.from(json.contents, 'hex'), callback);
