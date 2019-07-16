@@ -19,14 +19,14 @@ exports.replaceFirstWith = r => f => s => s.replace(r.cacheNonGlobal(), function
     var groups = Array.prototype.slice.call(arguments, 0, arguments.length - 2);
     var from = arguments[arguments.length - 2];
     var until = from + arguments[0].length;
-    return f({groups: groups, matched: groups[0], input: s, from: from, until: until});
+    return f({groups: groups.slice(1).map(g => g || ""), matched: groups[0], input: s, from: from, until: until});
 });
 //: Regex -> ({groups: List String, matched: String, input: String, from: Int, until: Int} -> String) -> String -> String
 exports.replaceAllWith = r => f => s => s.replace(r.cacheGlobal(), function() {
     var groups = Array.prototype.slice.call(arguments, 0, arguments.length - 2);
     var from = arguments[arguments.length - 2];
     var until = from + arguments[0].length;
-    return f({groups: groups, matched: groups[0], input: s, from: from, until: until});
+    return f({groups: groups.slice(1).map(g => g || ""), matched: groups[0], input: s, from: from, until: until});
 });
 //: Regex -> String -> List String
 exports.split = r => s => s.split(r.cacheNonGlobal());
@@ -46,7 +46,13 @@ exports.matchFirstFrom = o => r => s => {
     var groups = null;
     var cached = r.cacheGlobal(o);
     if((groups = cached.exec(s)) != null) {
-        return self.tsh.some({groups: groups, matched: groups[0], input: s, from: groups.index, until: cached.lastIndex});
+        return self.tsh.some({
+            groups: groups.slice(1).map(g => g || ""),
+            matched: groups[0],
+            input: s,
+            from: groups.index,
+            until: cached.lastIndex
+        });
     }
     return self.tsh.none;
 };
@@ -58,7 +64,13 @@ exports.matchAllFrom = o => r => s => {
     var groups = null;
     var cached = r.cacheGlobal(o);
     while((groups = cached.exec(s)) != null) {
-        result.push({groups: groups, matched: groups[0], input: s, from: groups.index, until: cached.lastIndex});
+        result.push({
+            groups: groups.slice(1).map(g => g || ""),
+            matched: groups[0],
+            input: s,
+            from: groups.index,
+            until: cached.lastIndex
+        });
     }
     return result;
 };
