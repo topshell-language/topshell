@@ -100,6 +100,9 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 }
             }
             checkStructure(s1, c1, s2, c2).orElse(checkStructure(s2, c2, s1, c1)).getOrElse(List(constraint))
+        case RecordConstraint(record, required, List()) =>
+            unification.unify(record, TRecord(required))
+            List()
         case RecordConstraint(record, required, optional) =>
             record match {
                 case TRecord(fields) =>
