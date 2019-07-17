@@ -25,14 +25,14 @@ exports._fetchThen = f => configuration => new self.tsh.Task(async world => {
     }
 });
 
-//: c -> Task Http | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
+//: c -> Task Http | c ~ {url : String, ?method : String, ?mode : String, ?body : String, ?check : Bool, ?headers : List {key: String, value: String}}
 exports.fetch = exports._fetchThen(r => r);
 
-//: c -> Task String | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
+//: c -> Task String | c ~ {url : String, ?method : String, ?mode : String, ?body : String, ?check : Bool, ?headers : List {key: String, value: String}}
 exports.fetchText = exports._fetchThen(r => r.text());
-//: c -> Task Json | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
+//: c -> Task Json | c ~ {url : String, ?method : String, ?mode : String, ?body : String, ?check : Bool, ?headers : List {key: String, value: String}}
 exports.fetchJson = exports._fetchThen(r => r.json());
-//: c -> Task Bytes | c.url : String | c.?method : String | c.?mode : String | c.?body : String | c.?check : Bool | c.?headers : List {key: String, value: String}
+//: c -> Task Bytes | c ~ {url : String, ?method : String, ?mode : String, ?body : String, ?check : Bool, ?headers : List {key: String, value: String}}
 exports.fetchBytes = exports._fetchThen(r => r.arrayBuffer().then(b => new Uint8Array(b)));
 
 exports._processResponse = f => response => new self.tsh.Task(async world => {

@@ -140,11 +140,11 @@ object Syntax {
     object RecordConstraint {
 
         def apply(recordType : Type, required : TRecord, optional : TRecord) = {
-            TApply(TApply(TApply(TConstructor("{}"), recordType), required), optional)
+            TApply(TApply(TApply(TConstructor("~"), recordType), required), optional)
         }
 
         def unapply(constraint : Type) = constraint match {
-            case TApply(TApply(TApply(TConstructor("{}"), recordType), TRecord(required)), TRecord(optional)) =>
+            case TApply(TApply(TApply(TConstructor("~"), recordType), TRecord(required)), TRecord(optional)) =>
                 Some((recordType, required, optional))
             case _ =>
                 None
