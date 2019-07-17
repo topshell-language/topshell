@@ -100,6 +100,29 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 }
             }
             checkStructure(s1, c1, s2, c2).orElse(checkStructure(s2, c2, s1, c1)).getOrElse(List(constraint))
+        case RecordConstraint(record, required, optional) =>
+            record match {
+                case TRecord(fields) =>
+                    var missing = required.map(_.name).toSet
+                    val allowed = (required ++ optional).map(field => field.name -> field.scheme.generalized).toMap
+                    for(field <- fields) {
+                        missing -= field.name
+                        allowed.get(field.name) match {
+                            case None => throw new RuntimeException("Unexpected field: " + field.name)
+                            case Some(t) => unification.unify(t, field.scheme.generalized)
+                        }
+                    }
+                    if(missing.nonEmpty) {
+                        throw new RuntimeException("Missing fields: " + missing.toList.sorted.mkString(", "))
+                    }
+                    List()
+                case TParameter(_) =>
+                    List(constraint)
+                case TVariable(_) =>
+                    List(constraint)
+                case _ =>
+                    throw new RuntimeException("Record constraint on non-record: " + constraint)
+            }
         case TApply(TApply(TConstructor("=="), a), b) =>
             unification.unify(a, b)
             List()
@@ -209,13 +232,26 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
     @tailrec
     private def doSimplifyConstraints(constraints : List[Type]) : List[Type] = {
         val expandedConstraints = constraints.map(unification.expand).distinct
-        val fieldConstraints = mutable.Map[(Type, String), Type]()
+        val fieldConstraints = mutable.Map[(Type, String, Boolean), Type]()
         val variantConstraints = mutable.Map[(Type, String), List[Type]]()
-        val newConstraints = expandedConstraints.flatMap(simplifyConstraint).flatMap {
-            case c@FieldConstraint(record, label, t, _) =>
-                fieldConstraints.get((record, label)).map { t0 =>
+        val simplifiedConstraints = expandedConstraints.flatMap(simplifyConstraint)
+        val recordConstraints = simplifiedConstraints.collect { case RecordConstraint(t, r, o) => (t, r, o) }
+        val newConstraints = simplifiedConstraints.flatMap {
+            case FieldConstraint(record, label, fieldType, isOptional) if recordConstraints.exists(_._1 == record) =>
+                val (_, required, optional) = recordConstraints.find(_._1 == record).get
+                if(!isOptional && optional.map(_.name).contains(label)) {
+                    throw new RuntimeException("Optional field accessed as if required: " + label)
+                }
+                val allowed = (required ++ optional).map(field => field.name -> field.scheme.generalized).toMap
+                allowed.get(label) match {
+                    case None => throw new RuntimeException("Unexpected field: " + label)
+                    case Some(t) => unification.unify(fieldType, t)
+                }
+                List()
+            case c@FieldConstraint(record, label, fieldType, isOptional) =>
+                fieldConstraints.get((record, label, isOptional)).map { t0 =>
                     try {
-                        unification.unify(t0, t)
+                        unification.unify(t0, fieldType)
                     } catch {
                         case e : RuntimeException =>
                             throw new RuntimeException(
@@ -225,7 +261,7 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                     }
                     List()
                 }.getOrElse {
-                    fieldConstraints.put((record, label), t)
+                    fieldConstraints.put((record, label, isOptional), fieldType)
                     List(c)
                 }
             case c@VariantConstraint(label, constructorType) =>
@@ -319,8 +355,15 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
             case e : RuntimeException =>
                 throw ParseException(at, "Type annotation differs vs. " + actual + " (" + e.getMessage + ")")
         }
+        val expandedConstraints = annotation.constraints.flatMap {
+            case c@RecordConstraint(recordType, required, optional) =>
+                val r = required.map(field => FieldConstraint(recordType, field.name, field.scheme.generalized, false))
+                val o = optional.map(field => FieldConstraint(recordType, field.name, field.scheme.generalized, true))
+                c :: (r ++ o)
+            case c => List(c)
+        }
         val unsatisfied = cs.find { c1 =>
-            !annotation.constraints.exists { c2 =>
+            !expandedConstraints.exists { c2 =>
                 try {
                     val u = temporary.unification.copy()
                     u.unify(c2, c1)

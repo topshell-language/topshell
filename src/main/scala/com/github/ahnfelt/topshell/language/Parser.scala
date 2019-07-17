@@ -564,6 +564,27 @@ class Parser(file : String, tokens : Array[Token]) {
             skip("separator", Some(":"))
             val t = parseType()
             List(FieldConstraint(TParameter(record), label, t, o == ".?"))
+        } else if(ahead.raw == "~") {
+            val record = skip("lower").raw
+            skip("separator", Some("~"))
+            var required = List[TypeBinding]()
+            var optional = List[TypeBinding]()
+            skip("bracket", Some("{"))
+            while(current.raw != "}") {
+                val (isOptional, label) = if(current.raw != "?") {
+                    false -> skip("lower")
+                } else {
+                    skip("separator", Some("?"))
+                    true -> skip("definition")
+                }
+                skip("separator", Some(":"))
+                val binding = TypeBinding(label.raw, Scheme(List(), List(), parseType()))
+                if(isOptional) optional ::= binding
+                else required ::= binding
+                if(current.raw != "}") skip("separator", Some(","))
+            }
+            skip("bracket", Some("}"))
+            List(RecordConstraint(TParameter(record), TRecord(required.reverse), TRecord(optional.reverse)))
         } else {
             val left = parseType()
             if(current.raw == "==") {

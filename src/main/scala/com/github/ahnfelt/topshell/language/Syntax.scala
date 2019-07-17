@@ -137,6 +137,21 @@ object Syntax {
 
     }
 
+    object RecordConstraint {
+
+        def apply(recordType : Type, required : TRecord, optional : TRecord) = {
+            TApply(TApply(TApply(TConstructor("{}"), recordType), required), optional)
+        }
+
+        def unapply(constraint : Type) = constraint match {
+            case TApply(TApply(TApply(TConstructor("{}"), recordType), TRecord(required)), TRecord(optional)) =>
+                Some((recordType, required, optional))
+            case _ =>
+                None
+        }
+
+    }
+
     def functionType(arguments : List[Type], result : Type) : Type =
         arguments.foldRight(result)((x, y) => TApply(TApply(TConstructor("->"), x), y))
 

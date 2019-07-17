@@ -6,7 +6,7 @@ import scala.scalajs.js.JSON
 
 object Pretty {
 
-    def showType(t : Type) : String = t match {
+    def showType(typeToShow : Type) : String = typeToShow match {
         case TVariable(id) => "_" + id
         case TParameter(name) => name
         case TConstructor(name) => name
@@ -21,6 +21,10 @@ object Pretty {
         case StructureConstraint(p, s1, c1, s2, c2, cs) =>
             val x = cs.map(" | " + showType(_)).mkString
             "{" + showStructureConstraintPart(p, s1, c1) + ", " + showStructureConstraintPart(p, s2, c2) + x + "}"
+        case RecordConstraint(t, required, optional) =>
+            val requiredFields = required.map(f => f.name + ": " + f.scheme.generalized)
+            val optionalFields = optional.map(f => "?" + f.name + ": " + f.scheme.generalized)
+            t + " ~ {" + (requiredFields ++ optionalFields).mkString(", ") + "}"
         case TRecord(fields) =>
             "{" + fields.map(b => b.name + ": " + showScheme(b.scheme, true)).mkString(", ") + "}"
         case TApply(TApply(TApply(TConstructor(o), TSymbol(l)), t1), t2) if o == "." || o == ".?" =>
