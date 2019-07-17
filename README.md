@@ -221,13 +221,14 @@ Meaning "magnitude is a function that takes in any type `a` and returns `Float`,
 The `Http.fetchJson` function has the following signature:
 
 ```haskell
-Http.fetchJson : c -> Task Json
-    | c.url : String 
-    | c.?method : String 
-    | c.?mode : String 
-    | c.?body : String 
-    | c.?check : Bool 
-    | c.?headers : List {key: String, value: String}
+Http.fetchJson : c -> Task Json | c ~ {
+    url : String 
+    ?method : String 
+    ?mode : String 
+    ?body : String 
+    ?check : Bool 
+    ?headers : List {key: String, value: String}
+}
 ```
 
 This means that `c` is a record with a field called `url` of type `String`, and optionally one or more of the fields `method`, `mode`, `body`, `check` and `headers`. A common invocation is:
@@ -238,7 +239,7 @@ json <- Http.fetchJson {url: "https://www.example.com/data.json", mode: "proxy"}
 
 Since the `url` field is present, the `mode` field doesn't have the wrong type, and none of the left out fields are required, the above compiles.
 
-Optional fields are accessed with the `.?` operator, eg. `r.?optionalField`, and they return `[None, Some a]`, where `a` is the field type.
+Optional fields are accessed with the `.?` operator, eg. `r.?optionalField`, and they return `[None, Some a]`, where `a` is the field type. For open records, there is also the optional field type constraint `record.?label: type`.
 
 
 ## Modules are records
