@@ -1,6 +1,6 @@
 # TopShell
 
-*A reactive environment that replaces the terminal.* [Why?](https://github.com/topshell-language/topshell/wiki/TopShell:-Reimagined-Terminal-and-Shell)
+*A reactive environment that replaces the terminal. [Why?](https://github.com/topshell-language/topshell/wiki/TopShell:-Reimagined-Terminal-and-Shell)*
 
 * Asynchronous I/O and reactive streaming with live updates
 * Purely functional scripting with type inference and autocompletion
