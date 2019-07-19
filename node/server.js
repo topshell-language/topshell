@@ -66,11 +66,11 @@ var server = http.createServer((request, response) => {
                     utils.sendResponse(response, problem, 500, {'Content-Type': 'text/plain'});
                 } else if(Buffer.isBuffer(result)) {
                     utils.sendResponse(response, result, 200, {'Content-Type': 'application/octet-stream'});
-                } else if(typeof result.pipe === "function") {
+                } else if(result != null && typeof result.pipe === "function") {
                     response.setHeader("Content-Type", 'application/octet-stream');
                     result.pipe(response);
                 } else {
-                    let json = JSON.stringify({data: data === undefined ? null : data});
+                    let json = JSON.stringify({data: result === undefined ? {} : result});
                     utils.sendResponse(response, json, 200, {'Content-Type': 'application/json'});
                 }
             });
