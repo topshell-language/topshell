@@ -1,6 +1,6 @@
 # TopShell
 
-*A reactive environment that replaces the terminal.*
+*A purely functional, reactive scripting language.*
 
 * Asynchronous I/O and reactive streaming with live updates
 * Purely functional scripting with type inference and autocompletion
