@@ -63,3 +63,6 @@ exports.statusText = response => response.statusText;
 exports.type = response => response.type;
 //: Http -> String
 exports.url = response => response.url;
+
+//: String -> String
+exports.toProxyUrl = url => "/proxy/" + encodeURI(url);
