@@ -1,5 +1,3 @@
-<img src="https://img.shields.io/badge/made%20with-scala-red.svg" alt="made with scala.js"> <img src="https://img.shields.io/badge/paradigm-purely%20functional-blue.svg" alt="made with scala.js">
-
 # TopShell
 
 *A purely functional, reactive scripting language.*
