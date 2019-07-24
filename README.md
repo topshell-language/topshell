@@ -324,3 +324,5 @@ Lets will automatically be evaluated, but binds needs to be started manually by 
 # Getting help
 
 You're encouraged to [create an issue](https://github.com/Ahnfelt/topshell/issues/new) if you have a question about TopShell.
+
+You can also read the [FAQ](https://github.com/topshell-language/topshell/wiki/FAQ).
