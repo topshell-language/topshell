@@ -1,6 +1,6 @@
-# TopShell
+# TopShell <img src="https://avatars2.githubusercontent.com/u/52890641?s=200&v=4" align="right" height="40">
 
-*A purely functional, reactive scripting language.*
+*Purely functional, reactive scripting language.*
 
 * Asynchronous I/O and reactive streaming with live updates
 * Purely functional scripting with type inference and autocompletion
