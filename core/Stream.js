@@ -15,12 +15,18 @@ exports.never = (function() {
 
 //: (a -> b) -> Stream a -> Stream b
 exports.map = f => s => s.map(f);
-//: (a -> Stream b) -> Stream a -> Stream b
-exports.flatMap = f => s => s.then(f);
-//: Stream (Stream a) -> Stream a
-exports.flatten = s => s.flatMap(x => x);
 //: (a -> Bool) -> Stream a -> Stream a
 exports.filter = f => s => s.filter(f);
+
+//: Stream (Stream a) -> Stream a
+exports.flatten = s => s.flatMap(x => x);
+//: (a -> Stream b) -> Stream a -> Stream b
+exports.flatMap = f => s => s.then(f);
+
+//: Stream (Stream a) -> Stream a
+exports.switch = s => s.switchMap(x => x);
+//: (a -> Stream b) -> Stream a -> Stream b
+exports.switchMap = f => s => s.switchMap(f);
 
 //: b -> (b -> a -> b) -> Stream a -> Task b
 exports.fold = x => f => s => s.fold(x, f);

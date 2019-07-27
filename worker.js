@@ -162,6 +162,61 @@ self.tsh.Stream = class extends self.tsh.AbstractView {
             return {result: r};
         });
     }
+    switchMap(body) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let s1 = open(world);
+            let s2 = null;
+            let p1 = null;
+            let p2 = null;
+            let done = false;
+            let newController = null;
+            let newWorld = null;
+            function propagateAbort() { newController.abort() }
+            function stopInner() {
+                if(newController && newWorld) {
+                    if(world.abortSignal) world.abortSignal.removeEventListener("abort", propagateAbort);
+                    newController.abort();
+                    newController = null;
+                    newWorld = null;
+                }
+            }
+            try {
+                while(!done) {
+                    if(p1 == null) {
+                        p1 = s1.next().then(n => {
+                            p1 = null;
+                            p2 = null;
+                            stopInner();
+                            if(n.done) {
+                                done = true;
+                            } else {
+                                let stream2 = body(n.value.result);
+                                newController = new AbortController();
+                                if(world.abortSignal) world.abortSignal.addEventListener("abort", propagateAbort);
+                                newWorld = Object.assign({}, world, {abortSignal: newController.signal});
+                                s2 = stream2.open(newWorld);
+                            }
+                            return {outer: true};
+                        });
+                    }
+                    if(p2 == null && s2 != null) {
+                        p2 = s2.next();
+                    }
+                    let n = await Promise.race([p1, p2].filter(p => p != null));
+                    if(n.done) {
+                        s2 = null;
+                        p2 = null;
+                    } else if(!n.outer) {
+                        p2 = null;
+                        yield n.value;
+                    }
+                }
+            } finally {
+                stopInner();
+            }
+        });
+    }
     merge(stream) {
         let open = this.open;
         return new self.tsh.Stream(function(world) {
