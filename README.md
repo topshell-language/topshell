@@ -57,7 +57,7 @@ _ <- File.appendText "/etc/hosts" (
 
 ## HTTP example
 
-* Fetch some JSON from the `reques.in` mock data API.
+* Fetch some JSON from the `reqres.in` mock data API.
 * Turn the JSON into a typed record.
 * Show it in a graphical table with image avatars.
 
