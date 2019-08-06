@@ -19,7 +19,7 @@ exports.map = f => s => s.map(f);
 exports.filter = f => s => s.filter(f);
 
 //: Stream (Stream a) -> Stream a
-exports.flatten = s => s.flatMap(x => x);
+exports.flatten = s => s.then(x => x);
 //: (a -> Stream b) -> Stream a -> Stream b
 exports.flatMap = f => s => s.then(f);
 

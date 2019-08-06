@@ -52,3 +52,25 @@ exports.toIntBase = b => i => parseInt(i, b);
 exports.ofIntBase = b => i => i.toString(b);
 //: String -> List String
 exports.lines = s => s.split("\n");
+
+//: Bytes -> String
+exports.ofBytes = bytes => new TextDecoder().decode(bytes);
+//: String -> Bytes
+exports.toBytes = text => new TextEncoder().encode(text);
+//: Stream Bytes -> Stream String
+exports.ofBytesStreaming = stream => new self.tsh.Stream(async function*(world) {
+    let decoder = new TextDecoder();
+    let o = stream.open(world);
+    while(true) {
+        let n = await o.next();
+        if(n.done) {
+            let s = decoder.decode();
+            if(s.length !== 0) yield {result: s};
+            return;
+        }
+        let s = decoder.decode(n.value.result, {stream: true});
+        if(s.length !== 0) yield {result: s};
+    }
+});
+//: Stream String -> Stream Bytes
+exports.toBytesStreaming = stream => stream.filter(s => s.length !== 0).map(exports.toBytes);

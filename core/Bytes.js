@@ -8,10 +8,6 @@ exports.toList = bytes => Array.from(bytes);
 exports.ofHex = self.tsh.ofHex;
 //: Bytes -> String
 exports.toHex = self.tsh.toHex;
-//: String -> Bytes
-exports.ofString = text => new TextEncoder("utf-8").encode(text);
-//: Bytes -> String
-exports.toString = bytes => new TextDecoder().decode(bytes);
 //: Bytes -> Int
 exports.size = bytes => bytes.byteLength;
 //: Int -> Bytes -> Bytes

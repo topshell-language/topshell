@@ -92,6 +92,18 @@ self.tsh.Stream = class extends self.tsh.AbstractView {
             }
         });
     }
+    filter(body) {
+        let open = this.open;
+        return new self.tsh.Stream(async function*(world) {
+            let outer = open(world);
+            let o = await outer.next();
+            while(!o.done) {
+                let v = o.value;
+                if(body(v.result)) yield v;
+                o = await outer.next();
+            }
+        });
+    }
     map(body) {
         let open = this.open;
         return new self.tsh.Stream(async function*(world) {
