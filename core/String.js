@@ -74,3 +74,5 @@ exports.ofBytesStreaming = stream => new self.tsh.Stream(async function*(world) 
 });
 //: Stream String -> Stream Bytes
 exports.toBytesStreaming = stream => stream.filter(s => s.length !== 0).map(exports.toBytes);
+//: Stream Bytes -> Task String
+exports.drainBytesStream = s => exports.toBytesStreaming(s).fold("", x => y => x + y);
