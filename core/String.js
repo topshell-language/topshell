@@ -84,7 +84,11 @@ exports.linesStreaming = stream => new self.tsh.Stream(async function*(world) {
                 remainder = remainder + s;
                 break;
             }
-            yield {result: remainder + s.slice(0, s[i - 1] === '\r' ? i - 1 : i)};
+            let result =
+                s[i - 1] === '\r' ? remainder + s.slice(0, i - 1) :
+                i === 0 && remainder.endsWith('\r') ? remainder.slice(0, -1) :
+                remainder + s.slice(0, i);
+            yield {result: result};
             s = s.slice(i + 1);
             remainder = "";
         }
