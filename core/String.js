@@ -51,7 +51,7 @@ exports.toIntBase = b => i => parseInt(i, b);
 //: Int -> Int -> String
 exports.ofIntBase = b => i => i.toString(b);
 //: String -> List String
-exports.lines = s => s.split("\n");
+exports.lines = s => s.split(/\r?\n/);
 
 //: Bytes -> String
 exports.ofBytes = bytes => new TextDecoder().decode(bytes);
@@ -79,12 +79,12 @@ exports.linesStreaming = stream => new self.tsh.Stream(async function*(world) {
         let n = await o.next();
         let s = n.done ? decoder.decode() : decoder.decode(n.value.result, {stream: true});
         while(true) {
-            let i = s.indexOf("\n");
+            let i = s.indexOf('\n');
             if(i === -1) {
                 remainder = remainder + s;
                 break;
             }
-            yield {result: remainder + s.slice(0, i)};
+            yield {result: remainder + s.slice(0, s[i - 1] === '\r' ? i - 1 : i)};
             s = s.slice(i + 1);
             remainder = "";
         }
