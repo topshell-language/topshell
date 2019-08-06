@@ -32,3 +32,36 @@ exports.map = f => a => a.map(f);
 exports.foldLeft = z => f => a => a.reduce((x, y) => f(x)(y), z);
 //: a -> (a -> Int -> a) -> Bytes -> a
 exports.foldRight = z => f => a => a.reduceRight((x, y) => f(x)(y), z);
+//: a -> (a -> Stream b) -> (a -> Int -> {state: a, stream: Stream b}) -> Stream Bytes -> Stream b
+exports.stream = z => g => f => stream => new self.tsh.Stream(async function*(world) {
+    let o = stream.open(world);
+    while(true) {
+        let n = await o.next();
+        if(n.done) {
+            let r = g(z);
+            if(r !== self.tsh.Stream.empty) {
+                let e = r.open(world);
+                while(true) {
+                    let next = await e.next();
+                    if(next.done) break;
+                    yield next.value;
+                }
+            }
+            return;
+        }
+        let bytes = n.value.result;
+        for(let i = 0; i < bytes.length; i++) {
+            let r = f(z)(bytes[i]);
+            z = r.state;
+            if(r.stream !== self.tsh.Stream.empty) {
+                let e = r.stream.open(world);
+                while(true) {
+                    let next = await e.next();
+                    if(next.done) break;
+                    yield next.value;
+                }
+            }
+        }
+    }
+});
+

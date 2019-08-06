@@ -399,6 +399,7 @@ self.tsh.Stream.once = task => new self.tsh.Stream(async function*(world) {
 self.tsh.Stream.ofList = a => new self.tsh.Stream(async function*(world) {
     for(var i = 0; i < a.length; i++) yield {result: a[i]};
 });
+self.tsh.Stream.empty = new self.tsh.Stream(async function*(world) {});
 
 self.tsh.Lazy = class extends self.tsh.AbstractView {
     constructor(compute) {

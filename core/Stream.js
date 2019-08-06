@@ -12,6 +12,8 @@ exports.never = (function() {
     let p = Promise.race([]);
     return new self.tsh.Stream(async function*(world) { await p; });
 })();
+//: Stream a
+exports.empty = self.tsh.Stream.empty;
 
 //: (a -> b) -> Stream a -> Stream b
 exports.map = f => s => s.map(f);
