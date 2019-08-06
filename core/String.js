@@ -74,15 +74,19 @@ exports.toBytesStreaming = stream => stream.filter(s => s.length !== 0).map(expo
 exports.linesStreaming = stream => new self.tsh.Stream(async function*(world) {
     let decoder = new TextDecoder();
     let o = stream.open(world);
-    let remainder;
+    let remainder = "";
     while(true) {
         let n = await o.next();
-        remainder = n.done ? decoder.decode() : decoder.decode(n.value.result, {stream: true});
+        let s = n.done ? decoder.decode() : decoder.decode(n.value.result, {stream: true});
         while(true) {
-            let i = remainder.indexOf("\n");
-            if(i === -1) break;
-            yield {result: remainder.slice(0, i)};
-            remainder = remainder.slice(i + 1);
+            let i = s.indexOf("\n");
+            if(i === -1) {
+                remainder = remainder + s;
+                break;
+            }
+            yield {result: remainder + s.slice(0, i)};
+            s = s.slice(i + 1);
+            remainder = "";
         }
         if(n.done) {
             yield {result: remainder};
