@@ -1,8 +1,11 @@
+//: k -> v -> Map k v | Order k
+exports.of = k => v => XMap.of([{key: k, value: v}]);
+
 //: List {key: k, value: v} -> Map k v | Order k
-exports.of = a => XMap.of(a);
+exports.ofList = a => XMap.of(a);
 
 //: (v -> v -> v) -> List {key: k, value: v} -> Map k v | Order k
-exports.ofList = f => l => XMap.ofList(f, l);
+exports.ofListBy = f => l => XMap.ofList(f, l);
 
 //: Map k v -> List {key: k, value: v} | Order k
 exports.toList = m => XMap.toList(m);

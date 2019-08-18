@@ -1,11 +1,14 @@
-//: List v -> Set v | Order v
-exports.of = a => XSet.of(a);
+//: v -> Set v | Order v
+exports.of = a => XSet.of([a]);
 
-//: (k -> v) -> Set k -> Map k v | Order k
-exports.toMap = f => s => XSet.toMap(f, s);
+//: List v -> Set v | Order v
+exports.ofList = a => XSet.of(a);
 
 //: Set v -> List v | Order v
 exports.toList = m => XSet.toList(m);
+
+//: (k -> v) -> Set k -> Map k v | Order k
+exports.toMap = f => s => XSet.toMap(f, s);
 
 //: v -> Set v -> Set v | Order v
 exports.add = v => m => XSet.add(k, v, m);
