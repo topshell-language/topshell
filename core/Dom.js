@@ -66,27 +66,27 @@ exports.drop = i => dom => new self.tsh.Dom(dom.list.slice(i));
 exports.takeLast = i => dom => new self.tsh.Dom(dom.list.slice(-i));
 //: Int -> Dom -> Dom
 exports.dropLast = i => dom => new self.tsh.Dom(dom.list.slice(0, -i));
-//: Dom -> Boolean
+//: Dom -> Bool
 exports.isText = dom => {
     return dom.list.length === 1 && dom.list[0].nodeType === 3;
 };
-//: Dom -> Boolean
+//: Dom -> Bool
 exports.isElement = dom => {
     return dom.list.length === 1 && dom.list[0].nodeType === 1;
 };
-//: Dom -> Boolean
+//: Dom -> Bool
 exports.isCData = dom => {
     return dom.list.length === 1 && dom.list[0].nodeType === 4;
 };
-//: Dom -> Boolean
+//: Dom -> Bool
 exports.isComment = dom => {
     return dom.list.length === 1 && dom.list[0].nodeType === 8;
 };
-//: Dom -> Boolean
+//: Dom -> Bool
 exports.isList = dom => {
     return dom.list.length !== 1;
 };
-//: Dom -> Boolean
+//: Dom -> Bool
 exports.isEmpty = dom => {
     return dom.list.length === 0;
 };
