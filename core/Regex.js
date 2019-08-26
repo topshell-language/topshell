@@ -10,6 +10,8 @@ exports.multiLineIgnoringCase = s => new self.tsh.Regex(s, "ium");
 exports.pattern = r => r.pattern;
 //: Regex -> String
 exports.flags = r => r.flags;
+//: String -> String
+exports.escape = string => string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 //: Regex -> String -> String -> String
 exports.replaceFirst = r => t => s => s.replace(r.cacheNonGlobal(), t);
 //: Regex -> String -> String -> String
