@@ -39,7 +39,7 @@ exports.findFirst = r => s => {
     return self.tsh.some(groups[0]);
 };
 //: Regex -> String -> List String
-exports.findAll = r => s => exports.matchAll(r)(s).map(m => m.groups[0]);
+exports.findAll = r => s => exports.matchAll(r)(s).map(m => m.matched);
 //: Regex -> String -> [None, Some {groups: List String, matched: String, input: String, from: Int, until: Int}]
 exports.matchFirst = r => s => exports.matchFirstFrom(0)(r)(s);
 //: Int -> Regex -> String -> [None, Some {groups: List String, matched: String, input: String, from: Int, until: Int}]
