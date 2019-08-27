@@ -90,8 +90,12 @@ exports.foldLeft = z => f => a => a.reduce((x, y) => f(x)(y), z);
 //: a -> (a -> b -> a) -> List b -> a
 exports.foldRight = z => f => a => a.reduceRight((x, y) => f(x)(y), z);
 
+//: List a -> List a | Order a
+exports.sort = a => exports.sortBy(x => y => XOrder.less(x, y))(a);
+//: (a -> b) -> List a -> List a | Order b
+exports.sortOn = f => a => exports.sortBy(x => y => XOrder.less(f(x), f(y)))(a);
 //: (a -> a -> Bool) -> List a -> List a
-exports.sort = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
+exports.sortBy = f => a => a.slice().sort((a, b) => f(a)(b) ? -1 : f(b)(a) ? 1 : 0);
 
 //: Int -> a -> List a
 exports.repeat = n => v => new Array(n).fill(v);
