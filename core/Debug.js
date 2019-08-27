@@ -18,7 +18,7 @@ exports.get = v => { if(v._ !== "Some") throw "Debug.get None"; else return v._1
 
 //: Int -> List a -> a
 exports.at = i => v => {
-    if(!(i < v.length)) throw "List.at " + i + " [... " + v.length + " elements]";
+    if(!(i < v.length)) throw "Debug.at " + i + " [... " + v.length + " elements]";
     return v[i];
 };
 

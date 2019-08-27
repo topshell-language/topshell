@@ -13,7 +13,7 @@ exports.repeat = n => s => s.repeat(n);
 //: String -> String
 exports.reverse = s => s.split("").reverse().join("");
 //: String -> String -> String -> String
-exports.replace = i => o => s => s.replace(i, o);
+exports.replace = i => o => s => s.split(i).join(o);
 //: String -> String -> Bool
 exports.startsWith = x => s => s.startsWith(x);
 //: String -> String -> Bool
