@@ -5,7 +5,11 @@ exports.ofList = self.tsh.Stream.ofList;
 
 //: Int -> Stream a
 exports.counter = a => new self.tsh.Stream(async function*(world) {
-    var x = a; while(true) { yield {result: x}; x += 1; }
+    var x = a;
+    while(true) {
+        yield {result: x};
+        x += 1;
+    }
 });
 
 //: Task a -> Stream a
