@@ -4,7 +4,9 @@ exports.of = x => self.tsh.Stream.ofList([x]);
 exports.ofList = self.tsh.Stream.ofList;
 
 //: Int -> Stream a
-exports.counter = a => new self.tsh.Stream(async function*(world) { while(true) { yield {result: a}; a += 1; } });
+exports.counter = a => new self.tsh.Stream(async function*(world) {
+    var x = a; while(true) { yield {result: x}; x += 1; }
+});
 
 //: Task a -> Stream a
 exports.once = task => new self.tsh.Stream(async function*(world) {yield (await task.run(world))});
