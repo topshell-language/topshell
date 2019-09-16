@@ -83,7 +83,12 @@ var server = http.createServer((request, response) => {
             utils.sendResponse(response, result, 200, {'Content-Type': 'application/javascript'});
         });
 
+    } else if(parts.pathname === '/' && request.method === 'GET') {
+
+        utils.sendResponse(response, 'Redirecting...', 302, {'Location': '/topshell/index.html'});
+
     } else if(parts.pathname.startsWith(base) && request.method === 'GET') {
+
         var file = parts.pathname.slice(base.length);
         if(file.includes("..")) throw 'Illegal path: ' + file;
         file = "../" + file;
@@ -98,9 +103,13 @@ var server = http.createServer((request, response) => {
             response.end();
         });
         stream.pipe(response);
+
     } else {
+
         utils.sendResponse(response, "Not found", 404);
+
     }
+
 });
 
 if(process.argv.length > 3) throw 'Expected one or zero command line arguments';
