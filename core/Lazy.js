@@ -14,19 +14,31 @@ exports.force = l => {
     return l.value;
 };
 
-//: (a -> String) -> ((a -> b) -> (a -> b)) -> a -> b
-exports.memoBy = g => f => v => {
-    var cache = {};
-    function h(x) {
-        var k = g(x);
-        if(!Object.prototype.hasOwnProperty.call(cache, k)) cache[k] = f(h)(x);
-        return cache[k];
+//: ((a -> b) -> (a -> b)) -> a -> b | Order a
+exports.memo = f => x => {
+    var cache = XMap.empty;
+    function h(k) {
+        var c = XMap.get(k, cache);
+        if(self.tsh.isNone(c)) {
+            var v = f(h)(k);
+            cache = XMap.add(k, v, cache);
+            return v;
+        } else {
+            return c._1
+        }
     }
-    return h(v);
+    return h(x);
 };
 
 //: ((String -> a) -> (String -> a)) -> String -> a
-exports.memo = exports.memoBy(k => k);
+exports.memoString = f => x => {
+    var cache = {};
+    function h(k) {
+        if(!Object.prototype.hasOwnProperty.call(cache, k)) cache[k] = f(h)(k);
+        return cache[k];
+    }
+    return h(x);
+};
 
 //: ((Int -> a) -> (Int -> a)) -> Int -> a
 exports.memoArray = f => x => {
