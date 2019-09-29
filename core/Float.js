@@ -7,8 +7,6 @@ exports.isNaN = isNaN;
 exports.pi = Math.PI;
 //: Float
 exports.e = Math.E;
-//: Float
-exports.phi = 0.5 * (1 + Math.sqrt(5));
 
 //: Float -> Float -> Float
 exports.remainder = top => bottom => top % bottom;
