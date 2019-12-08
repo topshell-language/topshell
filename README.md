@@ -143,7 +143,7 @@ x -> x          // a -> a
 
 Comments start with `//` and last to the end of the line. 
 
-Strings with placeholders, such as `\{placeholder}`, are functions that take a record argument with a field for each placeholder, where every field must be naturally convertable to a string, which is enforced via the `Display` constraint.
+Strings with placeholders, such as `\{placeholder}`, are functions that take a record argument with a field for each placeholder, where every field must be naturally convertable to a string, enforced via the `Display` constraint.
 
 # Lambda functions
 
