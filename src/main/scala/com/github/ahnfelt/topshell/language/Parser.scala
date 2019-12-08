@@ -393,7 +393,7 @@ class Parser(file : String, tokens : Array[Token]) {
             if(placeholders.isEmpty) EString(c.at, c.raw) else {
                 val end = placeholders.last.end
                 val body = placeholders.foldRight[Term](EString(c.at, "\"" + text.drop(end) + "\"")) { (m, e) =>
-                    val field = EField(c.at, EVariable(c.at, "r"), m.group(3), false)
+                    val field = EUnary(c.at, "\\{}", EField(c.at, EVariable(c.at, "r"), m.group(3), false))
                     val left = EBinary(c.at, "+", EString(c.at, "\"" + Option(m.group(1)).getOrElse("") + "\""), field)
                     EBinary(c.at, "+", left, e)
                 }

@@ -168,6 +168,8 @@ object Emitter {
             "(" + emitTerm(condition) + " ? " + emitTerm(thenBody) + " : " + emitTerm(elseBody) + ")"
         case EIf(at, condition, thenBody, None) =>
             "(" + emitTerm(condition) + " ? self.tsh.some(" + emitTerm(thenBody) + ") : self.tsh.none)"
+        case EUnary(at, "\\{}", operand) =>
+            emitTerm(operand)
         case EUnary(at, operator, operand) =>
             "(" + operator + "(" + emitTerm(operand) + "))"
         case EBinary(at, "^", left, right) =>

@@ -156,6 +156,7 @@ object Syntax {
         arguments.foldRight(result)((x, y) => TApply(TApply(TConstructor("->"), x), y))
 
     val unaryOperators = Seq(
+        Seq("\\{}")                 -> "a -> String | Display a",
         Seq("-")                    -> "a -> a | Number a",
         Seq("!")                    -> "Bool -> Bool",
     )

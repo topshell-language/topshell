@@ -219,6 +219,23 @@ class Constraints(val unification : Unification, initialTypeVariable : Int = 0, 
                 case _ =>
                     throw new RuntimeException("Not satisfiable: " + constraint)
             }
+        case TApply(TConstructor(c), target) if c == "Display" =>
+            target match {
+                case TConstructor("Int") =>
+                    List()
+                case TConstructor("Float") =>
+                    List()
+                case TConstructor("String") =>
+                    List()
+                case TConstructor("Bool") =>
+                    List()
+                case TParameter(_) =>
+                    List(constraint)
+                case TVariable(_) =>
+                    List(constraint)
+                case _ =>
+                    throw new RuntimeException("Not satisfiable: " + constraint)
+            }
         case _ =>
             throw new RuntimeException("Invalid constraint: " + constraint)
     }
