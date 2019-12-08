@@ -141,8 +141,9 @@ Some 42         // eg. [None, Some Int]
 x -> x          // a -> a
 ```
 
-Note: Comments start with `//` and last to the end of the line. 
+Comments start with `//` and last to the end of the line. 
 
+Strings with placeholders `\{placeholder}` are functions that take a record argument with a field for each placeholder, where every field must be naturally convertable to a string, which is enforced via the `Display` constraint.
 
 # Lambda functions
 
