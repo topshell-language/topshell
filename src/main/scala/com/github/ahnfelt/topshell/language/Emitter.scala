@@ -7,11 +7,13 @@ import scala.scalajs.js.JSON
 object Emitter {
 
     def emit(version : Double, topImports : List[TopImport], topSymbols : List[TopSymbol]) = {
-        "var _h = _g.tsh;\n" +
+        val x = "var _h = _g.tsh;\n" +
         "var _n = [];\n" +
         topImports.map(emitImport).map("\n" + _ + "\n").mkString +
         topSymbols.map(emitTopSymbol).map("\n" + _ + "\n").mkString +
         "return _n;\n"
+        println(x)
+        x
     }
 
     def emitImport(topImport : TopImport) : String = {

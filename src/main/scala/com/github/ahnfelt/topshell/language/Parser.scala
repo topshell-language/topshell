@@ -388,12 +388,24 @@ class Parser(file : String, tokens : Array[Token]) {
             EFloat(c.at, c.raw)
         case ("string", _) =>
             val c = skip("string")
-            EString(c.at, c.raw)
+            val text = c.raw.drop(1).dropRight(1)
+            val placeholders = placeholderPattern.findAllMatchIn(text).toList
+            if(placeholders.isEmpty) EString(c.at, c.raw) else {
+                val end = placeholders.last.end
+                val body = placeholders.foldRight[Term](EString(c.at, "\"" + text.drop(end) + "\"")) { (m, e) =>
+                    val field = EField(c.at, EVariable(c.at, "r"), m.group(3), false)
+                    val left = EBinary(c.at, "+", EString(c.at, "\"" + Option(m.group(1)).getOrElse("") + "\""), field)
+                    EBinary(c.at, "+", left, e)
+                }
+                EFunction(c.at, "r", body)
+            }
         case ("definition", _) =>
             parseDefinition()
         case _ =>
             throw ParseException(current.at, "Expected an atom, got " + current.raw)
     }
+
+    private val placeholderPattern = """(([^\\]|\\[^{])*)\\[{]([^}]+)[}]""".r
 
     private def parseDefinition() : Term = {
         ahead.raw match {
