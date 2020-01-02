@@ -12,7 +12,7 @@
 
 # Live demo
 
-**[Open the playground](http://show.ahnfelt.net/topshell/)**
+**[Open the playground](http://show.ahnfelt.net/topshell/)** (somewhat older than the latest release)
 
 Press Ctrl+Enter to run a top level binding.
 
