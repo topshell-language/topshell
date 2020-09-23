@@ -171,7 +171,7 @@ class Parser(file : String, tokens : Array[Token]) {
         var result = parseOperand()
         val operator = current.raw
         while(operators.contains(current.raw)) {
-            val c = skip("operator", Some(operator))
+            val c = skip("operator")
             val argument = parseOperand()
             result = EBinary(c.at, operator, result, argument)
         }
