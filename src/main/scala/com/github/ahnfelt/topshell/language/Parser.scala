@@ -169,9 +169,9 @@ class Parser(file : String, tokens : Array[Token]) {
 
     private def parseBinary(operators : Seq[String], parseOperand : () => Term) : Term = {
         var result = parseOperand()
-        val operator = current.raw
         while(operators.contains(current.raw)) {
-            val c = skip("operator")
+            val operator = current.raw
+            val c = skip("operator", Some(operator))
             val argument = parseOperand()
             result = EBinary(c.at, operator, result, argument)
         }
