@@ -237,15 +237,13 @@ self.tsh.Stream = class extends self.tsh.AbstractView {
             let p1 = null;
             let p2 = null;
             return {next() {
-                if(p1 === null && s1 !== null) p1 = s1.next().then(n => { p1 = null; if(n.done) s1 = null; return n });
-                if(p2 === null && s2 !== null) p2 = s2.next().then(n => { p2 = null; if(n.done) s2 = null; return n });
+                if(p1 === null && s1 !== null) p1 = s1.next().then(n => { if(n.done) s1 = null; return {p: true, n: n}; });
+                if(p2 === null && s2 !== null) p2 = s2.next().then(n => { if(n.done) s2 = null; return {p: false, n: n}; });
                 let promises = [p1, p2].filter(p => p !== null);
-                return promises.length === 0 ? {done: true} : Promise.race(promises).then(n => {
-                    if(n.done) {
-                        if(p1 !== null) return p1;
-                        if(p2 !== null) return p2;
-                    }
-                    return n;
+                return promises.length === 0 ? {done: true} : Promise.race(promises).then(r => {
+                    if(r.p) p1 = null;
+                    else p2 = null;
+                    return r.n.done ? this.next() : r.n;
                 });
             }};
         });
